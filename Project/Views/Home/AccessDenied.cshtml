@@ -1,0 +1,47 @@
+@{
+    ViewData["Title"] = "ไม่มีสิทธิ์เข้าถึง";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>ไม่มีสิทธิ์เข้าถึง
+                    </h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-ban fa-5x text-danger mb-3"></i>
+                        <h5>คุณไม่มีสิทธิ์เข้าถึงหน้านี้</h5>
+                        <p class="text-muted">
+                            ระบบจะนำคุณไปยังหน้าที่เหมาะสมตามบทบาทของคุณ
+                        </p>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>กลับหน้าหลัก
+                        </a>
+                        <a href="@Url.Action("Logout", "Home")" class="btn btn-outline-secondary">
+                            <i class="fas fa-sign-out-alt me-2"></i>ออกจากระบบ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto redirect หลังจาก 3 วินาที
+            setTimeout(function() {
+                window.location.href = '@Url.Action("Index", "Home")';
+            }, 3000);
+        });
+    </script>
+}

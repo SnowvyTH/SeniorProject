@@ -23,13 +23,7 @@ public class HomeController : Controller
     }
 
     public IActionResult Index()
-    {
-        // ถ้าผู้ใช้เข้าสู่ระบบแล้ว ให้ redirect ไปหน้า Dashboard
-        if (User.Identity?.IsAuthenticated == true)
-        {
-            return RedirectToAction("Dashboard");
-        }
-        
+    {   
         return View(new LoginViewModel());
     }
 
@@ -59,6 +53,7 @@ public class HomeController : Controller
             new Claim("LastName", user.LastName ?? ""),
             new Claim("RoleID", user.RoleID?.ToString() ?? ""),
             new Claim("RoleName", user.Role?.RoleName ?? ""),
+            new Claim(ClaimTypes.Role, user.Role?.RoleName ?? ""),
             new Claim("TitleID", user.TitleID?.ToString() ?? ""),
             new Claim("TitleName", user.Title?.TitleName ?? "")
         };
@@ -82,7 +77,14 @@ public class HomeController : Controller
         _context.Log.Add(log);
         await _context.SaveChangesAsync();
 
-        return RedirectToAction("Dashboard");
+        // Redirect ตามสิทธิ์ของผู้ใช้
+        return user.RoleID switch
+        {
+            1 => RedirectToAction("Index", "Pharma"),      // เภสัช
+            2 => RedirectToAction("Index", "HP"),          // หัวหน้าเภสัช
+            3 => RedirectToAction("Index", "Admin"),       // ผู้ดูแลระบบ
+            _ => RedirectToAction("AccessDenied")
+        };
     }
 
     public async Task<IActionResult> Logout()
@@ -91,15 +93,8 @@ public class HomeController : Controller
         return RedirectToAction("Index");
     }
 
-    public IActionResult Dashboard()
+    public IActionResult AccessDenied()
     {
-        if (User.Identity?.IsAuthenticated != true)
-        {
-            return RedirectToAction("Index");
-        }
-        
-        ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
-        ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
         return View();
     }
 

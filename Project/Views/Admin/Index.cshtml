@@ -1,5 +1,215 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "ระบบผู้ดูแลระบบ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-danger">
+                    <i class="fas fa-cog me-2"></i>ระบบผู้ดูแลระบบ
+                </h2>
+                <div class="dropdown">
+                    <button class="btn btn-outline-danger dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user me-1"></i>@ViewBag.UserName
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><span class="dropdown-item-text">บทบาท: @ViewBag.RoleName</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="@Url.Action("Logout", "Home")">
+                            <i class="fas fa-sign-out-alt me-1"></i>ออกจากระบบ
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card stats-card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">ผู้ใช้ระบบ</h4>
+                            <h2 class="mb-0">-</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark">
+                    <small>จำนวนผู้ใช้ทั้งหมด</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card stats-card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">การใช้งานวันนี้</h4>
+                            <h2 class="mb-0">-</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark">
+                    <small>จำนวนครั้งการเข้าใช้งาน</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card stats-card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">ข้อมูลระบบ</h4>
+                            <h2 class="mb-0">-</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-database fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark">
+                    <small>ขนาดฐานข้อมูล</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card stats-card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">สำรองข้อมูล</h4>
+                            <h2 class="mb-0">-</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-save fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-dark">
+                    <small>ครั้งล่าสุดที่สำรองข้อมูล</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card dashboard-card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tools me-2"></i>เครื่องมือผู้ดูแลระบบ
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-users me-2"></i>จัดการผู้ใช้
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-outline-success w-100">
+                                <i class="fas fa-clipboard-list me-2"></i>จัดการแบบฟอร์ม
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-hospital-user me-2"></i>จัดการผู้ป่วย
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-outline-info w-100">
+                                <i class="fas fa-chart-bar me-2"></i>รายงานระบบ
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-cog me-2"></i>ตั้งค่าระบบ
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="#" class="btn btn-outline-dark w-100">
+                                <i class="fas fa-download me-2"></i>สำรองข้อมูล
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card dashboard-card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>กิจกรรมล่าสุด
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-history fa-2x mb-3"></i>
+                        <p>ไม่มีกิจกรรมล่าสุด</p>
+                        <small>กิจกรรมของผู้ใช้ระบบจะแสดงที่นี่</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card dashboard-card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-server me-2"></i>สถานะระบบ
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                            <h6>เซิร์ฟเวอร์</h6>
+                            <small class="text-success">ปกติ</small>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                            <h6>ฐานข้อมูล</h6>
+                            <small class="text-success">ปกติ</small>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                            <h6>การสำรองข้อมูล</h6>
+                            <small class="text-success">ปกติ</small>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                            <h6>ความปลอดภัย</h6>
+                            <small class="text-success">ปกติ</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            console.log('Admin Dashboard loaded');
+            
+            // เพิ่ม JavaScript สำหรับฟังก์ชันการทำงานของผู้ดูแลระบบ
+        });
+    </script>
 }
