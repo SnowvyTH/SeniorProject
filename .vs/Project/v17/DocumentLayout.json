@@ -1,0 +1,41 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\Project\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{7A5AFDA7-98E5-90C4-3164-A14884667405}|Project\\Project.csproj|d:\\project\\project\\views\\pharma\\evaluations\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{7A5AFDA7-98E5-90C4-3164-A14884667405}|Project\\Project.csproj|solutionrelative:project\\views\\pharma\\evaluations\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\Project\\Project\\Views\\Pharma\\Evaluations\\Index.cshtml",
+              "RelativeDocumentMoniker": "Project\\Views\\Pharma\\Evaluations\\Index.cshtml",
+              "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\Evaluations\\Index.cshtml",
+              "RelativeToolTip": "Project\\Views\\Pharma\\Evaluations\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-07-22T13:55:11.967Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
