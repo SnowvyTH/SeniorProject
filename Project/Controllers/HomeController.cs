@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Project.Models;
+using Project.Models.Entity;
 using Project.Services;
 using Project.Data;
 
@@ -23,8 +24,22 @@ public class HomeController : Controller
     }
 
     public IActionResult Index()
-    {   
-        return View(new LoginViewModel());
+    {
+        if (User.Identity.IsAuthenticated)
+        {
+            var roleIdClaim = User.FindFirst("RoleID")?.Value;
+            if (int.TryParse(roleIdClaim, out int roleId))
+            {
+                return roleId switch
+                {
+                    1 => RedirectToAction("Index", "Pharma"),
+                    2 => RedirectToAction("Index", "HP"),
+                    3 => RedirectToAction("Index", "Admin"),
+                    _ => RedirectToAction("Logout")
+                };
+            }
+        }
+        return View();
     }
 
     [HttpPost]
@@ -69,7 +84,7 @@ public class HomeController : Controller
             new ClaimsPrincipal(claimsIdentity), authProperties);
 
         // บันทึก Log การเข้าสู่ระบบ
-        var log = new Project.Models.Entity.Log
+        var log = new Log
         {
             UserID = user.UserID,
             LogDateTime = DateTime.Now
