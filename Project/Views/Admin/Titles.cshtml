@@ -1,0 +1,236 @@
+﻿@{
+    ViewData["Title"] = "จัดการคำนำหน้า";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4><i class="fas fa-id-badge me-2"></i>จัดการคำนำหน้าผู้ใช้</h4>
+        <button type="button" class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addTitleModal">
+            <i class="fas fa-plus me-2"></i>เพิ่มคำนำหน้าใหม่
+        </button>
+    </div>
+
+    <!-- Search -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchTitle" class="form-control" placeholder="ค้นหาคำนำหน้า...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Titles Table -->
+    <div class="table-responsive">
+        <table class="table table-hover" id="titlesTable">
+            <thead class="table-light">
+                <tr>
+                    <th width="100">รหัส</th>
+                    <th>คำนำหน้า</th>
+                    <th width="200">การจัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="titlesTableBody">
+                <!-- Data will be loaded via AJAX -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loadingIndicator" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">กำลังโหลด...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Add Title Modal -->
+<div class="modal fade" id="addTitleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus me-2"></i>เพิ่มคำนำหน้าใหม่</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addTitleForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">คำนำหน้า</label>
+                        <input type="text" class="form-control" name="TitleName" required 
+                               placeholder="เช่น นาย, นาง, นางสาว, ดร.">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary-custom">เพิ่มคำนำหน้า</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Title Modal -->
+<div class="modal fade" id="editTitleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>แก้ไขคำนำหน้า</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editTitleForm">
+                <input type="hidden" name="TitleID" id="editTitleID">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">คำนำหน้า</label>
+                        <input type="text" class="form-control" name="TitleName" id="editTitleName" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary-custom">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            loadTitles();
+
+            // Search functionality
+            $('#searchTitle').on('keyup', function() {
+                loadTitles();
+            });
+
+            // Add title form
+            $('#addTitleForm').on('submit', function(e) {
+                e.preventDefault();
+                addTitle();
+            });
+
+            // Edit title form
+            $('#editTitleForm').on('submit', function(e) {
+                e.preventDefault();
+                updateTitle();
+            });
+        });
+
+        function loadTitles() {
+            $('#loadingIndicator').show();
+            $('#titlesTable tbody').hide();
+
+            const search = $('#searchTitle').val();
+
+            $.ajax({
+                url: '@Url.Action("GetTitles", "Admin")',
+                method: 'GET',
+                data: { search: search },
+                success: function(data) {
+                    let html = '';
+                    data.forEach(function(title) {
+                        html += `
+                            <tr>
+                                <td>${title.titleID}</td>
+                                <td>${title.titleName}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editTitle(${title.titleID}, '${title.titleName}')">
+                                        <i class="fas fa-edit"></i> แก้ไข
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTitle(${title.titleID}, '${title.titleName}')">
+                                        <i class="fas fa-trash"></i> ลบ
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    $('#titlesTableBody').html(html);
+                    $('#loadingIndicator').hide();
+                    $('#titlesTable tbody').show();
+                },
+                error: function() {
+                    alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+                    $('#loadingIndicator').hide();
+                }
+            });
+        }
+
+        function addTitle() {
+            const formData = new FormData($('#addTitleForm')[0]);
+            
+            $.ajax({
+                url: '@Url.Action("CreateTitle", "Admin")',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if(response.success) {
+                        $('#addTitleModal').modal('hide');
+                        $('#addTitleForm')[0].reset();
+                        loadTitles();
+                        alert('เพิ่มคำนำหน้าสำเร็จ');
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('เกิดข้อผิดพลาดในการเพิ่มคำนำหน้า');
+                }
+            });
+        }
+
+        function editTitle(titleID, titleName) {
+            $('#editTitleID').val(titleID);
+            $('#editTitleName').val(titleName);
+            $('#editTitleModal').modal('show');
+        }
+
+        function updateTitle() {
+            const formData = new FormData($('#editTitleForm')[0]);
+            
+            $.ajax({
+                url: '@Url.Action("UpdateTitle", "Admin")',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if(response.success) {
+                        $('#editTitleModal').modal('hide');
+                        loadTitles();
+                        alert('อัปเดตคำนำหน้าสำเร็จ');
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
+                }
+            });
+        }
+
+        function deleteTitle(titleID, titleName) {
+            if(confirm(`คุณต้องการลบคำนำหน้า "${titleName}" หรือไม่?\n\nหมายเหตุ: การลบคำนำหน้าที่มีผู้ใช้งานอยู่อาจทำให้เกิดปัญหาได้`)) {
+                $.ajax({
+                    url: '@Url.Action("DeleteTitle", "Admin")',
+                    method: 'POST',
+                    data: { titleID: titleID },
+                    success: function(response) {
+                        if(response.success) {
+                            loadTitles();
+                            alert('ลบคำนำหน้าสำเร็จ');
+                        } else {
+                            alert('เกิดข้อผิดพลาด: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('เกิดข้อผิดพลาดในการลบข้อมูล');
+                    }
+                });
+            }
+        }
+    </script>
+}

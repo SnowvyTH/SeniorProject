@@ -1,0 +1,414 @@
+﻿@{
+    ViewData["Title"] = "จัดการรายชื่อผู้ใช้";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4><i class="fas fa-users me-2"></i>จัดการรายชื่อผู้ใช้</h4>
+        <button type="button" class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#addUserModal">
+            <i class="fas fa-plus me-2"></i>เพิ่มผู้ใช้ใหม่
+        </button>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchUser" class="form-control" placeholder="ค้นหาผู้ใช้...">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select id="roleFilter" class="form-select">
+                <option value="">ทุกสิทธิ์</option>
+                <option value="1">เภสัชกร</option>
+                <option value="2">หัวหน้าเภสัชกร</option>
+                <option value="3">ผู้ดูแลระบบ</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select id="statusFilter" class="form-select">
+                <option value="">ทุกสถานะ</option>
+                <option value="true">ใช้งานได้</option>
+                <option value="false">ปิดการใช้งาน</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-responsive">
+        <table class="table table-hover" id="usersTable">
+            <thead class="table-light">
+                <tr>
+                    <th>รหัสผู้ใช้</th>
+                    <th>ชื่อ-นามสกุล</th>
+                    <th>ชื่อผู้ใช้</th>
+                    <th>สิทธิ์</th>
+                    <th>สถานะ</th>
+                    <th>การจัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody">
+                <!-- Data will be loaded via AJAX -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loadingIndicator" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">กำลังโหลด...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>เพิ่มผู้ใช้ใหม่</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addUserForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">คำนำหน้า</label>
+                                <select class="form-select" name="TitleID" required>
+                                    <option value="">เลือกคำนำหน้า</option>
+                                    <!-- Will be populated via AJAX -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">ชื่อ</label>
+                                <input type="text" class="form-control" name="FirstName" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">นามสกุล</label>
+                                <input type="text" class="form-control" name="LastName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">ชื่อผู้ใช้</label>
+                                <input type="text" class="form-control" name="Username" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">รหัสผ่าน</label>
+                                <input type="password" class="form-control" name="Password" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">สิทธิ์</label>
+                                <select class="form-select" name="RoleID" required>
+                                    <option value="">เลือกสิทธิ์</option>
+                                    <option value="1">เภสัชกร</option>
+                                    <option value="2">หัวหน้าเภสัชกร</option>
+                                    <option value="3">ผู้ดูแลระบบ</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="IsActive" checked>
+                            <label class="form-check-label">เปิดใช้งาน</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary-custom">เพิ่มผู้ใช้</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-edit me-2"></i>แก้ไขข้อมูลผู้ใช้</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editUserForm">
+                <input type="hidden" name="UserID" id="editUserID">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">คำนำหน้า</label>
+                                <select class="form-select" name="TitleID" id="editTitleID" required>
+                                    <!-- Will be populated via AJAX -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">ชื่อ</label>
+                                <input type="text" class="form-control" name="FirstName" id="editFirstName" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">นามสกุล</label>
+                                <input type="text" class="form-control" name="LastName" id="editLastName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">ชื่อผู้ใช้</label>
+                                <input type="text" class="form-control" name="Username" id="editUsername" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">รหัสผ่านใหม่ (เว้นว่างถ้าไม่เปลี่ยน)</label>
+                                <input type="password" class="form-control" name="Password" id="editPassword">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">สิทธิ์</label>
+                                <select class="form-select" name="RoleID" id="editRoleID" required>
+                                    <option value="1">เภสัชกร</option>
+                                    <option value="2">หัวหน้าเภสัชกร</option>
+                                    <option value="3">ผู้ดูแลระบบ</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="IsActive" id="editIsActive">
+                            <label class="form-check-label">เปิดใช้งาน</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-primary-custom">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            loadUsers();
+            loadTitles();
+
+            // Search functionality
+            $('#searchUser').on('keyup', function() {
+                loadUsers();
+            });
+
+            // Filter functionality
+            $('#roleFilter, #statusFilter').on('change', function() {
+                loadUsers();
+            });
+
+            // Add user form
+            $('#addUserForm').on('submit', function(e) {
+                e.preventDefault();
+                addUser();
+            });
+
+            // Edit user form
+            $('#editUserForm').on('submit', function(e) {
+                e.preventDefault();
+                updateUser();
+            });
+        });
+
+        function loadUsers() {
+            $('#loadingIndicator').show();
+            $('#usersTable tbody').hide();
+
+            const search = $('#searchUser').val();
+            const roleFilter = $('#roleFilter').val();
+            const statusFilter = $('#statusFilter').val();
+
+            $.ajax({
+                url: '@Url.Action("GetUsers", "Admin")',
+                method: 'GET',
+                data: {
+                    search: search,
+                    roleFilter: roleFilter,
+                    statusFilter: statusFilter
+                },
+                success: function(data) {
+                    let html = '';
+                    data.forEach(function(user) {
+                        const statusBadge = user.isActive ? 
+                            '<span class="badge bg-success">ใช้งานได้</span>' : 
+                            '<span class="badge bg-danger">ปิดการใช้งาน</span>';
+                        
+                        const roleName = getRoleName(user.roleID);
+                        
+                        html += `
+                            <tr>
+                                <td>${user.userID}</td>
+                                <td>${user.titleName} ${user.firstName} ${user.lastName}</td>
+                                <td>${user.username}</td>
+                                <td>${roleName}</td>
+                                <td>${statusBadge}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editUser(${user.userID})">
+                                        <i class="fas fa-edit"></i> แก้ไข
+                                    </button>
+                                    <button class="btn btn-sm ${user.isActive ? 'btn-outline-warning' : 'btn-outline-success'}" 
+                                            onclick="toggleUserStatus(${user.userID}, ${!user.isActive})">
+                                        <i class="fas ${user.isActive ? 'fa-ban' : 'fa-check'}"></i> 
+                                        ${user.isActive ? 'ปิดใช้งาน' : 'เปิดใช้งาน'}
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    $('#usersTableBody').html(html);
+                    $('#loadingIndicator').hide();
+                    $('#usersTable tbody').show();
+                },
+                error: function() {
+                    alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+                    $('#loadingIndicator').hide();
+                }
+            });
+        }
+
+        function loadTitles() {
+            $.ajax({
+                url: '@Url.Action("GetTitles", "Admin")',
+                method: 'GET',
+                success: function(data) {
+                    let options = '<option value="">เลือกคำนำหน้า</option>';
+                    data.forEach(function(title) {
+                        options += `<option value="${title.titleID}">${title.titleName}</option>`;
+                    });
+                    $('select[name="TitleID"]').html(options);
+                }
+            });
+        }
+
+        function getRoleName(roleID) {
+            switch(roleID) {
+                case 1: return 'เภสัชกร';
+                case 2: return 'หัวหน้าเภสัชกร';
+                case 3: return 'ผู้ดูแลระบบ';
+                default: return 'ไม่ระบุ';
+            }
+        }
+
+        function addUser() {
+            const formData = new FormData($('#addUserForm')[0]);
+            
+            $.ajax({
+                url: '@Url.Action("CreateUser", "Admin")',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if(response.success) {
+                        $('#addUserModal').modal('hide');
+                        $('#addUserForm')[0].reset();
+                        loadUsers();
+                        alert('เพิ่มผู้ใช้สำเร็จ');
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('เกิดข้อผิดพลาดในการเพิ่มผู้ใช้');
+                }
+            });
+        }
+
+        function editUser(userID) {
+            $.ajax({
+                url: '@Url.Action("GetUser", "Admin")',
+                method: 'GET',
+                data: { id: userID },
+                success: function(user) {
+                    $('#editUserID').val(user.userID);
+                    $('#editTitleID').val(user.titleID);
+                    $('#editFirstName').val(user.firstName);
+                    $('#editLastName').val(user.lastName);
+                    $('#editUsername').val(user.username);
+                    $('#editRoleID').val(user.roleID);
+                    $('#editIsActive').prop('checked', user.isActive);
+                    $('#editUserModal').modal('show');
+                }
+            });
+        }
+
+        function updateUser() {
+            const formData = new FormData($('#editUserForm')[0]);
+            
+            $.ajax({
+                url: '@Url.Action("UpdateUser", "Admin")',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if(response.success) {
+                        $('#editUserModal').modal('hide');
+                        loadUsers();
+                        alert('อัปเดตข้อมูลผู้ใช้สำเร็จ');
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
+                }
+            });
+        }
+
+        function toggleUserStatus(userID, newStatus) {
+            const action = newStatus ? 'เปิดใช้งาน' : 'ปิดการใช้งาน';
+            if(confirm(`คุณต้องการ${action}ผู้ใช้นี้หรือไม่?`)) {
+                $.ajax({
+                    url: '@Url.Action("ToggleUserStatus", "Admin")',
+                    method: 'POST',
+                    data: { userID: userID, isActive: newStatus },
+                    success: function(response) {
+                        if(response.success) {
+                            loadUsers();
+                            alert(`${action}ผู้ใช้สำเร็จ`);
+                        } else {
+                            alert('เกิดข้อผิดพลาด: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('เกิดข้อผิดพลาดในการเปลี่ยนสถานะ');
+                    }
+                });
+            }
+        }
+    </script>
+}

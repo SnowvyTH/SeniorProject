@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ระบบจัดการโรงพยาบาล</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    
+    <style>
+        :root {
+            --mint-green: #51c3b7;
+            --dark-green: #05685e;
+            --dark-gray: #545454;
+            --light-gray: #737373;
+            --white: #ffffff;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, var(--dark-green) 0%, var(--mint-green) 100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: var(--dark-green);
+        }
+
+        .logo {
+            color: var(--white);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 28px;
+        }
+
+        .logo-subtitle {
+            color: rgba(255,255,255,0.8);
+            font-size: 12px;
+            font-weight: 300;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            margin: 5px 15px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: var(--white);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 0;
+            background-color: var(--light-bg);
+        }
+
+        .top-bar {
+            background: var(--white);
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .page-title {
+            color: var(--dark-green);
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            color: var(--dark-gray);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--mint-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            margin-right: 10px;
+            font-weight: 600;
+        }
+
+        .content-wrapper {
+            padding: 30px;
+        }
+
+        /* Dashboard Cards */
+        .stats-card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            background: var(--white);
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .stats-card .card-body {
+            padding: 25px;
+        }
+
+        .stats-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--dark-green);
+            margin: 0;
+        }
+
+        .stats-label {
+            color: var(--light-gray);
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+
+        .stats-icon {
+            font-size: 40px;
+            color: var(--mint-green);
+            opacity: 0.8;
+        }
+
+        .card-mint { border-left: 5px solid var(--mint-green); }
+        .card-dark-green { border-left: 5px solid var(--dark-green); }
+        .card-gray { border-left: 5px solid var(--dark-gray); }
+
+        /* Modern Cards */
+        .modern-card {
+            background: var(--white);
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .modern-card .card-header {
+            background: linear-gradient(135deg, var(--mint-green), var(--dark-green));
+            color: var(--white);
+            border: none;
+            padding: 20px 25px;
+            font-weight: 600;
+        }
+
+        .modern-card .card-body {
+            padding: 25px;
+        }
+
+        /* Buttons */
+        .btn-mint {
+            background: var(--mint-green);
+            border: none;
+            color: var(--white);
+            border-radius: 10px;
+            padding: 12px 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-mint:hover {
+            background: var(--dark-green);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(81, 195, 183, 0.3);
+        }
+
+        /* Status Indicators */
+        .status-online {
+            width: 12px;
+            height: 12px;
+            background: #28a745;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @@keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: fixed;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* Chart placeholder */
+        .chart-placeholder {
+            height: 200px;
+            background: linear-gradient(135deg, rgba(81, 195, 183, 0.1), rgba(5, 104, 94, 0.1));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--light-gray);
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-hospital-alt"></i>
+                    Hospital System
+                </div>
+                <div class="logo-subtitle">ระบบจัดการโรงพยาบาล</div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="@Url.Action("Index", "Admin")" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                        <i class="fas fa-tachometer-alt"></i>
+                        หน้าหลัก
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="@Url.Action("Users", "Admin")" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Users" ? "active" : "")">
+                        <i class="fas fa-users"></i>
+                        จัดการรายชื่อผู้ใช้
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="@Url.Action("Titles", "Admin")" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Titles" ? "active" : "")">
+                        <i class="fas fa-id-badge"></i>
+                        จัดการคำนำหน้า
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="@Url.Action("Treatments", "Admin")" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Treatments" ? "active" : "")">
+                        <i class="fas fa-user-md"></i>
+                        จัดการสิทธิ์การรักษา
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="@Url.Action("Logs", "Admin")" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Logs" ? "active" : "")">
+                        <i class="fas fa-history"></i>
+                        ดูประวัติการเข้าใช้งาน
+                    </a>
+                </div>
+                
+                <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 15px;">
+                
+                <div class="nav-item">
+                    <a href="@Url.Action("Logout", "Home")" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        ออกจากระบบ
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <h1 class="page-title">@ViewData["Title"]</h1>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        @(ViewBag.UserName?.ToString()?.Substring(0, 1) ?? "A")
+                    </div>
+                    <div>
+                        <div style="font-weight: 600;">@ViewBag.UserName</div>
+                        <small style="color: var(--light-gray);">@ViewBag.RoleName</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-wrapper">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
