@@ -1,5 +1,236 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "จัดการสิทธิ์การรักษา";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4><i class="fas fa-user-md me-2"></i>จัดการสิทธิ์การรักษา</h4>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTreatmentModal">
+            <i class="fas fa-plus me-2"></i>เพิ่มสิทธิ์การรักษาใหม่
+        </button>
+    </div>
+
+    <!-- Search -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" id="searchTreatment" class="form-control" placeholder="ค้นหาสิทธิ์การรักษา...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Treatments Table -->
+    <div class="table-responsive">
+        <table class="table table-hover" id="treatmentsTable">
+            <thead class="table-light">
+                <tr>
+                    <th width="100">รหัส</th>
+                    <th>ชื่อสิทธิ์การรักษา</th>
+                    <th width="200">การจัดการ</th>
+                </tr>
+            </thead>
+            <tbody id="treatmentsTableBody">
+                <!-- Data will be loaded via AJAX -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loadingIndicator" class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">กำลังโหลด...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Add Treatment Modal -->
+<div class="modal fade" id="addTreatmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus me-2"></i>เพิ่มสิทธิ์การรักษาใหม่</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addTreatmentForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">ชื่อสิทธิ์การรักษา</label>
+                        <input type="text" class="form-control" name="TreatmentName" required 
+                               placeholder="เช่น ประกันสังคม, ข้าราชการ, จ่ายเอง">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-success">เพิ่มสิทธิ์การรักษา</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Treatment Modal -->
+<div class="modal fade" id="editTreatmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>แก้ไขสิทธิ์การรักษา</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editTreatmentForm">
+                <input type="hidden" name="TreatmentID" id="editTreatmentID">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">ชื่อสิทธิ์การรักษา</label>
+                        <input type="text" class="form-control" name="TreatmentName" id="editTreatmentName" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">ยกเลิก</button>
+                    <button type="submit" class="btn btn-success">บันทึกการเปลี่ยนแปลง</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            loadTreatments();
+
+            // Search functionality
+            $('#searchTreatment').on('keyup', function() {
+                loadTreatments();
+            });
+
+            // Add treatment form
+            $('#addTreatmentForm').on('submit', function(e) {
+                e.preventDefault();
+                addTreatment();
+            });
+
+            // Edit treatment form
+            $('#editTreatmentForm').on('submit', function(e) {
+                e.preventDefault();
+                updateTreatment();
+            });
+        });
+
+        function loadTreatments() {
+            $('#loadingIndicator').show();
+            $('#treatmentsTable tbody').hide();
+
+            const search = $('#searchTreatment').val();
+
+            $.ajax({
+                url: '@Url.Action("GetTreatments", "Admin")',
+                method: 'GET',
+                data: { search: search },
+                success: function(data) {
+                    let html = '';
+                    data.forEach(function(treatment) {
+                        html += `
+                            <tr>
+                                <td>${treatment.treatmentID}</td>
+                                <td>${treatment.treatmentName}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning me-1" onclick="editTreatment(${treatment.treatmentID}, '${treatment.treatmentName}')">
+                                        <i class="fas fa-edit"></i> แก้ไข
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteTreatment(${treatment.treatmentID}, '${treatment.treatmentName}')">
+                                        <i class="fas fa-trash"></i> ลบ
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    $('#treatmentsTableBody').html(html);
+                    $('#loadingIndicator').hide();
+                    $('#treatmentsTable tbody').show();
+                },
+                error: function() {
+                    alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+                    $('#loadingIndicator').hide();
+                }
+            });
+        }
+
+        function addTreatment() {
+            const formData = new FormData($('#addTreatmentForm')[0]);
+            
+            $.ajax({
+                url: '@Url.Action("CreateTreatment", "Admin")',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if(response.success) {
+                        $('#addTreatmentModal').modal('hide');
+                        $('#addTreatmentForm')[0].reset();
+                        loadTreatments();
+                        alert('เพิ่มสิทธิ์การรักษาสำเร็จ');
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('เกิดข้อผิดพลาดในการเพิ่มสิทธิ์การรักษา');
+                }
+            });
+        }
+
+        function editTreatment(treatmentID, treatmentName) {
+            $('#editTreatmentID').val(treatmentID);
+            $('#editTreatmentName').val(treatmentName);
+            $('#editTreatmentModal').modal('show');
+        }
+
+        function updateTreatment() {
+            const formData = new FormData($('#editTreatmentForm')[0]);
+            
+            $.ajax({
+                url: '@Url.Action("UpdateTreatment", "Admin")',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if(response.success) {
+                        $('#editTreatmentModal').modal('hide');
+                        loadTreatments();
+                        alert('อัปเดตสิทธิ์การรักษาสำเร็จ');
+                    } else {
+                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
+                }
+            });
+        }
+
+        function deleteTreatment(treatmentID, treatmentName) {
+            if(confirm(`คุณต้องการลบสิทธิ์การรักษา "${treatmentName}" หรือไม่?\n\nหมายเหตุ: การลบสิทธิ์การรักษาที่มีผู้ป่วยใช้งานอยู่อาจทำให้เกิดปัญหาได้`)) {
+                $.ajax({
+                    url: '@Url.Action("DeleteTreatment", "Admin")',
+                    method: 'POST',
+                    data: { treatmentID: treatmentID },
+                    success: function(response) {
+                        if(response.success) {
+                            loadTreatments();
+                            alert('ลบสิทธิ์การรักษาสำเร็จ');
+                        } else {
+                            alert('เกิดข้อผิดพลาด: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('เกิดข้อผิดพลาดในการลบข้อมูล');
+                    }
+                });
+            }
+        }
+    </script>
 }
