@@ -1,47 +1,342 @@
 @{
     ViewData["Title"] = "ไม่มีสิทธิ์เข้าถึง";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = null;
 }
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card border-danger">
-                <div class="card-header bg-danger text-white text-center">
-                    <h4 class="mb-0">
-                        <i class="fas fa-exclamation-triangle me-2"></i>ไม่มีสิทธิ์เข้าถึง
-                    </h4>
-                </div>
-                <div class="card-body text-center">
-                    <div class="mb-4">
-                        <i class="fas fa-ban fa-5x text-danger mb-3"></i>
-                        <h5>คุณไม่มีสิทธิ์เข้าถึงหน้านี้</h5>
-                        <p class="text-muted">
-                            ระบบจะนำคุณไปยังหน้าที่เหมาะสมตามบทบาทของคุณ
-                        </p>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
-                            <i class="fas fa-home me-2"></i>กลับหน้าหลัก
-                        </a>
-                        <a href="@Url.Action("Logout", "Home")" class="btn btn-outline-secondary">
-                            <i class="fas fa-sign-out-alt me-2"></i>ออกจากระบบ
-                        </a>
-                    </div>
-                </div>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ระบบจัดการข้อมูลผู้ป่วย</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --mint-green: #51c3b7;
+            --dark-green: #05685e;
+            --dark-gray: #545454;
+            --light-gray: #737373;
+            --white: #ffffff;
+            --light-mint: #e8f7f5;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --error-red: #ff6b6b;
+            --warning-orange: #ffa726;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: linear-gradient(135deg, var(--light-mint) 0%, #f8fdfc 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .access-denied-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .error-card {
+            background: var(--white);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 107, 107, 0.1);
+            padding: 3rem 2.5rem;
+            animation: bounceIn 0.8s ease-out;
+        }
+
+        .error-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--error-red), #ff5252);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .error-icon i {
+            font-size: 3rem;
+            color: white;
+        }
+
+        .error-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 1rem;
+        }
+
+        .error-subtitle {
+            font-size: 1.1rem;
+            color: var(--light-gray);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .error-details {
+            background: #fff5f5;
+            border: 1px solid rgba(255, 107, 107, 0.2);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .error-details h5 {
+            color: var(--error-red);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .error-details h5 i {
+            margin-right: 0.5rem;
+        }
+
+        .error-details ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .error-details li {
+            padding: 0.5rem 0;
+            color: var(--dark-gray);
+            display: flex;
+            align-items: center;
+        }
+
+        .error-details li i {
+            color: var(--mint-green);
+            margin-right: 0.75rem;
+            width: 16px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, var(--mint-green), var(--dark-green));
+            border: none;
+            border-radius: 12px;
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(81, 195, 183, 0.3);
+            color: white;
+        }
+
+        .btn-back i {
+            margin-right: 0.5rem;
+        }
+
+        .btn-login {
+            background: transparent;
+            border: 2px solid var(--mint-green);
+            border-radius: 12px;
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--mint-green);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .btn-login:hover {
+            background: var(--mint-green);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-login i {
+            margin-right: 0.5rem;
+        }
+
+        .footer-info {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e8f0fe;
+            color: var(--light-gray);
+            font-size: 0.9rem;
+        }
+
+        .footer-info i {
+            color: var(--mint-green);
+            margin-right: 0.5rem;
+        }
+
+        @@keyframes bounceIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.3);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+            70% {
+                transform: scale(0.9);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @@keyframes pulse {
+            0% {
+                box-shadow: 0 15px 40px rgba(255, 107, 107, 0.3);
+            }
+            50% {
+                box-shadow: 0 15px 40px rgba(255, 107, 107, 0.5);
+            }
+            100% {
+                box-shadow: 0 15px 40px rgba(255, 107, 107, 0.3);
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .access-denied-container {
+                padding: 1rem;
+            }
+            
+            .error-card {
+                padding: 2rem 1.5rem;
+            }
+            
+            .error-title {
+                font-size: 1.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-back, .btn-login {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="access-denied-container">
+        <div class="error-card">
+            <div class="error-icon">
+                <i class="fas fa-ban"></i>
+            </div>
+            
+            <h1 class="error-title">Access Denied</h1>
+            <p class="error-subtitle">
+                ขออภัย คุณไม่มีสิทธิ์ในการเข้าถึงหน้านี้<br>
+                โปรดตรวจสอบสิทธิ์การเข้าถึงของคุณ
+            </p>
+
+            <div class="error-details">
+                <h5>
+                    <i class="fas fa-info-circle"></i>
+                    สาเหตุที่เป็นไปได้:
+                </h5>
+                <ul>
+                    <li>
+                        <i class="fas fa-user-times"></i>
+                        คุณไม่ได้เข้าสู่ระบบ หรือ Session หมดอายุ
+                    </li>
+                    <li>
+                        <i class="fas fa-key"></i>
+                        บัญชีของคุณไม่มีสิทธิ์เข้าถึงส่วนนี้
+                    </li>
+                    <li>
+                        <i class="fas fa-user-lock"></i>
+                        บัญชีของคุณถูกปิดการใช้งาน
+                    </li>
+                    <li>
+                        <i class="fas fa-shield-alt"></i>
+                        ระบบความปลอดภัยป้องกันการเข้าถึงที่ไม่ได้รับอนุญาต
+                    </li>
+                </ul>
+            </div>
+
+            <div class="action-buttons">
+                <a href="javascript:history.back()" class="btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                    ย้อนกลับ
+                </a>
+                <a href="@Url.Action("Index", "Home")" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i>
+                    เข้าสู่ระบบ
+                </a>
+            </div>
+
+            <div class="footer-info">
+                <p>
+                    <i class="fas fa-headset"></i>
+                    หากคุณคิดว่านี่เป็นข้อผิดพลาด โปรดติดต่อผู้ดูแลระบบ
+                </p>
+                <p class="mt-2">
+                    <i class="fas fa-hospital"></i>
+                    ระบบจัดการข้อมูลโรงพยาบาล - Hospital Management System
+                </p>
             </div>
         </div>
     </div>
-</div>
 
-@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Auto redirect หลังจาก 3 วินาที
-            setTimeout(function() {
-                window.location.href = '@Url.Action("Index", "Home")';
-            }, 3000);
+        // Add some interaction
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click effect to buttons
+            const buttons = document.querySelectorAll('.btn-back, .btn-login');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    // Add loading state
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>กำลังดำเนินการ...';
+                    this.style.pointerEvents = 'none';
+                    
+                    // Restore after delay (for visual feedback)
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                        this.style.pointerEvents = 'auto';
+                    }, 1000);
+                });
+            });
         });
     </script>
-}
+</body>
+</html>

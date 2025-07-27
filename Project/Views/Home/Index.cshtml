@@ -1,60 +1,379 @@
 ﻿@model Project.Models.LoginViewModel
 @{
     ViewData["Title"] = "เข้าสู่ระบบ";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = null;
 }
 
-<div class="login-container">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-4">
-                <div class="card login-card shadow-lg">
-                    <div class="card-header text-white text-center">
-                        <h4 class="mb-0">
-                            <i class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบ
-                        </h4>
-                        <small class="d-block mt-1">ระบบจัดการข้อมูลผู้ป่วยและแบบประเมิน</small>
-                    </div>
-                    <div class="card-body p-4">
-                        <form asp-action="Index" asp-controller="Home" method="post" class="login-form">
-                            <div asp-validation-summary="All" class="alert alert-danger" style="display: none;"></div>
-                            
-                            <div class="mb-3">
-                                <label asp-for="Username" class="form-label fw-bold">
-                                    <i class="fas fa-user me-1 text-primary"></i>@Html.DisplayNameFor(m => m.Username)
-                                </label>
-                        <input asp-for="Username" class="form-control" placeholder="กรอกชื่อผู้ใช้" />
-                        <span asp-validation-for="Username" class="text-danger"></span>
-                    </div>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ระบบจัดการข้อมูลผู้ป่วย</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --mint-green: #51c3b7;
+            --dark-green: #05685e;
+            --dark-gray: #545454;
+            --light-gray: #737373;
+            --white: #ffffff;
+            --light-mint: #e8f7f5;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
 
-                    <div class="mb-3">
-                        <label asp-for="Password" class="form-label">
-                            <i class="fas fa-lock me-1"></i>@Html.DisplayNameFor(m => m.Password)
-                        </label>
-                        <input asp-for="Password" class="form-control" placeholder="กรอกรหัสผ่าน" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-                    <div class="mb-3 form-check">
-                        <input asp-for="RememberMe" class="form-check-input" />
+        body {
+            font-family: 'Kanit', sans-serif;
+            background: linear-gradient(135deg, var(--light-mint) 0%, #f8fdfc 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+        }
+
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--mint-green), var(--dark-green));
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            box-shadow: 0 10px 30px rgba(81, 195, 183, 0.3);
+        }
+
+        .logo-icon i {
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        .brand-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .brand-subtitle {
+            font-size: 0.95rem;
+            color: var(--light-gray);
+        }
+
+        .login-card {
+            background: var(--white);
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(81, 195, 183, 0.1);
+            padding: 2.5rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .login-header h2 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .login-subtitle {
+            text-align: center;
+            color: var(--light-gray);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-label i {
+            color: var(--mint-green);
+            margin-right: 0.5rem;
+        }
+
+        .form-control {
+            border: 2px solid #e8f0fe;
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fafbfc;
+        }
+
+        .form-control:focus {
+            border-color: var(--mint-green);
+            box-shadow: 0 0 0 0.2rem rgba(81, 195, 183, 0.15);
+            background: white;
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: #a0a0a0;
+            font-size: 0.95rem;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+        }
+
+        .form-check-input {
+            margin-right: 0.5rem;
+            border-radius: 6px;
+            border: 2px solid #e8f0fe;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--mint-green);
+            border-color: var(--mint-green);
+        }
+
+        .form-check-label {
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .forgot-link {
+            color: var(--light-gray);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-link:hover {
+            color: var(--mint-green);
+        }
+
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(135deg, var(--mint-green), var(--dark-green));
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(81, 195, 183, 0.3);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e8f0fe;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+            color: var(--light-gray);
+            font-size: 0.9rem;
+        }
+
+        .footer-text {
+            text-align: center;
+            color: var(--light-gray);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .alert-danger {
+            border-radius: 12px;
+            border: 1px solid #ff6b6b;
+            background: #fff5f5;
+            color: #c53030;
+            margin-bottom: 1.5rem;
+        }
+
+        .text-danger {
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        @@keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .login-container {
+                padding: 1rem;
+            }
+            
+            .login-card {
+                padding: 2rem;
+            }
+            
+            .brand-logo {
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <!-- Login Card -->
+        <div class="login-card">
+            <div class="login-header">
+                <!-- Brand Logo -->
+                <div class="brand-logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <div class="brand-title">ระบบประเมินผู้ป่วย</div>
+                    <div class="brand-subtitle">Assessment Management System</div>
+                </div>
+            </div>
+
+            <form asp-action="Index" asp-controller="Home" method="post">
+                <div asp-validation-summary="All" class="alert alert-danger" style="display: none;"></div>
+                
+                <div class="form-group">
+                    <label asp-for="Username" class="form-label">
+                        <i class="fas fa-user"></i>Username
+                    </label>
+                    <input asp-for="Username" class="form-control" placeholder="กรอกชื่อผู้ใช้งาน" />
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Password" class="form-label">
+                        <i class="fas fa-lock"></i>Password
+                    </label>
+                    <input asp-for="Password" class="form-control" placeholder="กรอกรหัสผ่าน" />
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="remember-forgot">
+                    <div class="form-check">
+                        <input asp-for="RememberMe" class="form-check-input" type="checkbox" />
                         <label asp-for="RememberMe" class="form-check-label">
-                            @Html.DisplayNameFor(m => m.RememberMe)
+                            จดจำการเข้าสู่ระบบ
                         </label>
                     </div>
+                </div>
 
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบ
-                        </button>
-                    </div>
-                </form>
-            </div>
-            <div class="card-footer text-center text-muted">
-                <small>ระบบจัดการข้อมูลผู้ป่วยและแบบประเมิน</small>
-            </div>
+                <button type="submit" class="btn btn-login" id="loginBtn">
+                    <i class="fas fa-sign-in-alt me-2"></i>Log In
+                </button>
+                <div class="footer-text">
+                    <i class="fas fa-shield-alt me-1"></i>
+                    ระบบปลอดภัยด้วยเทคโนโลยีการเข้ารหัสขั้นสูง
+                </div>
+            </form>
         </div>
     </div>
-</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // แสดง validation summary เมื่อมี error
+            if ($('.validation-summary-errors').length > 0 || $('.field-validation-error').length > 0) {
+                $('.alert-danger').show();
+            }
+            
+            // Focus ที่ Username field
+            $('#Username').focus();
+
+            // Add loading state to login button
+            $('form').on('submit', function() {
+                var $btn = $('.btn-login');
+                $btn.html('<i class="fas fa-spinner fa-spin me-2"></i>กำลังเข้าสู่ระบบ...');
+                $btn.prop('disabled', true);
+            });
+
+            // Add input focus effects
+            $('.form-control').on('focus', function() {
+                $(this).parent().addClass('focused');
+            }).on('blur', function() {
+                $(this).parent().removeClass('focused');
+            });
+        });
+
+    </script>
+</body>
+</html>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
