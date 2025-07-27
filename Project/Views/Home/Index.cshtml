@@ -345,22 +345,142 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         $(document).ready(function() {
+            let isSubmitting = false;
+            
             // แสดง validation summary เมื่อมี error
             if ($('.validation-summary-errors').length > 0 || $('.field-validation-error').length > 0) {
-                $('.alert-danger').show();
+                var errorMessages = [];
+                $('.validation-summary-errors li').each(function() {
+                    errorMessages.push($(this).text());
+                });
+                $('.field-validation-error').each(function() {
+                    if ($(this).text().trim()) {
+                        errorMessages.push($(this).text());
+                    }
+                });
+                
+                if (errorMessages.length > 0) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ข้อมูลไม่ถูกต้อง',
+                        html: errorMessages.join('<br>'),
+                        confirmButtonColor: '#51c3b7',
+                        confirmButtonText: 'ตกลง'
+                    });
+                }
             }
             
             // Focus ที่ Username field
             $('#Username').focus();
 
-            // Add loading state to login button
-            $('form').on('submit', function() {
+            // Handle form submission
+            $('form').on('submit', function(e) {
+                e.preventDefault();
+                
+                if (isSubmitting) {
+                    return false;
+                }
+                
+                var $form = $(this);
                 var $btn = $('.btn-login');
+                var username = $('#Username').val().trim();
+                var password = $('#Password').val().trim();
+                
+                // ตรวจสอบข้อมูลที่กรอก
+                if (!username || !password) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'กรุณากรอกข้อมูลให้ครบ',
+                        text: 'โปรดกรอกชื่อผู้ใช้และรหัสผ่าน',
+                        confirmButtonColor: '#51c3b7',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    return false;
+                }
+                
+                // เริ่มการส่งข้อมูล
+                isSubmitting = true;
                 $btn.html('<i class="fas fa-spinner fa-spin me-2"></i>กำลังเข้าสู่ระบบ...');
                 $btn.prop('disabled', true);
+                
+                // ส่งข้อมูลไปยัง server
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'POST',
+                    data: $form.serialize(),
+                    timeout: 10000, // 10 seconds timeout
+                    success: function(response) {
+                        // ถ้าสำเร็จ redirect ไปหน้าที่ควรไป
+                        if (response.success === false) {
+                            // ถ้า server ส่งข้อผิดพลาดกลับมา
+                            isSubmitting = false;
+                            $btn.html('<i class="fas fa-sign-in-alt me-2"></i>Log In');
+                            $btn.prop('disabled', false);
+                            
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เข้าสู่ระบบไม่สำเร็จ',
+                                text: response.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
+                                confirmButtonColor: '#51c3b7',
+                                confirmButtonText: 'ลองใหม่อีกครั้ง'
+                            });
+                        } else {
+                            // สำเร็จ - redirect
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'เข้าสู่ระบบสำเร็จ',
+                                text: 'กำลังนำคุณเข้าสู่ระบบ...',
+                                timer: 1500,
+                                showConfirmButton: false,
+                                allowOutsideClick: false
+                            }).then(() => {
+                                // Redirect ไปยัง URL ที่ server ส่งมา หรือ submit form ปกติ
+                                if (response.redirectUrl) {
+                                    window.location.href = response.redirectUrl;
+                                } else {
+                                    $form.off('submit').submit();
+                                }
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        isSubmitting = false;
+                        $btn.html('<i class="fas fa-sign-in-alt me-2"></i>Log In');
+                        $btn.prop('disabled', false);
+                        
+                        if (status === 'timeout') {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'การเชื่อมต่อล่าช้า',
+                                text: 'กรุณาลองใหม่อีกครั้ง',
+                                confirmButtonColor: '#51c3b7',
+                                confirmButtonText: 'ตกลง'
+                            });
+                        } else if (xhr.status === 400 || xhr.status === 401) {
+                            // ข้อมูลไม่ถูกต้อง
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เข้าสู่ระบบไม่สำเร็จ',
+                                text: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
+                                confirmButtonColor: '#51c3b7',
+                                confirmButtonText: 'ลองใหม่อีกครั้ง'
+                            });
+                        } else {
+                            // ข้อผิดพลาดอื่นๆ
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'ไม่สามารถเข้าสู่ระบบได้ในขณะนี้',
+                                confirmButtonColor: '#51c3b7',
+                                confirmButtonText: 'ตกลง'
+                            });
+                        }
+                    }
+                });
             });
 
             // Add input focus effects
@@ -368,6 +488,12 @@
                 $(this).parent().addClass('focused');
             }).on('blur', function() {
                 $(this).parent().removeClass('focused');
+            });
+            
+            // เคลียร์ error messages เมื่อผู้ใช้เริ่มพิมพ์
+            $('.form-control').on('input', function() {
+                $(this).siblings('.text-danger').text('');
+                $('.alert-danger').hide();
             });
         });
 

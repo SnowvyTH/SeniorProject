@@ -3,20 +3,8 @@
   "WorkspaceRootPath": "D:\\Project\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\home\\accessdenied.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\home\\accessdenied.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\shared\\_adminlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\shared\\_adminlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\admin\\logs.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\admin\\logs.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\admin\\titles.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\admin\\titles.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,7 +14,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -34,51 +22,15 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Logs.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Admin\\Logs.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Admin\\Logs.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Admin\\Logs.cshtml",
-              "RelativeToolTip": "Project\\Views\\Admin\\Logs.cshtml",
-              "ViewState": "AgIAAGAAAAAAAAAAAAAAAGkAAAAhAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-26T14:34:11.69Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "AccessDenied.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Home\\AccessDenied.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Home\\AccessDenied.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Home\\AccessDenied.cshtml",
-              "RelativeToolTip": "Project\\Views\\Home\\AccessDenied.cshtml",
-              "ViewState": "AgIAAJwAAAAAAAAAAAAAACQAAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-26T14:20:56.831Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "_AdminLayout.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Shared\\_AdminLayout.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Shared\\_AdminLayout.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Shared\\_AdminLayout.cshtml",
-              "RelativeToolTip": "Project\\Views\\Shared\\_AdminLayout.cshtml",
-              "ViewState": "AgIAAJkBAAAAAAAAAAAnwLwBAAAzAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-26T14:19:53.628Z"
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Home\\Index.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Home\\Index.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Home\\Index.cshtml",
-              "RelativeToolTip": "Project\\Views\\Home\\Index.cshtml",
-              "ViewState": "AgIAABsBAAAAAAAAAAAAACQBAAAgAAAAAAAAAA==",
+              "Title": "Titles.cshtml",
+              "DocumentMoniker": "D:\\Project\\Project\\Views\\Admin\\Titles.cshtml",
+              "RelativeDocumentMoniker": "Project\\Views\\Admin\\Titles.cshtml",
+              "ToolTip": "D:\\Project\\Project\\Views\\Admin\\Titles.cshtml",
+              "RelativeToolTip": "Project\\Views\\Admin\\Titles.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAOAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-26T14:09:52.512Z",
+              "WhenOpened": "2025-07-27T07:46:54.992Z",
               "EditorCaption": ""
             }
           ]

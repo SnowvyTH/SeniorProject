@@ -48,6 +48,11 @@ public class HomeController : Controller
     {
         if (!ModelState.IsValid)
         {
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { success = false, message = string.Join(", ", errors) });
+            }
             return View(model);
         }
 
@@ -55,7 +60,22 @@ public class HomeController : Controller
         
         if (user == null)
         {
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new { success = false, message = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง" });
+            }
             ModelState.AddModelError("", "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+            return View(model);
+        }
+
+        // ตรวจสอบว่าบัญชียังใช้งานได้หรือไม่
+        if (!user.IsActive)
+        {
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new { success = false, message = "บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ" });
+            }
+            ModelState.AddModelError("", "บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ");
             return View(model);
         }
 
@@ -92,6 +112,19 @@ public class HomeController : Controller
         _context.Log.Add(log);
         await _context.SaveChangesAsync();
 
+        // ส่งผลลัพธ์สำหรับ AJAX request
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        {
+            var redirectUrl = user.RoleID switch
+            {
+                1 => Url.Action("Index", "Pharma"),
+                2 => Url.Action("Index", "HP"),
+                3 => Url.Action("Index", "Admin"),
+                _ => Url.Action("Logout")
+            };
+            return Json(new { success = true, redirectUrl = redirectUrl });
+        }
+
         // Redirect ตามสิทธิ์ของผู้ใช้
         return user.RoleID switch
         {
@@ -109,11 +142,6 @@ public class HomeController : Controller
     }
 
     public IActionResult AccessDenied()
-    {
-        return View();
-    }
-
-    public IActionResult Privacy()
     {
         return View();
     }

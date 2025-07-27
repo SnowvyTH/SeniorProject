@@ -9,7 +9,7 @@ namespace Project.Models.Entity
         [Key]
         public int LogID { get; set; }
 
-        public DateTime? LogDateTime { get; set; }
+        public DateTime? LogDateTime { get; set; } = DateTime.Now;
 
         [ForeignKey("User")]
         public int? UserID { get; set; }

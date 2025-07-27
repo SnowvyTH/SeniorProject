@@ -151,7 +151,12 @@
                     $('#treatmentsTable tbody').show();
                 },
                 error: function() {
-                    alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'เกิดข้อผิดพลาดในการโหลดข้อมูล',
+                        confirmButtonColor: '#51c3b7'
+                    });
                     $('#loadingIndicator').hide();
                 }
             });
@@ -171,13 +176,28 @@
                         $('#addTreatmentModal').modal('hide');
                         $('#addTreatmentForm')[0].reset();
                         loadTreatments();
-                        alert('เพิ่มสิทธิ์การรักษาสำเร็จ');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ',
+                            text: 'เพิ่มสิทธิ์การรักษาสำเร็จ',
+                            confirmButtonColor: '#51c3b7'
+                        });
                     } else {
-                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'เกิดข้อผิดพลาด: ' + response.message,
+                            confirmButtonColor: '#51c3b7'
+                        });
                     }
                 },
                 error: function() {
-                    alert('เกิดข้อผิดพลาดในการเพิ่มสิทธิ์การรักษา');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'เกิดข้อผิดพลาดในการเพิ่มสิทธิ์การรักษา',
+                        confirmButtonColor: '#51c3b7'
+                    });
                 }
             });
         }
@@ -201,36 +221,77 @@
                     if(response.success) {
                         $('#editTreatmentModal').modal('hide');
                         loadTreatments();
-                        alert('อัปเดตสิทธิ์การรักษาสำเร็จ');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ',
+                            text: 'อัปเดตข้อมูลสิทธิ์การรักษาสำเร็จ',
+                            confirmButtonColor: '#51c3b7'
+                        });
                     } else {
-                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'เกิดข้อผิดพลาด: ' + response.message,
+                            confirmButtonColor: '#51c3b7'
+                        });
                     }
                 },
                 error: function() {
-                    alert('เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล',
+                        confirmButtonColor: '#51c3b7'
+                    });
                 }
             });
         }
 
         function deleteTreatment(treatmentID, treatmentName) {
-            if(confirm(`คุณต้องการลบสิทธิ์การรักษา "${treatmentName}" หรือไม่?\n\nหมายเหตุ: การลบสิทธิ์การรักษาที่มีผู้ป่วยใช้งานอยู่อาจทำให้เกิดปัญหาได้`)) {
-                $.ajax({
-                    url: '@Url.Action("DeleteTreatment", "Admin")',
-                    method: 'POST',
-                    data: { treatmentID: treatmentID },
-                    success: function(response) {
-                        if(response.success) {
-                            loadTreatments();
-                            alert('ลบสิทธิ์การรักษาสำเร็จ');
-                        } else {
-                            alert('เกิดข้อผิดพลาด: ' + response.message);
+            Swal.fire({
+                title: 'ยืนยันการดำเนินการ',
+                text: `คุณต้องการลบสิทธิ์การรักษา ${treatmentName} หรือไม่?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#51c3b7',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'ใช่, ดำเนินการ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteTreatment", "Admin")',
+                        method: 'POST',
+                        data: { treatmentID: treatmentID },
+                        success: function(response) {
+                            if(response.success) {
+                                loadTreatments();
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'สำเร็จ',
+                                    text: 'ลบสิทธิ์การรักษาสำเร็จ',
+                                    confirmButtonColor: '#51c3b7'
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'เกิดข้อผิดพลาด',
+                                    text: 'เกิดข้อผิดพลาด: ' + response.message,
+                                    confirmButtonColor: '#51c3b7'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'เกิดข้อผิดพลาดในการลบข้อมูล',
+                                confirmButtonColor: '#51c3b7'
+                            });
                         }
-                    },
-                    error: function() {
-                        alert('เกิดข้อผิดพลาดในการลบข้อมูล');
-                    }
-                });
-            }
+                    });
+                }
+            });
         }
     </script>
 }

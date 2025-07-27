@@ -291,7 +291,12 @@
                     $('#usersTable tbody').show();
                 },
                 error: function() {
-                    alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'เกิดข้อผิดพลาดในการโหลดข้อมูล',
+                        confirmButtonColor: '#51c3b7'
+                    });
                     $('#loadingIndicator').hide();
                 }
             });
@@ -334,13 +339,28 @@
                         $('#addUserModal').modal('hide');
                         $('#addUserForm')[0].reset();
                         loadUsers();
-                        alert('เพิ่มผู้ใช้สำเร็จ');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ',
+                            text: 'เพิ่มผู้ใช้สำเร็จ',
+                            confirmButtonColor: '#51c3b7'
+                        });
                     } else {
-                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: response.message,
+                            confirmButtonColor: '#51c3b7'
+                        });
                     }
                 },
                 error: function() {
-                    alert('เกิดข้อผิดพลาดในการเพิ่มผู้ใช้');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'เกิดข้อผิดพลาดในการเพิ่มผู้ใช้',
+                        confirmButtonColor: '#51c3b7'
+                    });
                 }
             });
         }
@@ -375,37 +395,79 @@
                     if(response.success) {
                         $('#editUserModal').modal('hide');
                         loadUsers();
-                        alert('อัปเดตข้อมูลผู้ใช้สำเร็จ');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ',
+                            text: 'อัปเดตข้อมูลผู้ใช้สำเร็จ',
+                            confirmButtonColor: '#51c3b7'
+                        });
                     } else {
-                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: response.message,
+                            confirmButtonColor: '#51c3b7'
+                        });
                     }
                 },
                 error: function() {
-                    alert('เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล',
+                        confirmButtonColor: '#51c3b7'
+                    });
                 }
             });
         }
 
         function toggleUserStatus(userID, newStatus) {
             const action = newStatus ? 'เปิดใช้งาน' : 'ปิดการใช้งาน';
-            if(confirm(`คุณต้องการ${action}ผู้ใช้นี้หรือไม่?`)) {
-                $.ajax({
-                    url: '@Url.Action("ToggleUserStatus", "Admin")',
-                    method: 'POST',
-                    data: { userID: userID, isActive: newStatus },
-                    success: function(response) {
-                        if(response.success) {
-                            loadUsers();
-                            alert(`${action}ผู้ใช้สำเร็จ`);
-                        } else {
-                            alert('เกิดข้อผิดพลาด: ' + response.message);
+            
+            Swal.fire({
+                title: 'ยืนยันการดำเนินการ',
+                text: `คุณต้องการ${action}ผู้ใช้นี้หรือไม่?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#51c3b7',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'ใช่, ดำเนินการ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("ToggleUserStatus", "Admin")',
+                        method: 'POST',
+                        data: { userID: userID, isActive: newStatus },
+                        success: function(response) {
+                            if(response.success) {
+                                loadUsers();
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'สำเร็จ',
+                                    text: `${action}ผู้ใช้สำเร็จ`,
+                                    confirmButtonColor: '#51c3b7'
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'เกิดข้อผิดพลาด',
+                                    text: response.message,
+                                    confirmButtonColor: '#51c3b7'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะ',
+                                confirmButtonColor: '#51c3b7'
+                            });
                         }
-                    },
-                    error: function() {
-                        alert('เกิดข้อผิดพลาดในการเปลี่ยนสถานะ');
-                    }
-                });
-            }
+                    });
+                }
+            });
         }
     </script>
 }

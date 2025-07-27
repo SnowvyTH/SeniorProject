@@ -151,7 +151,12 @@
                     $('#titlesTable tbody').show();
                 },
                 error: function() {
-                    alert('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'เกิดข้อผิดพลาดในการโหลดข้อมูล',
+                        confirmButtonColor: '#51c3b7'
+                    });
                     $('#loadingIndicator').hide();
                 }
             });
@@ -171,13 +176,28 @@
                         $('#addTitleModal').modal('hide');
                         $('#addTitleForm')[0].reset();
                         loadTitles();
-                        alert('เพิ่มคำนำหน้าสำเร็จ');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ',
+                            text: 'เพิ่มคำนำหน้าสำเร็จ',
+                            confirmButtonColor: '#51c3b7'
+                        });
                     } else {
-                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'เกิดข้อผิดพลาด: ' + response.message,
+                            confirmButtonColor: '#51c3b7'
+                        });
                     }
                 },
                 error: function() {
-                    alert('เกิดข้อผิดพลาดในการเพิ่มคำนำหน้า');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'เกิดข้อผิดพลาดในการเพิ่มคำนำหน้า',
+                        confirmButtonColor: '#51c3b7'
+                    });
                 }
             });
         }
@@ -201,36 +221,77 @@
                     if(response.success) {
                         $('#editTitleModal').modal('hide');
                         loadTitles();
-                        alert('อัปเดตคำนำหน้าสำเร็จ');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ',
+                            text: 'อัปเดตข้อมูลคำนำหน้าสำเร็จ',
+                            confirmButtonColor: '#51c3b7'
+                        });
                     } else {
-                        alert('เกิดข้อผิดพลาด: ' + response.message);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'เกิดข้อผิดพลาด: ' + response.message,
+                            confirmButtonColor: '#51c3b7'
+                        });
                     }
                 },
                 error: function() {
-                    alert('เกิดข้อผิดพลาดในการอัปเดตข้อมูล');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล',
+                        confirmButtonColor: '#51c3b7'
+                    });
                 }
             });
         }
 
         function deleteTitle(titleID, titleName) {
-            if(confirm(`คุณต้องการลบคำนำหน้า "${titleName}" หรือไม่?\n\nหมายเหตุ: การลบคำนำหน้าที่มีผู้ใช้งานอยู่อาจทำให้เกิดปัญหาได้`)) {
-                $.ajax({
-                    url: '@Url.Action("DeleteTitle", "Admin")',
-                    method: 'POST',
-                    data: { titleID: titleID },
-                    success: function(response) {
-                        if(response.success) {
-                            loadTitles();
-                            alert('ลบคำนำหน้าสำเร็จ');
-                        } else {
-                            alert('เกิดข้อผิดพลาด: ' + response.message);
+            Swal.fire({
+                title: 'ยืนยันการดำเนินการ',
+                text: `คุณต้องการลบคำนำหน้า ${titleName} หรือไม่?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#51c3b7',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'ใช่, ดำเนินการ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteTitle", "Admin")',
+                        method: 'POST',
+                        data: { titleID: titleID },
+                        success: function(response) {
+                            if(response.success) {
+                                loadTitles();
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'สำเร็จ',
+                                    text: 'ลบคำนำหน้าสำเร็จ',
+                                    confirmButtonColor: '#51c3b7'
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'เกิดข้อผิดพลาด',
+                                    text: 'เกิดข้อผิดพลาด: ' + response.message,
+                                    confirmButtonColor: '#51c3b7'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'เกิดข้อผิดพลาดในการลบข้อมูล',
+                                confirmButtonColor: '#51c3b7'
+                            });
                         }
-                    },
-                    error: function() {
-                        alert('เกิดข้อผิดพลาดในการลบข้อมูล');
-                    }
-                });
-            }
+                    });
+                }
+            });
         }
     </script>
 }
