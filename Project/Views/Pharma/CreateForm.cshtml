@@ -1,0 +1,533 @@
+﻿@{
+    ViewData["Title"] = "สร้างแบบประเมิน";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-clipboard-list"></i> สร้างแบบประเมิน</h1>
+        <p class="lead">สร้างแบบประเมินสำหรับผู้ป่วย</p>
+    </div>
+</div>
+
+<div id="step1" class="step-container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> ข้อมูลพื้นฐาน</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="formName" class="form-label">ชื่อแบบประเมิน</label>
+                        <input type="text" class="form-control" id="formName" placeholder="กรุณากรอกชื่อแบบประเมิน" 
+                               onblur="checkFormNameExists()">
+                        <div id="formNameFeedback" class="invalid-feedback" style="display: none;"></div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">เลือกประเภทแบบประเมิน</label>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-type-card" data-type="1">
+                                    <div class="card h-100 form-type-option">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-list-ul fa-3x text-primary mb-3"></i>
+                                            <h5>แบบประเมิน ประเภท 1</h5>
+                                            <p class="text-muted">แบบประเมินแบบมาตรฐาน</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-type-card" data-type="2">
+                                    <div class="card h-100 form-type-option">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                                            <h5>แบบประเมิน ประเภท 2</h5>
+                                            <p class="text-muted">แบบประเมินคำตอบมีข้อความยาว</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-type-card" data-type="3">
+                                    <div class="card h-100 form-type-option">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-star fa-3x text-warning mb-3"></i>
+                                            <h5>แบบประเมิน ประเภท 3</h5>
+                                            <p class="text-muted">แบบประเมินแบบมีหัวข้อใหญ่</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-primary" onclick="nextStep()">
+                            <i class="fas fa-arrow-right"></i> ถัดไป
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-lightbulb"></i> คำแนะนำ</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> วิธีการใช้งาน</h6>
+                        <ul class="mb-0">
+                            <li>กรอกชื่อแบบประเมิน</li>
+                            <li>เลือกประเภทแบบประเมิน</li>
+                            <li>คลิกถัดไปเพื่อดำเนินการต่อ</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h6>ตัวอย่างแบบประเมิน:</h6>
+                        <div id="preview-container">
+                            <div class="text-center text-muted">
+                                <i class="fas fa-eye-slash fa-2x"></i>
+                                <p>เลือกประเภทแบบประเมินเพื่อดูตัวอย่าง</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="step2" class="step-container" style="display: none;">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-edit"></i> สร้างคำถาม</h5>
+                </div>
+                <div class="card-body">
+                    <div id="questions-container">
+                       
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                        <button type="button" class="btn btn-success" onclick="addQuestion()">
+                            <i class="fas fa-plus"></i> เพิ่มคำถาม
+                        </button>
+                        <div>
+                            <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                                <i class="fas fa-arrow-left"></i> กลับ
+                            </button>
+                            <button type="button" class="btn btn-primary" onclick="nextStep()">
+                                <i class="fas fa-arrow-right"></i> ถัดไป
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="step3" class="step-container" style="display: none;">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-calculator"></i> การตั้งค่าผลลัพธ์การประเมิน</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">วิธีการนับคะแนน</label>
+                        <select class="form-select" id="scoringMethod">
+                            <option value="sum">รวมคะแนนทั้งหมด</option>
+                            <option value="average">คะแนนเฉลี่ย</option>
+                            <option value="highest">นับจากตัวเลือกที่มีคะแนนสูงสุด</option>
+                        </select>
+                    </div>
+                    
+                    <div class="result-settings">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6><i class="fas fa-star"></i> ช่วงคะแนนและผลลัพธ์</h6>
+                            <button type="button" class="btn btn-sm btn-success" onclick="addResultSetting()">
+                                <i class="fas fa-plus"></i> เพิ่มช่วงคะแนน
+                            </button>
+                        </div>
+                        
+                        <div id="result-settings-container">
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-4">
+                        <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                            <i class="fas fa-arrow-left"></i> กลับ
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="saveForm()">
+                            <i class="fas fa-save"></i> บันทึกแบบประเมิน
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentStep = 1;
+        let selectedFormType = 0;
+        let questionsCount = 0;
+        let resultSettingsCount = 0;
+        
+        $(document).ready(function() {
+            $('.form-type-card').click(function() {
+                $('.form-type-option').removeClass('border-primary');
+                $(this).find('.form-type-option').addClass('border-primary');
+                selectedFormType = $(this).data('type');
+                showPreview(selectedFormType);
+            });
+            
+            addQuestion();
+            addResultSetting();
+        });
+        
+        function checkFormNameExists() {
+            let formName = $('#formName').val().trim();
+            let feedbackDiv = $('#formNameFeedback');
+            let formNameInput = $('#formName');
+            
+            if (!formName) {
+                formNameInput.removeClass('is-invalid is-valid');
+                feedbackDiv.hide();
+                return;
+            }
+            
+            $.ajax({
+                url: '@Url.Action("CheckFormNameExists", "Pharma")',
+                type: 'POST',
+                data: JSON.stringify({ 
+                    formName: formName, 
+                    excludeFormId: null
+                }),
+                contentType: 'application/json',
+                success: function(result) {
+                    if (result.exists) {
+                        formNameInput.removeClass('is-valid').addClass('is-invalid');
+                        feedbackDiv.text('ชื่อแบบประเมินนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น').show();
+                    } else {
+                        formNameInput.removeClass('is-invalid').addClass('is-valid');
+                        feedbackDiv.hide();
+                    }
+                },
+                error: function() {
+                    formNameInput.removeClass('is-invalid is-valid');
+                    feedbackDiv.hide();
+                }
+            });
+        }
+        
+        function showPreview(type) {
+            let preview = '';
+            switch(type) {
+                case 1:
+                    preview = '<div class="border p-2 rounded"><h6>ตัวอย่าง แบบประเมิน ประเภท 1</h6><p class="text-muted">แบบประเมิน Mod-SAS</p><img src="/img/form1.png" class="img-thumbnail" alt="" /></div>';
+                    break;
+                case 2:
+                    preview = '<div class="border p-2 rounded"><h6>ตัวอย่าง แบบประเมิน ประเภท 2</h6><p class="text-muted">แบบประเมินขั้นสูง</p></div>';
+                    break;
+                case 3:
+                    preview = '<div class="border p-2 rounded"><h6>ตัวอย่าง แบบประเมิน ประเภท 3</h6><p class="text-muted">แบบประเมินพิเศษ</p></div>';
+                    break;
+            }
+            $('#preview-container').html(preview);
+        }
+        
+        function nextStep() {
+            if (currentStep === 1) {
+                if (!$('#formName').val().trim()) {
+                    alert('กรุณากรอกชื่อแบบประเมิน');
+                    return;
+                }
+                
+                // Check if form name is invalid (duplicate)
+                if ($('#formName').hasClass('is-invalid')) {
+                    alert('ชื่อแบบประเมินซ้ำกับที่มีอยู่แล้ว กรุณาเปลี่ยนชื่อก่อนดำเนินการต่อ');
+                    $('#formName').focus();
+                    return;
+                }
+                
+                if (selectedFormType === 0) {
+                    alert('กรุณาเลือกประเภทแบบประเมิน');
+                    return;
+                }
+            }
+            
+            if (currentStep === 2) {
+                if ($('.question-item').length === 0) {
+                    alert('กรุณาเพิ่มคำถามอย่างน้อย 1 คำถาม');
+                    return;
+                }
+                
+                let QuestionNotFill = false;
+                $('.question-item').each(function() {
+                    if (!$(this).find('.question-text').val().trim()) {
+                        QuestionNotFill = true;
+                        return false;
+                    }
+                });
+                
+                if (QuestionNotFill) {
+                    alert('กรุณากรอกคำถามให้ครบถ้วน');
+                    return;
+                }
+            }
+            
+            if (currentStep < 3) {
+                $('#step' + currentStep).hide();
+                currentStep++;
+                $('#step' + currentStep).show();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                $('#step' + currentStep).hide();
+                currentStep--;
+                $('#step' + currentStep).show();
+            }
+        }
+        
+        function addQuestion() {
+            questionsCount++;
+            let questionHtml = `
+                <div class="question-item mb-4 border p-3 rounded" data-question="${questionsCount}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6><i class="fas fa-question-circle"></i> คำถามที่ ${questionsCount}</h6>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeQuestion(${questionsCount})">
+                            <i class="fas fa-trash"></i> ลบ
+                        </button>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" class="form-control question-text" placeholder="กรอกคำถาม">
+                    </div>
+                    <div class="options-container" data-question="${questionsCount}">
+                        <div class="option-item mb-2">
+                            <div class="input-group">
+                                <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ 1">
+                                <input type="number" class="form-control option-value" style="max-width: 80px;" placeholder="คะแนน">
+                                <button class="btn btn-outline-success" type="button" onclick="addOption(${questionsCount})">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            $('#questions-container').append(questionHtml);
+        }
+        
+        function removeQuestion(questionId) {
+            if (confirm('ต้องการลบคำถามนี้หรือไม่?')) {
+                $(`.question-item[data-question="${questionId}"]`).remove();
+                questionsCount--;
+            }
+        }
+        
+        function addOption(questionId) {
+            let optionCount = $(`.options-container[data-question="${questionId}"] .option-item`).length + 1;
+            let optionHtml = `
+                <div class="option-item mb-2">
+                    <div class="input-group">
+                        <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ ${optionCount}">
+                        <input type="number" class="form-control option-value" style="max-width: 80px;" placeholder="คะแนน">
+                        <button class="btn btn-outline-danger" type="button" onclick="$(this).closest('.option-item').remove()">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                </div>`;
+            $(`.options-container[data-question="${questionId}"]`).append(optionHtml);
+        }
+        
+        function addResultSetting() {
+            resultSettingsCount++;
+            let resultSettingHtml = `
+                <div class="result-setting-item mb-3 border p-3 rounded" data-result-setting="${resultSettingsCount}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6><i class="fas fa-chart-line"></i> ช่วงคะแนนที่ ${resultSettingsCount}</h6>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeResultSetting(${resultSettingsCount})">
+                            <i class="fas fa-trash"></i> ลบ
+                        </button>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <label class="form-label">คะแนนต่ำสุด</label>
+                            <input type="number" class="form-control min-score" placeholder="0" min="0">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">คะแนนสูงสุด</label>
+                            <input type="number" class="form-control max-score" placeholder="10" min="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">ระดับความรุนแรง</label>
+                            <input type="text" class="form-control result-name" placeholder="เช่น Mild, Moderate, Severe">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label">แนวทางปฎิบัติ</label>
+                            <textarea class="form-control result-text" rows="1" placeholder="เช่น Consult แพทย์"></textarea>
+                        </div>
+                    </div>
+                </div>`;
+            $('#result-settings-container').append(resultSettingHtml);
+        }
+        
+        function removeResultSetting(resultSettingId) {
+            if (confirm('ต้องการลบการตั้งค่าผลลัพธ์นี้หรือไม่?')) {
+                $(`.result-setting-item[data-result-setting="${resultSettingId}"]`).remove();
+                resultSettingsCount--;
+            }
+        }
+        
+        function saveForm() {
+            if (!$('#formName').val().trim()) {
+                alert('กรุณากรอกชื่อแบบประเมิน');
+                return;
+            }
+            
+            // Check for duplicate form name
+            if ($('#formName').hasClass('is-invalid')) {
+                alert('ชื่อแบบประเมินซ้ำกับที่มีอยู่แล้ว กรุณาเปลี่ยนชื่อ');
+                return;
+            }
+            
+            if (selectedFormType === 0) {
+                alert('กรุณาเลือกประเภทแบบประเมิน');
+                return;
+            }
+            
+            if ($('.question-item').length === 0) {
+                alert('กรุณาเพิ่มคำถามอย่างน้อย 1 คำถาม');
+                return;
+            }
+            
+            if ($('.result-setting-item').length === 0) {
+                alert('กรุณาเพิ่มการตั้งค่าผลลัพธ์อย่างน้อย 1 ช่วงคะแนน');
+                return;
+            }
+            
+            let ResultNotFill = false;
+            $('.result-setting-item').each(function() {
+                let minScore = $(this).find('.min-score').val();
+                let maxScore = $(this).find('.max-score').val();
+                let resultName = $(this).find('.result-name').val();
+                let resultText = $(this).find('.result-text').val();
+                
+                if (!minScore || !maxScore || !resultName.trim() || !resultText.trim()) {
+                    ResultNotFill = true;
+                    return false;
+                }
+            });
+            
+            if (ResultNotFill) {
+                alert('กรุณากรอกข้อมูลการตั้งค่าผลลัพธ์ให้ครบถ้วน (คะแนนต่ำสุด, คะแนนสูงสุด, ระดับความรุนแรง, และแนวทางปฎิบัติ)');
+                return;
+            }
+            
+            let formData = {
+                formName: $('#formName').val(),
+                formType: selectedFormType,
+                scoringMethod: $('#scoringMethod').val() || 'sum',
+                questions: [],
+                resultSettings: []
+            };
+            
+            $('.question-item').each(function() {
+                let question = {
+                    questionText: $(this).find('.question-text').val(),
+                    options: []
+                };
+                
+                $(this).find('.option-item').each(function() {
+                    let optionText = $(this).find('.option-text').val();
+                    let optionValue = $(this).find('.option-value').val();
+                    
+                    if (optionText.trim()) {
+                        question.options.push({
+                            optionText: optionText,
+                            value: parseInt(optionValue) || 0
+                        });
+                    }
+                });
+                
+                if (question.questionText.trim() && question.options.length > 0) {
+                    formData.questions.push(question);
+                }
+            });
+            
+            $('.result-setting-item').each(function() {
+                let minScore = $(this).find('.min-score').val();
+                let maxScore = $(this).find('.max-score').val();
+                let resultName = $(this).find('.result-name').val();
+                let resultText = $(this).find('.result-text').val();
+                
+                if (minScore !== '' && maxScore !== '' && resultName.trim() && resultText.trim()) {
+                    formData.resultSettings.push({
+                        minScore: parseInt(minScore),
+                        maxScore: parseInt(maxScore),
+                        resultName: resultName,
+                        resultText: resultText
+                    });
+                }
+            });
+            
+            $.ajax({
+                url: '@Url.Action("CreateForm", "Pharma")',
+                type: 'POST',
+                data: JSON.stringify(formData),
+                contentType: 'application/json',
+                success: function(result) {
+                    if (result.success) {
+                        alert('บันทึกแบบประเมินเรียบร้อย');
+                        window.location.href = '@Url.Action("Index", "Pharma")';
+                    } else {
+                        alert('เกิดข้อผิดพลาดในการบันทึก: ' + result.message);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('เกิดข้อผิดพลาดในการบันทึก: ' + error);
+                }
+            });
+        }
+    </script>
+    
+    <style>
+        .form-type-option {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .form-type-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .question-item {
+            background-color: #f8f9fa;
+        }
+        
+        .result-setting-item {
+            background-color: #f8f9fa;
+        }
+        
+        .result-settings .card {
+            transition: all 0.3s ease;
+        }
+        
+        .result-settings .card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+}

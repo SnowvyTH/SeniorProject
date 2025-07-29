@@ -1,5 +1,436 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "จัดการฟอร์มประเมิน";
+    Layout = "~/Views/Shared/_PharmaLayout.cshtml";
+}
+
+<div class="container">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">
+                <i class="fas fa-clipboard-list me-2 mt-4"></i>จัดการฟอร์มประเมิน
+            </h2>
+            <p class="text-muted mb-0">เพิ่ม แก้ไข และจัดการฟอร์มประเมินในระบบ</p>
+        </div>
+        <button type="button" class="btn btn-pharma" data-bs-toggle="modal" data-bs-target="#formModal" onclick="openCreateModal()">
+            <i class="fas fa-plus me-2"></i>เพิ่มฟอร์มใหม่
+        </button>
+    </div>
+
+   
+
+    <!-- Search and Filter Section -->
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchInput" placeholder="ค้นหาชื่อฟอร์ม...">
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-secondary" onclick="clearSearch()">
+                        <i class="fas fa-times me-2"></i>ล้างการค้นหา
+                    </button>
+                </div>
+            </div>
+
+
+    <!-- Forms Table -->
+    <div class="modern-card mt-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="formsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="8%">รหัส</th>
+                            <th width="35%">ชื่อฟอร์ม</th>
+                            <th width="15%">ประเภท</th>
+                            <th width="12%">จำนวนคำถาม</th>
+                            <th width="12%">การประเมิน</th>
+                            <th width="18%">การจัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="loadingSpinner" class="text-center p-4" style="display: none;">
+                <div class="spinner-border text-pharma" role="status">
+                    <span class="visually-hidden">กำลังโหลด...</span>
+                </div>
+            </div>
+            <div id="noDataMessage" class="text-center p-4" style="display: none;">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">ไม่พบข้อมูลฟอร์ม</h5>
+                <p class="text-muted">ลองเพิ่มฟอร์มใหม่หรือปรับเปลี่ยนการค้นหา</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Form Modal -->
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-pharma text-white">
+                <h5 class="modal-title" id="formModalLabel">
+                    <i class="fas fa-clipboard-list me-2"></i>เพิ่มฟอร์มใหม่
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formForm">
+                <div class="modal-body">
+                    <input type="hidden" id="formId" name="FormID">
+                    
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label for="formName" class="form-label required">ชื่อฟอร์ม</label>
+                            <input type="text" class="form-control" id="formName" name="FormName" placeholder="กรอกชื่อฟอร์มประเมิน" required>
+                            <div class="invalid-feedback">กรุณากรอกชื่อฟอร์ม</div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label for="formType" class="form-label required">ประเภทฟอร์ม</label>
+                            <select class="form-select" id="formType" name="FormType" required>
+                                <option value="">เลือกประเภท</option>
+                                <option value="1">แบบประเมินทั่วไป</option>
+                                <option value="2">แบบประเมินเฉพาะ</option>
+                                <option value="3">แบบประเมินการรักษา</option>
+                                <option value="4">แบบประเมินความพึงพอใจ</option>
+                            </select>
+                            <div class="invalid-feedback">กรุณาเลือกประเภทฟอร์ม</div>
+                        </div>
+                    </div>
+
+                    <div class="form-text mt-3">
+                        <i class="fas fa-info-circle me-1"></i>
+                        หลังจากสร้างฟอร์มแล้ว คุณสามารถเพิ่มคำถามและตัวเลือกในหน้าจัดการคำถามได้
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>ยกเลิก
+                    </button>
+                    <button type="submit" class="btn btn-pharma" id="submitBtn">
+                        <i class="fas fa-save me-2"></i>บันทึก
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .card-pharma {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+        }
+        
+        .card-success {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white;
+        }
+        
+        .card-info {
+            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+            color: white;
+        }
+        
+        .card-warning {
+            background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+            color: white;
+        }
+
+        .stats-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .stats-label {
+            font-size: 0.9rem;
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .stats-icon {
+            font-size: 2.5rem;
+            opacity: 0.7;
+        }
+
+        .btn-pharma {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            border: none;
+            color: white;
+            font-weight: 500;
+        }
+
+        .btn-pharma:hover {
+            background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+
+        .bg-pharma {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%) !important;
+        }
+
+        .text-pharma {
+            color: #2196F3 !important;
+        }
+
+        .badge.bg-pharma {
+            background: #2196F3 !important;
+        }
+
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-label.required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        let currentFormId = null;
+
+        $(document).ready(function() {
+            loadForms();
+            loadStats();
+
+            // Search functionality
+            $('#searchInput').on('input', function() {
+                loadForms();
+            });
+
+            // Form submission
+            $('#formForm').on('submit', function(e) {
+                e.preventDefault();
+                if (validateForm()) {
+                    submitForm();
+                }
+            });
+        });
+
+        function loadStats() {
+            $.get('/Pharma/GetFormStats')
+                .done(function(data) {
+                    $('#totalForms').text(data.totalForms);
+                    $('#formsWithQuestions').text(data.formsWithQuestions);
+                    $('#totalQuestions').text(data.totalQuestions);
+                    $('#totalEvaluations').text(data.totalEvaluations);
+                })
+                .fail(function() {
+                    console.error('Error loading stats');
+                });
+        }
+
+        function loadForms() {
+            $('#loadingSpinner').show();
+            $('#noDataMessage').hide();
+            
+            const search = $('#searchInput').val();
+            
+            $.get('/Pharma/GetForms', { search: search })
+                .done(function(data) {
+                    displayForms(data);
+                    $('#formsCount').text(data.length + ' รายการ');
+                })
+                .fail(function() {
+                    showError('เกิดข้อผิดพลาดในการโหลดข้อมูล');
+                })
+                .always(function() {
+                    $('#loadingSpinner').hide();
+                });
+        }
+
+        function displayForms(forms) {
+            const tbody = $('#formsTable tbody');
+            tbody.empty();
+
+            if (forms.length === 0) {
+                $('#noDataMessage').show();
+                return;
+            }
+
+            forms.forEach(function(form) {
+                const formTypeText = getFormTypeText(form.formType);
+                const row = `
+                    <tr>
+                        <td><span class="badge bg-secondary">${form.formID}</span></td>
+                        <td>
+                            <div class="fw-bold">${form.formName || 'ไม่ระบุ'}</div>
+                        </td>
+                        <td>${formTypeText}</td>
+                        <td>
+                            <span class="badge bg-info">${form.questionCount} ข้อ</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-success">${form.evaluationCount} ครั้ง</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button type="button" class="btn btn-outline-primary btn-sm" 
+                                        onclick="editForm(${form.formID})" title="แก้ไข">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                        onclick="deleteForm(${form.formID}, '${form.formName}')" title="ลบ">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        function getFormTypeText(formType) {
+            switch(formType) {
+                case 1: return '<span class="badge bg-primary">แบบประเมินทั่วไป</span>';
+                case 2: return '<span class="badge bg-warning">แบบประเมินเฉพาะ</span>';
+                case 3: return '<span class="badge bg-success">แบบประเมินการรักษา</span>';
+                case 4: return '<span class="badge bg-info">แบบประเมินความพึงพอใจ</span>';
+                default: return '<span class="badge bg-secondary">ไม่ระบุ</span>';
+            }
+        }
+
+        function openCreateModal() {
+            currentFormId = null;
+            $('#formModalLabel').html('<i class="fas fa-plus me-2"></i>เพิ่มฟอร์มใหม่');
+            $('#formId').val('');
+            $('#formName').val('');
+            $('#formType').val('');
+            $('#submitBtn').html('<i class="fas fa-save me-2"></i>บันทึก');
+            clearValidation();
+        }
+
+        function editForm(formId) {
+            currentFormId = formId;
+            $('#formModalLabel').html('<i class="fas fa-edit me-2"></i>แก้ไขฟอร์ม');
+            $('#submitBtn').html('<i class="fas fa-save me-2"></i>อัปเดต');
+            
+            $.get('/Pharma/GetForm', { id: formId })
+                .done(function(data) {
+                    $('#formId').val(data.formID);
+                    $('#formName').val(data.formName);
+                    $('#formType').val(data.formType);
+                    $('#formModal').modal('show');
+                    clearValidation();
+                })
+                .fail(function() {
+                    showError('เกิดข้อผิดพลาดในการโหลดข้อมูลฟอร์ม');
+                });
+        }
+
+        function deleteForm(formId, formName) {
+            if (confirm(`คุณต้องการลบฟอร์ม "${formName}" หรือไม่?\n\nการลบจะไม่สามารถกู้คืนได้`)) {
+                $.post('/Pharma/DeleteForm', { formID: formId })
+                    .done(function(response) {
+                        if (response.success) {
+                            showSuccess('ลบฟอร์มเรียบร้อยแล้ว');
+                            loadForms();
+                            loadStats();
+                        } else {
+                            showError(response.message);
+                        }
+                    })
+                    .fail(function() {
+                        showError('เกิดข้อผิดพลาดในการลบฟอร์ม');
+                    });
+            }
+        }
+
+        function submitForm() {
+            const formData = $('#formForm').serialize();
+            const url = currentFormId ? '/Pharma/UpdateForm' : '/Pharma/CreateForm';
+            
+            $.post(url, formData)
+                .done(function(response) {
+                    if (response.success) {
+                        showSuccess(currentFormId ? 'อัปเดตฟอร์มเรียบร้อยแล้ว' : 'เพิ่มฟอร์มเรียบร้อยแล้ว');
+                        $('#formModal').modal('hide');
+                        loadForms();
+                        loadStats();
+                    } else {
+                        showError(response.message);
+                    }
+                })
+                .fail(function() {
+                    showError('เกิดข้อผิดพลาดในการบันทึกฟอร์ม');
+                });
+        }
+
+        function validateForm() {
+            let isValid = true;
+            
+            // Reset validation states
+            $('.form-control, .form-select').removeClass('is-invalid');
+            
+            // Validate form name
+            if (!$('#formName').val().trim()) {
+                $('#formName').addClass('is-invalid');
+                isValid = false;
+            }
+            
+            // Validate form type
+            if (!$('#formType').val()) {
+                $('#formType').addClass('is-invalid');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+
+        function clearValidation() {
+            $('.form-control, .form-select').removeClass('is-invalid');
+        }
+
+        function clearSearch() {
+            $('#searchInput').val('');
+            loadForms();
+        }
+
+        function showSuccess(message) {
+            // You can implement a toast notification here
+            alert(message);
+        }
+
+        function showError(message) {
+            // You can implement a toast notification here
+            alert('ข้อผิดพลาด: ' + message);
+        }
+    </script>
 }

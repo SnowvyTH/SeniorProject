@@ -173,7 +173,39 @@
         .badge-danger {
             background-color: #dc3545;
         }
+
+        .modern-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .modern-card .card-header {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border: none;
+            border-radius: 15px 15px 0 0;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+        }
+
+        .page-title {
+            color: var(--dark-green);
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+
+        .stats-card {
+            transition: transform 0.3s ease;
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
     </style>
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-custom">
@@ -185,27 +217,27 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="@Url.Action("Index", "Pharma")">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")" href="@Url.Action("Index", "Pharma")">
                             <i class="fas fa-history me-1"></i>ประวัติการประเมิน
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Patients", "Pharma")">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Patients" ? "active" : "")" href="@Url.Action("Patients", "Pharma")">
                             <i class="fas fa-users me-1"></i>จัดการรายชื่อผู้ป่วย
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Forms", "Pharma")">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Forms" ? "active" : "")" href="@Url.Action("Forms", "Pharma")">
                             <i class="fas fa-clipboard-list me-1"></i>จัดการแบบประเมิน
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Evaluation", "Pharma")">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Evaluation" ? "active" : "")" href="@Url.Action("Evaluation", "Pharma")">
                             <i class="fas fa-stethoscope me-1"></i>ทำแบบประเมิน
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="@Url.Action("Treatments", "Pharma")">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Treatments" ? "active" : "")" href="@Url.Action("Treatments", "Pharma")">
                             <i class="fas fa-shield-alt me-1"></i>จัดการสิทธิ์การรักษา
                         </a>
                     </li>
