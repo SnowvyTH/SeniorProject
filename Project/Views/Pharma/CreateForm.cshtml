@@ -436,17 +436,16 @@
                 return;
             }
             
-            let formData = {
-                formName: $('#formName').val(),
-                formType: selectedFormType,
-                scoringMethod: $('#scoringMethod').val() || 'sum',
-                questions: [],
-                resultSettings: []
-            };
+            let formData = new FormData();
+            formData.append('formName', $('#formName').val());
+            formData.append('formType', selectedFormType);
             
+            // Prepare questions data
+            let questionsData = [];
             $('.question-item').each(function() {
                 let question = {
                     questionText: $(this).find('.question-text').val(),
+                    section: $(this).find('.question-section').val() || null,
                     options: []
                 };
                 
@@ -463,35 +462,41 @@
                 });
                 
                 if (question.questionText.trim() && question.options.length > 0) {
-                    formData.questions.push(question);
+                    questionsData.push(question);
                 }
             });
             
+            // Prepare interpreters data (changed from resultSettings)
+            let interpretersData = [];
             $('.result-setting-item').each(function() {
                 let minScore = $(this).find('.min-score').val();
                 let maxScore = $(this).find('.max-score').val();
-                let resultName = $(this).find('.result-name').val();
-                let resultText = $(this).find('.result-text').val();
+                let interName = $(this).find('.result-name').val();
+                let interText = $(this).find('.result-text').val();
                 
-                if (minScore !== '' && maxScore !== '' && resultName.trim() && resultText.trim()) {
-                    formData.resultSettings.push({
+                if (minScore !== '' && maxScore !== '' && interName.trim() && interText.trim()) {
+                    interpretersData.push({
                         minScore: parseInt(minScore),
                         maxScore: parseInt(maxScore),
-                        resultName: resultName,
-                        resultText: resultText
+                        interName: interName,
+                        interText: interText
                     });
                 }
             });
             
+            formData.append('questionsJson', JSON.stringify(questionsData));
+            formData.append('interpretersJson', JSON.stringify(interpretersData));
+            
             $.ajax({
                 url: '@Url.Action("CreateForm", "Pharma")',
                 type: 'POST',
-                data: JSON.stringify(formData),
-                contentType: 'application/json',
+                data: formData,
+                processData: false,
+                contentType: false,
                 success: function(result) {
                     if (result.success) {
                         alert('บันทึกแบบประเมินเรียบร้อย');
-                        window.location.href = '@Url.Action("Index", "Pharma")';
+                        window.location.href = '@Url.Action("Forms", "Pharma")';
                     } else {
                         alert('เกิดข้อผิดพลาดในการบันทึก: ' + result.message);
                     }

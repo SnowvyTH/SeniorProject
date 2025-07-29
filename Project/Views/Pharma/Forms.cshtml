@@ -12,9 +12,9 @@
             </h2>
             <p class="text-muted mb-0">เพิ่ม แก้ไข และจัดการฟอร์มประเมินในระบบ</p>
         </div>
-        <button type="button" class="btn btn-pharma" data-bs-toggle="modal" data-bs-target="#formModal" onclick="openCreateModal()">
-            <i class="fas fa-plus me-2"></i>เพิ่มฟอร์มใหม่
-        </button>
+        <a href="@Url.Action("CreateForm", "Pharma")" class="btn btn-pharma">
+            <i class="fas fa-plus me-2"></i>สร้างแบบประเมินใหม่
+        </a>
     </div>
 
    
@@ -66,58 +66,6 @@
                 <h5 class="text-muted">ไม่พบข้อมูลฟอร์ม</h5>
                 <p class="text-muted">ลองเพิ่มฟอร์มใหม่หรือปรับเปลี่ยนการค้นหา</p>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Form Modal -->
-<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-pharma text-white">
-                <h5 class="modal-title" id="formModalLabel">
-                    <i class="fas fa-clipboard-list me-2"></i>เพิ่มฟอร์มใหม่
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="formForm">
-                <div class="modal-body">
-                    <input type="hidden" id="formId" name="FormID">
-                    
-                    <div class="row g-3">
-                        <div class="col-md-8">
-                            <label for="formName" class="form-label required">ชื่อฟอร์ม</label>
-                            <input type="text" class="form-control" id="formName" name="FormName" placeholder="กรอกชื่อฟอร์มประเมิน" required>
-                            <div class="invalid-feedback">กรุณากรอกชื่อฟอร์ม</div>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <label for="formType" class="form-label required">ประเภทฟอร์ม</label>
-                            <select class="form-select" id="formType" name="FormType" required>
-                                <option value="">เลือกประเภท</option>
-                                <option value="1">แบบประเมินทั่วไป</option>
-                                <option value="2">แบบประเมินเฉพาะ</option>
-                                <option value="3">แบบประเมินการรักษา</option>
-                                <option value="4">แบบประเมินความพึงพอใจ</option>
-                            </select>
-                            <div class="invalid-feedback">กรุณาเลือกประเภทฟอร์ม</div>
-                        </div>
-                    </div>
-
-                    <div class="form-text mt-3">
-                        <i class="fas fa-info-circle me-1"></i>
-                        หลังจากสร้างฟอร์มแล้ว คุณสามารถเพิ่มคำถามและตัวเลือกในหน้าจัดการคำถามได้
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-2"></i>ยกเลิก
-                    </button>
-                    <button type="submit" class="btn btn-pharma" id="submitBtn">
-                        <i class="fas fa-save me-2"></i>บันทึก
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -223,8 +171,6 @@
 
 @section Scripts {
     <script>
-        let currentFormId = null;
-
         $(document).ready(function() {
             loadForms();
             loadStats();
@@ -232,14 +178,6 @@
             // Search functionality
             $('#searchInput').on('input', function() {
                 loadForms();
-            });
-
-            // Form submission
-            $('#formForm').on('submit', function(e) {
-                e.preventDefault();
-                if (validateForm()) {
-                    submitForm();
-                }
             });
         });
 
@@ -301,10 +239,9 @@
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <button type="button" class="btn btn-outline-primary btn-sm" 
-                                        onclick="editForm(${form.formID})" title="แก้ไข">
+                                <a href="/Pharma/CreateForm?editId=${form.formID}" class="btn btn-outline-primary btn-sm" title="แก้ไข">
                                     <i class="fas fa-edit"></i>
-                                </button>
+                                </a>
                                 <button type="button" class="btn btn-outline-danger btn-sm" 
                                         onclick="deleteForm(${form.formID}, '${form.formName}')" title="ลบ">
                                     <i class="fas fa-trash"></i>
@@ -327,38 +264,12 @@
             }
         }
 
-        function openCreateModal() {
-            currentFormId = null;
-            $('#formModalLabel').html('<i class="fas fa-plus me-2"></i>เพิ่มฟอร์มใหม่');
-            $('#formId').val('');
-            $('#formName').val('');
-            $('#formType').val('');
-            $('#submitBtn').html('<i class="fas fa-save me-2"></i>บันทึก');
-            clearValidation();
-        }
-
-        function editForm(formId) {
-            currentFormId = formId;
-            $('#formModalLabel').html('<i class="fas fa-edit me-2"></i>แก้ไขฟอร์ม');
-            $('#submitBtn').html('<i class="fas fa-save me-2"></i>อัปเดต');
-            
-            $.get('/Pharma/GetForm', { id: formId })
-                .done(function(data) {
-                    $('#formId').val(data.formID);
-                    $('#formName').val(data.formName);
-                    $('#formType').val(data.formType);
-                    $('#formModal').modal('show');
-                    clearValidation();
-                })
-                .fail(function() {
-                    showError('เกิดข้อผิดพลาดในการโหลดข้อมูลฟอร์ม');
-                });
-        }
-
         function deleteForm(formId, formName) {
             if (confirm(`คุณต้องการลบฟอร์ม "${formName}" หรือไม่?\n\nการลบจะไม่สามารถกู้คืนได้`)) {
-                $.post('/Pharma/DeleteForm', { formID: formId })
-                    .done(function(response) {
+                $.ajax({
+                    url: '/Pharma/DeleteForm/' + formId,
+                    type: 'DELETE',
+                    success: function(response) {
                         if (response.success) {
                             showSuccess('ลบฟอร์มเรียบร้อยแล้ว');
                             loadForms();
@@ -366,56 +277,12 @@
                         } else {
                             showError(response.message);
                         }
-                    })
-                    .fail(function() {
+                    },
+                    error: function() {
                         showError('เกิดข้อผิดพลาดในการลบฟอร์ม');
-                    });
-            }
-        }
-
-        function submitForm() {
-            const formData = $('#formForm').serialize();
-            const url = currentFormId ? '/Pharma/UpdateForm' : '/Pharma/CreateForm';
-            
-            $.post(url, formData)
-                .done(function(response) {
-                    if (response.success) {
-                        showSuccess(currentFormId ? 'อัปเดตฟอร์มเรียบร้อยแล้ว' : 'เพิ่มฟอร์มเรียบร้อยแล้ว');
-                        $('#formModal').modal('hide');
-                        loadForms();
-                        loadStats();
-                    } else {
-                        showError(response.message);
                     }
-                })
-                .fail(function() {
-                    showError('เกิดข้อผิดพลาดในการบันทึกฟอร์ม');
                 });
-        }
-
-        function validateForm() {
-            let isValid = true;
-            
-            // Reset validation states
-            $('.form-control, .form-select').removeClass('is-invalid');
-            
-            // Validate form name
-            if (!$('#formName').val().trim()) {
-                $('#formName').addClass('is-invalid');
-                isValid = false;
             }
-            
-            // Validate form type
-            if (!$('#formType').val()) {
-                $('#formType').addClass('is-invalid');
-                isValid = false;
-            }
-            
-            return isValid;
-        }
-
-        function clearValidation() {
-            $('.form-control, .form-select').removeClass('is-invalid');
         }
 
         function clearSearch() {
@@ -424,12 +291,10 @@
         }
 
         function showSuccess(message) {
-            // You can implement a toast notification here
             alert(message);
         }
 
         function showError(message) {
-            // You can implement a toast notification here
             alert('ข้อผิดพลาด: ' + message);
         }
     </script>

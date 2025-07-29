@@ -101,27 +101,43 @@ namespace Project.Controllers
             });
         }
 
-        public async Task<IActionResult> CreateForm()
+        public async Task<IActionResult> CreateForm(int? editId)
         {
-            ViewBag.UserName = User.FindFirst("FullName")?.Value;
+            ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
             ViewBag.Forms = await _db.Form.ToListAsync();
+            
+            if (editId.HasValue)
+            {
+                var form = await _db.Form
+                    .Include(f => f.Questions)
+                        .ThenInclude(q => q.Options)
+                    .Include(f => f.Interpreters)
+                    .FirstOrDefaultAsync(f => f.FormID == editId.Value);
+                    
+                if (form != null)
+                {
+                    ViewBag.EditForm = form;
+                    ViewBag.IsEdit = true;
+                }
+            }
+            
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateForm([FromBody] CreateFormModel model)
+        public async Task<IActionResult> CreateForm([FromForm] string formName, [FromForm] int formType, [FromForm] string questionsJson, [FromForm] string interpretersJson)
         {
             try
             {
                 var existingForm = await _db.Form
-                    .FirstOrDefaultAsync(f => f.FormName.ToLower() == model.FormName.ToLower());
+                    .FirstOrDefaultAsync(f => f.FormName!.ToLower() == formName.ToLower());
                     
                 if (existingForm != null)
                 {
                     return Json(new { success = false, message = "ชื่อแบบประเมินนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น" });
                 }
 
-                if (ModelState.IsValid)
+                if (!string.IsNullOrEmpty(formName))
                 {
                     using var transaction = await _db.Database.BeginTransactionAsync();
                     
@@ -129,61 +145,75 @@ namespace Project.Controllers
                     {
                         var form = new Form
                         {
-                            FormName = model.FormName,
-                            FormType = model.FormType.ToString(),
+                            FormName = formName,
+                            FormType = formType,
                             Questions = new List<Question>()
                         };
 
-                        if (model.Questions != null)
+                        // Parse questions JSON if provided
+                        if (!string.IsNullOrEmpty(questionsJson))
                         {
-                            foreach (var questionModel in model.Questions)
+                            var questionsData = System.Text.Json.JsonSerializer.Deserialize<List<QuestionData>>(questionsJson);
+                            
+                            if (questionsData != null)
                             {
-                                var question = new Question
+                                foreach (var questionData in questionsData)
                                 {
-                                    QuestionText = questionModel.QuestionText,
-                                    Options = new List<Option>()
-                                };
-
-                                form.Questions.Add(question);
-
-                                foreach (var optionModel in questionModel.Options)
-                                {
-                                    var option = new Option
+                                    var question = new Question
                                     {
-                                        OptionText = optionModel.OptionText,
-                                        Value = optionModel.Value,
+                                        QuestionText = questionData.QuestionText,
+                                        Section = questionData.Section,
+                                        Options = new List<Option>()
                                     };
-                                    question.Options.Add(option);
+
+                                    form.Questions.Add(question);
+
+                                    if (questionData.Options != null)
+                                    {
+                                        foreach (var optionData in questionData.Options)
+                                        {
+                                            var option = new Option
+                                            {
+                                                OptionText = optionData.OptionText,
+                                                Value = optionData.Value,
+                                            };
+                                            question.Options.Add(option);
+                                        }
+                                    }
                                 }
                             }
                         }
 
                         _db.Form.Add(form);
-
                         await _db.SaveChangesAsync();
 
-                        if (model.ResultSettings != null)
+                        // Parse interpreters JSON if provided
+                        if (!string.IsNullOrEmpty(interpretersJson))
                         {
-                            foreach (var resultSettingModel in model.ResultSettings)
+                            var interpretersData = System.Text.Json.JsonSerializer.Deserialize<List<InterpreterData>>(interpretersJson);
+                            
+                            if (interpretersData != null)
                             {
-                                var resultName = string.IsNullOrWhiteSpace(resultSettingModel.ResultName) 
-                                    ? $"ระดับ {resultSettingModel.MinScore}-{resultSettingModel.MaxScore}"
-                                    : resultSettingModel.ResultName;
-
-                                var resultSetting = new ResultSetting
+                                foreach (var interpreterData in interpretersData)
                                 {
-                                    FormID = form.FormID,
-                                    MinScore = resultSettingModel.MinScore,
-                                    MaxScore = resultSettingModel.MaxScore,
-                                    ResultText = resultSettingModel.ResultText,
-                                    ResultName = resultName
-                                };
-                                _db.ResultSettings.Add(resultSetting);
+                                    var interName = string.IsNullOrWhiteSpace(interpreterData.InterName) 
+                                        ? $"ระดับ {interpreterData.MinScore}-{interpreterData.MaxScore}"
+                                        : interpreterData.InterName;
+
+                                    var interpreter = new Interpreter
+                                    {
+                                        FormID = form.FormID,
+                                        MinScore = interpreterData.MinScore,
+                                        MaxScore = interpreterData.MaxScore,
+                                        InterText = interpreterData.InterText,
+                                        InterName = interName
+                                    };
+                                    _db.Interpreter.Add(interpreter);
+                                }
                             }
                         }
 
                         await _db.SaveChangesAsync();
-                        
                         await transaction.CommitAsync();
 
                         return Json(new { success = true, message = "บันทึกแบบประเมินเรียบร้อย" });
@@ -205,7 +235,122 @@ namespace Project.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
-        
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateForm(int id, [FromForm] string formName, [FromForm] int formType)
+        {
+            try
+            {
+                var form = await _db.Form.FindAsync(id);
+                if (form == null)
+                {
+                    return Json(new { success = false, message = "ไม่พบแบบประเมิน" });
+                }
+
+                // Check if name already exists (excluding current form)
+                var existingForm = await _db.Form
+                    .FirstOrDefaultAsync(f => f.FormName != null && 
+                                            f.FormName.ToLower() == formName.ToLower() && 
+                                            f.FormID != id);
+                    
+                if (existingForm != null)
+                {
+                    return Json(new { success = false, message = "ชื่อแบบประเมินนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น" });
+                }
+
+                form.FormName = formName;
+                form.FormType = formType;
+
+                await _db.SaveChangesAsync();
+
+                return Json(new { success = true, message = "อัพเดทแบบประเมินเรียบร้อย" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "เกิดข้อผิดพลาดในการอัพเดท: " + ex.Message });
+            }
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteForm(int id)
+        {
+            try
+            {
+                var form = await _db.Form
+                    .Include(f => f.Questions)
+                        .ThenInclude(q => q.Options)
+                    .Include(f => f.Interpreters)
+                    .Include(f => f.Evaluations)
+                    .FirstOrDefaultAsync(f => f.FormID == id);
+                    
+                if (form == null)
+                {
+                    return Json(new { success = false, message = "ไม่พบแบบประเมิน" });
+                }
+
+                // Check if form is being used in evaluations
+                if (form.Evaluations.Any())
+                {
+                    return Json(new { success = false, message = "ไม่สามารถลบแบบประเมินนี้ได้ เนื่องจากมีการใช้งานอยู่" });
+                }
+
+                using var transaction = await _db.Database.BeginTransactionAsync();
+                
+                try
+                {
+                    // Delete options first
+                    foreach (var question in form.Questions)
+                    {
+                        _db.Option.RemoveRange(question.Options);
+                    }
+
+                    // Delete questions
+                    _db.Question.RemoveRange(form.Questions);
+
+                    // Delete interpreters
+                    _db.Interpreter.RemoveRange(form.Interpreters);
+
+                    // Delete form
+                    _db.Form.Remove(form);
+
+                    await _db.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return Json(new { success = true, message = "ลบแบบประเมินเรียบร้อย" });
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return Json(new { success = false, message = "เกิดข้อผิดพลาดในการลบ: " + ex.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "เกิดข้อผิดพลาด: " + ex.Message });
+            }
+        }
+
+        // Helper classes for JSON deserialization
+        public class QuestionData
+        {
+            public string? QuestionText { get; set; }
+            public string? Section { get; set; }
+            public List<OptionData>? Options { get; set; }
+        }
+
+        public class OptionData
+        {
+            public string? OptionText { get; set; }
+            public int? Value { get; set; }
+        }
+
+        public class InterpreterData
+        {
+            public string? InterName { get; set; }
+            public string? InterText { get; set; }
+            public int? MinScore { get; set; }
+            public int? MaxScore { get; set; }
+        }
 
         public class CheckFormNameRequest
         {
@@ -217,7 +362,7 @@ namespace Project.Controllers
         public async Task<JsonResult> CheckFormNameExists([FromBody] CheckFormNameRequest request)
         {
             var exists = await _db.Form
-                .AnyAsync(f => f.FormName.ToLower() == request.FormName.ToLower() && 
+                .AnyAsync(f => f.FormName != null && f.FormName.ToLower() == request.FormName.ToLower() && 
                               (request.ExcludeFormId == null || f.FormID != request.ExcludeFormId));
 
             return Json(new { exists = exists });
