@@ -1,106 +1,146 @@
-﻿@{
-    ViewData["Title"] = "ระบบเภสัชกรรม";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+﻿@model IEnumerable<Project.Models.Entity.Patient>
+@{
+    ViewData["Title"] = "ประวัติผู้ป่วย";
+    Layout = "_PharmaLayout";
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-primary">
-                    <i class="fas fa-pills me-2"></i>ระบบเภสัชกรรม
-                </h2>
-                <div class="dropdown">
-                    <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user me-1"></i>@ViewBag.UserName
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><span class="dropdown-item-text">บทบาท: @ViewBag.RoleName</span></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="@Url.Action("Logout", "Home")">
-                            <i class="fas fa-sign-out-alt me-1"></i>ออกจากระบบ
-                        </a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+<div class="row">
+    <div class="col-12 mt-4">
+        <h4><i class="fas fa-users"></i> ประวัติการประเมิน</h4>
     </div>
+</div>
 
-    <div class="row">
-        <div class="col-md-3 mb-4">
-            <div class="card stats-card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">ผู้ป่วยวันนี้</h4>
-                            <h2 class="mb-0">-</h2>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-user-injured fa-2x"></i>
-                        </div>
+<div class="row">
+    <div class="col-12">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>HN</th>
+                                <th>ชื่อผู้ป่วย</th>
+                                <th>ประเภทผู้ป่วย</th>
+                                <th>ประวัติการตรวจ</th>
+                                <th>การแปรผล</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var patient in Model)
+                            {
+                                <tr>
+                                    <td>@patient.HN</td>
+                                    <td>@patient.Title.TitleName @patient.FirstName @patient.LastName</td>
+                                    <th>
+                                        <span class="badge @(patient.PatientType == "OPD" ? "bg-primary" : "bg-success")">
+                                            @patient.PatientType
+                                        </span>
+                                    </th>
+                                    <td>
+                                        @if (patient.Evaluations.Any())
+                                        {
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                                    @patient.Evaluations.OrderByDescending(r => r.RecordDate).First().Form.FormName - @patient.Evaluations.OrderByDescending(r => r.RecordDate).First().RecordDate.ToString("dd/MM/yyyy")
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    @foreach (var record in patient.Evaluations.OrderByDescending(r => r.RecordDate))
+                                                    {
+                                                        <li><a class="dropdown-item" href="#" data-record-id="@record.EvaID">
+                                                                @record.Form.FormName - @record.RecordDate.ToString("dd/MM/yyyy")
+                                                            </a></li>
+                                                    }
+                                                </ul>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">ไม่มีข้อมูล</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (patient.Evaluations.Any())
+                                        {
+                                            var firstRecord = patient.Evaluations.OrderBy(r => r.RecordDate).First();
+                                            @($"{firstRecord.User.Title.TitleName}{firstRecord.User.FirstName} {firstRecord.User.LastName}")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <button type="button" class="btn btn-sm btn-info mx-2" onclick="editEvaluation(@patient.HN)">
+                                                <i class="fas fa-edit"></i> ดูรายละเอียด
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-success" onclick="printEvaluation(@patient.HN)">
+                                                <i class="fas fa-print"></i> พิมพ์
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                
+                @if (!Model.Any())
+                {
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle"></i> ยังไม่มีข้อมูลผู้ป่วย
                     </div>
-                </div>
-                <div class="card-footer bg-dark">
-                    <small>จำนวนผู้ป่วยที่ต้องประเมิน</small>
-                </div>
+                }
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0"><i class="fas fa-chart-bar"></i> สถิติผู้ป่วย</h5>
             </div>
-        </div>
-
-        <div class="col-md-3 mb-4">
-            <div class="card stats-card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">แบบประเมิน</h4>
-                            <h2 class="mb-0">-</h2>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-clipboard-check fa-2x"></i>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-primary">@Model.Count()</h3>
+                            <p class="text-muted">ผู้ป่วยทั้งหมด</p>
                         </div>
                     </div>
-                </div>
-                <div class="card-footer bg-dark">
-                    <small>แบบประเมินที่เสร็จสมบูรณ์</small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-4">
-            <div class="card stats-card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">รอดำเนินการ</h4>
-                            <h2 class="mb-0">-</h2>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-clock fa-2x"></i>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-success">@Model.Where(p => p.PatientType == "OPD").Count()</h3>
+                            <p class="text-muted">ผู้ป่วยนอก (OPD)</p>
                         </div>
                     </div>
-                </div>
-                <div class="card-footer bg-dark">
-                    <small>การประเมินที่รอดำเนินการ</small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-4">
-            <div class="card stats-card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">ยาที่แจกจ่าย</h4>
-                            <h2 class="mb-0">-</h2>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-prescription-bottle-alt fa-2x"></i>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-warning">@Model.Where(p => p.PatientType == "WARD").Count()</h3>
+                            <p class="text-muted">ผู้ป่วยใน (WARD)</p>
                         </div>
                     </div>
-                </div>
-                <div class="card-footer bg-dark">
-                    <small>จำนวนยาที่แจกจ่ายวันนี้</small>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h3 class="text-info">@Model.Where(p => p.Evaluations.Any()).Count()</h3>
+                            <p class="text-muted">มีประวัติการตรวจ</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        function editEvaluation(patientId) {
+            // This would typically get the latest record for the patient
+            alert('ฟีเจอร์การแก้ไขการประเมิน - ผู้ป่วย ID: ' + patientId);
+        }
+
+        function printEvaluation(patientId) {
+            // This would typically generate a PDF report
+            alert('ฟีเจอร์การพิมพ์รายงาน - ผู้ป่วย ID: ' + patientId);
+        }
+    </script>
+}
