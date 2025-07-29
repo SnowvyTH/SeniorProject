@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Project.Models;
 using Project.Models.Entity;
 using Project.Data;
+using System.Text.Json.Serialization;
 
 
 namespace Project.Controllers
@@ -129,6 +130,12 @@ namespace Project.Controllers
         {
             try
             {
+                // Debug logging
+                Console.WriteLine($"Form Name: {formName}");
+                Console.WriteLine($"Form Type: {formType}");
+                Console.WriteLine($"Questions JSON: {questionsJson}");
+                Console.WriteLine($"Interpreters JSON: {interpretersJson}");
+
                 var existingForm = await _db.Form
                     .FirstOrDefaultAsync(f => f.FormName!.ToLower() == formName.ToLower());
                     
@@ -154,11 +161,13 @@ namespace Project.Controllers
                         if (!string.IsNullOrEmpty(questionsJson))
                         {
                             var questionsData = System.Text.Json.JsonSerializer.Deserialize<List<QuestionData>>(questionsJson);
+                            Console.WriteLine($"Parsed {questionsData?.Count} questions");
                             
                             if (questionsData != null)
                             {
                                 foreach (var questionData in questionsData)
                                 {
+                                    Console.WriteLine($"Question: {questionData.QuestionText}");
                                     var question = new Question
                                     {
                                         QuestionText = questionData.QuestionText,
@@ -170,8 +179,10 @@ namespace Project.Controllers
 
                                     if (questionData.Options != null)
                                     {
+                                        Console.WriteLine($"Adding {questionData.Options.Count} options");
                                         foreach (var optionData in questionData.Options)
                                         {
+                                            Console.WriteLine($"Option: {optionData.OptionText}, Value: {optionData.Value}");
                                             var option = new Option
                                             {
                                                 OptionText = optionData.OptionText,
@@ -191,11 +202,14 @@ namespace Project.Controllers
                         if (!string.IsNullOrEmpty(interpretersJson))
                         {
                             var interpretersData = System.Text.Json.JsonSerializer.Deserialize<List<InterpreterData>>(interpretersJson);
+                            Console.WriteLine($"Parsed {interpretersData?.Count} interpreters");
                             
                             if (interpretersData != null)
                             {
                                 foreach (var interpreterData in interpretersData)
                                 {
+                                    Console.WriteLine($"Interpreter: Name={interpreterData.InterName}, Text={interpreterData.InterText}, Min={interpreterData.MinScore}, Max={interpreterData.MaxScore}");
+                                    
                                     var interName = string.IsNullOrWhiteSpace(interpreterData.InterName) 
                                         ? $"ระดับ {interpreterData.MinScore}-{interpreterData.MaxScore}"
                                         : interpreterData.InterName;
@@ -223,6 +237,7 @@ namespace Project.Controllers
                         // Rollback transaction เมื่อเกิดข้อผิดพลาด
                         await transaction.RollbackAsync();
                         Console.WriteLine($"Transaction Error: {ex.Message}");
+                        Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                         return Json(new { success = false, message = "เกิดข้อผิดพลาดในการบันทึกข้อมูล" });
                     }
                 }
@@ -232,6 +247,7 @@ namespace Project.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                 return Json(new { success = false, message = ex.Message });
             }
         }
@@ -333,22 +349,37 @@ namespace Project.Controllers
         // Helper classes for JSON deserialization
         public class QuestionData
         {
+            [JsonPropertyName("questionText")]
             public string? QuestionText { get; set; }
+            
+            [JsonPropertyName("section")]
             public string? Section { get; set; }
+            
+            [JsonPropertyName("options")]
             public List<OptionData>? Options { get; set; }
         }
 
         public class OptionData
         {
+            [JsonPropertyName("optionText")]
             public string? OptionText { get; set; }
+            
+            [JsonPropertyName("value")]
             public int? Value { get; set; }
         }
 
         public class InterpreterData
         {
+            [JsonPropertyName("interName")]
             public string? InterName { get; set; }
+            
+            [JsonPropertyName("interText")]
             public string? InterText { get; set; }
+            
+            [JsonPropertyName("minScore")]
             public int? MinScore { get; set; }
+            
+            [JsonPropertyName("maxScore")]
             public int? MaxScore { get; set; }
         }
 

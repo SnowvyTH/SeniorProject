@@ -443,38 +443,45 @@
             // Prepare questions data
             let questionsData = [];
             $('.question-item').each(function() {
-                let question = {
-                    questionText: $(this).find('.question-text').val(),
-                    section: $(this).find('.question-section').val() || null,
-                    options: []
-                };
+                let questionText = $(this).find('.question-text').val().trim();
                 
-                $(this).find('.option-item').each(function() {
-                    let optionText = $(this).find('.option-text').val();
-                    let optionValue = $(this).find('.option-value').val();
+                if (questionText) { // ตรวจสอบว่ามีคำถาม
+                    let question = {
+                        questionText: questionText,
+                        section: $(this).find('.question-section').val() || null,
+                        options: []
+                    };
                     
-                    if (optionText.trim()) {
-                        question.options.push({
-                            optionText: optionText,
-                            value: parseInt(optionValue) || 0
-                        });
+                    // เก็บข้อมูล options
+                    $(this).find('.option-item').each(function() {
+                        let optionText = $(this).find('.option-text').val().trim();
+                        let optionValue = $(this).find('.option-value').val();
+                        
+                        if (optionText) { // ตรวจสอบว่ามีข้อความตัวเลือก
+                            question.options.push({
+                                optionText: optionText,
+                                value: parseInt(optionValue) || 0
+                            });
+                        }
+                    });
+                    
+                    // เพิ่มคำถามเฉพาะเมื่อมี options
+                    if (question.options.length > 0) {
+                        questionsData.push(question);
                     }
-                });
-                
-                if (question.questionText.trim() && question.options.length > 0) {
-                    questionsData.push(question);
                 }
             });
             
-            // Prepare interpreters data (changed from resultSettings)
+            // Prepare interpreters data
             let interpretersData = [];
             $('.result-setting-item').each(function() {
                 let minScore = $(this).find('.min-score').val();
                 let maxScore = $(this).find('.max-score').val();
-                let interName = $(this).find('.result-name').val();
-                let interText = $(this).find('.result-text').val();
+                let interName = $(this).find('.result-name').val().trim();
+                let interText = $(this).find('.result-text').val().trim();
                 
-                if (minScore !== '' && maxScore !== '' && interName.trim() && interText.trim()) {
+                // ตรวจสอบให้ครบถ้วน
+                if (minScore && maxScore && interName && interText) {
                     interpretersData.push({
                         minScore: parseInt(minScore),
                         maxScore: parseInt(maxScore),
@@ -483,6 +490,9 @@
                     });
                 }
             });
+            
+            console.log('Questions Data:', questionsData); // Debug
+            console.log('Interpreters Data:', interpretersData); // Debug
             
             formData.append('questionsJson', JSON.stringify(questionsData));
             formData.append('interpretersJson', JSON.stringify(interpretersData));
