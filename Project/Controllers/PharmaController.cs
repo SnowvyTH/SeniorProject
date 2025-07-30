@@ -289,7 +289,7 @@ namespace Project.Controllers
 
             // Form Management API Actions
             [HttpGet]
-            public async Task<IActionResult> GetForms(string search = "")
+            public async Task<IActionResult> GetForms(string search = "", int? formType = null, string status = "")
             {
                 var query = _db.Form.AsQueryable();
 
@@ -297,6 +297,12 @@ namespace Project.Controllers
                 if (!string.IsNullOrEmpty(search))
                 {
                     query = query.Where(f => f.FormName != null && f.FormName.Contains(search));
+                }
+
+                // Apply form type filter
+                if (formType.HasValue)
+                {
+                    query = query.Where(f => f.FormType == formType.Value);
                 }
 
                 var forms = await query.Select(f => new
@@ -307,6 +313,26 @@ namespace Project.Controllers
                     questionCount = f.Questions.Count(),
                     evaluationCount = f.Evaluations.Count()
                 }).OrderBy(f => f.formID).ToListAsync();
+
+                // Apply status filter (after data retrieval)
+                if (!string.IsNullOrEmpty(status))
+                {
+                    switch (status)
+                    {
+                        case "withQuestions":
+                            forms = forms.Where(f => f.questionCount > 0).ToList();
+                            break;
+                        case "noQuestions":
+                            forms = forms.Where(f => f.questionCount == 0).ToList();
+                            break;
+                        case "hasEvaluations":
+                            forms = forms.Where(f => f.evaluationCount > 0).ToList();
+                            break;
+                        case "noEvaluations":
+                            forms = forms.Where(f => f.evaluationCount == 0).ToList();
+                            break;
+                    }
+                }
 
                 return Json(forms);
             }

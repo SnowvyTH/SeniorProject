@@ -16,17 +16,18 @@
     </div>
 
     <!-- Search and Filter Section -->
+    <div class="modern-card mb-4">
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-4">
-                    <label class="form-label">ค้นหาผู้ป่วย</label>
+                    <label class="form-label fw-bold">ค้นหาผู้ป่วย</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-search"></i></span>
                         <input type="text" class="form-control" id="searchInput" placeholder="ค้นหา HN, ชื่อ, หรือนามสกุล...">
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">ประเภทผู้ป่วย</label>
+                    <label class="form-label fw-bold">ประเภทผู้ป่วย</label>
                     <select class="form-select" id="patientTypeFilter">
                         <option value="">ทั้งหมด</option>
                         <option value="OPD">ผู้ป่วยนอก (OPD)</option>
@@ -34,7 +35,7 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">สถานะการประเมิน</label>
+                    <label class="form-label fw-bold">สถานะการประเมิน</label>
                     <select class="form-select" id="evaluationFilter">
                         <option value="">ทั้งหมด</option>
                         <option value="with">มีประวัติการประเมิน</option>
@@ -47,6 +48,8 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
 
 
 
@@ -151,6 +154,11 @@
 
 @section Styles {
     <style>
+        :root {
+            --mint-green: #51c3b7;
+            --dark-green: #05685e;
+        }
+
         .card-primary {
             background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
             color: white;
@@ -239,19 +247,22 @@
         }
 
         .modern-card {
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: none;
         }
 
         .modern-card .card-header {
-            border-radius: 8px 8px 0 0;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e0e6ed;
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
             font-weight: 600;
+            padding: 1rem 1.5rem;
         }
 
         .modern-card .card-body {
-            border-radius: 0 0 8px 8px;
+            padding: 1.5rem;
         }
 
         .btn {
@@ -260,9 +271,18 @@
 
         .form-control, .form-select {
             border-radius: 6px;
+            border: 1px solid #e0e6ed;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--mint-green);
+            box-shadow: 0 0 0 0.2rem rgba(81, 195, 183, 0.25);
         }
 
         .input-group-text {
+            background-color: var(--mint-green);
+            color: white;
+            border: 1px solid var(--mint-green);
             border-radius: 6px 0 0 6px;
         }
 

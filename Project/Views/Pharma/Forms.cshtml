@@ -12,7 +12,7 @@
             </h2>
             <p class="text-muted mb-0">เพิ่ม แก้ไข และจัดการฟอร์มประเมินในระบบ</p>
         </div>
-        <a href="@Url.Action("CreateForm", "Pharma")" class="btn btn-pharma">
+        <a href="@Url.Action("CreateForm", "Pharma")" class="btn btn-primary mt-4">
             <i class="fas fa-plus me-2"></i>สร้างแบบประเมินใหม่
         </a>
     </div>
@@ -20,20 +20,33 @@
    
 
     <!-- Search and Filter Section -->
-
+    <div class="modern-card mb-4">
+        <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-6">
+                    <label class="form-label fw-bold">ค้นหาฟอร์ม</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-search"></i></span>
                         <input type="text" class="form-control" id="searchInput" placeholder="ค้นหาชื่อฟอร์ม...">
                     </div>
                 </div>
-                <div class="col-md-6 d-flex align-items-end">
-                    <button type="button" class="btn btn-outline-secondary" onclick="clearSearch()">
-                        <i class="fas fa-times me-2"></i>ล้างการค้นหา
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">ประเภทแบบประเมิน</label>
+                    <select class="form-select" id="formTypeFilter">
+                        <option value="">ทุกประเภท</option>
+                        <option value="1">แบบประเมินทั่วไป</option>
+                        <option value="2">แบบประเมินข้อยาว</option>
+                        <option value="3">แบบประเมินหัวข้อใหญ่</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                        <i class="fas fa-times me-2"></i>ล้าง
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
 
 
     <!-- Forms Table -->
@@ -72,6 +85,37 @@
 
 @section Styles {
     <style>
+        .modern-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: none;
+        }
+
+        .input-group-text {
+            background-color: var(--mint-green);
+            color: white;
+            border: 1px solid var(--mint-green);
+            border-radius: 8px 0 0 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            border: none;
+        }
+
+        .modern-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .modern-card .card-header {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+
         .card-pharma {
             background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
             color: white;
@@ -120,41 +164,19 @@
             opacity: 0.7;
         }
 
-        .btn-pharma {
-            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-            border: none;
-            color: white;
-            font-weight: 500;
-        }
-
-        .btn-pharma:hover {
-            background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
-        }
-
-        .bg-pharma {
-            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%) !important;
-        }
-
-        .text-pharma {
-            color: #2196F3 !important;
-        }
-
-        .badge.bg-pharma {
-            background: #2196F3 !important;
-        }
-
         .table th {
             border-top: none;
             font-weight: 600;
             color: #495057;
         }
 
-        .form-label.required::after {
-            content: " *";
-            color: #dc3545;
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #e0e6ed;
+        }
+
+        .input-group .form-control {
+            border-radius: 0 8px 8px 0;
         }
 
         .action-buttons {
@@ -176,8 +198,12 @@
             loadForms();
             loadStats();
 
-            // Search functionality
+            // Search and filter functionality
             $('#searchInput').on('input', function() {
+                loadForms();
+            });
+
+            $('#formTypeFilter').on('change', function() {
                 loadForms();
             });
         });
@@ -200,8 +226,12 @@
             $('#noDataMessage').hide();
             
             const search = $('#searchInput').val();
-            
-            $.get('/Pharma/GetForms', { search: search })
+            const formType = $('#formTypeFilter').val();
+
+            $.get('/Pharma/GetForms', {
+                search: search,
+                formType: formType
+            })
                 .done(function(data) {
                     displayForms(data);
                     $('#formsCount').text(data.length + ' รายการ');
@@ -324,8 +354,10 @@
             });
         }
 
-        function clearSearch() {
+        function clearFilters() {
             $('#searchInput').val('');
+            $('#formTypeFilter').val('');
+            $('#statusFilter').val('');
             loadForms();
         }
 
