@@ -128,9 +128,14 @@
                     </div>
                     
                     <div class="d-flex justify-content-between align-items-center mt-4">
-                        <button type="button" class="btn btn-success btn-lg px-4 m-4" onclick="addQuestion()">
-                            <i class="fas fa-plus me-2"></i>เพิ่มคำถาม
-                        </button>
+                        <div>
+                            <button type="button" class="btn btn-success btn-lg px-4 m-4" onclick="addQuestion()" id="addQuestionBtn">
+                                <i class="fas fa-plus me-2"></i>เพิ่มคำถาม
+                            </button>
+                            <button type="button" class="btn btn-warning btn-lg px-4 m-4" onclick="addSection()" id="addSectionBtn" style="display: none;">
+                                <i class="fas fa-plus me-2"></i>เพิ่มหัวข้อใหญ่
+                            </button>
+                        </div>
                         <div>
                             <button type="button" class="btn btn-secondary me-2" onclick="prevStep()">
                                 <i class="fas fa-arrow-left me-2"></i>กลับ
@@ -209,9 +214,23 @@
                 $(this).find('.form-type-option').addClass('border-primary');
                 selectedFormType = $(this).data('type');
                 showPreview(selectedFormType);
+                
+                // Clear existing questions when form type changes
+                $('#questions-container').empty();
+                questionsCount = 0;
+                
+                // Show/hide appropriate buttons based on form type
+                if (selectedFormType === 3) {
+                    $('#addQuestionBtn').hide();
+                    $('#addSectionBtn').show();
+                    addSection(); // For type 3, start with section
+                } else {
+                    $('#addQuestionBtn').show();
+                    $('#addSectionBtn').hide();
+                    addQuestion(); // For type 1 and 2, start with question
+                }
             });
             
-            addQuestion();
             addResultSetting();
         });
         
@@ -302,32 +321,142 @@
             }
             
             if (currentStep === 2) {
-                if ($('.question-item').length === 0) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'กรุณาเพิ่มคำถาม',
-                        text: 'กรุณาเพิ่มคำถามอย่างน้อย 1 คำถาม',
-                        confirmButtonColor: '#51c3b7'
-                    });
-                    return;
-                }
-                
-                let QuestionNotFill = false;
-                $('.question-item').each(function() {
-                    if (!$(this).find('.question-text').val().trim()) {
-                        QuestionNotFill = true;
-                        return false;
+                // ตรวจสอบสำหรับประเภท 3 ที่ใช้ Section
+                if (selectedFormType === 3) {
+                    if ($('.section-item').length === 0) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'กรุณาเพิ่มหัวข้อใหญ่',
+                            text: 'กรุณาเพิ่มหัวข้อใหญ่อย่างน้อย 1 หัวข้อ',
+                            confirmButtonColor: '#51c3b7'
+                        });
+                        return;
                     }
-                });
-                
-                if (QuestionNotFill) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'กรุณากรอกคำถามให้ครบถ้วน',
-                        text: 'มีคำถามที่ยังไม่ได้กรอกข้อความ กรุณาตรวจสอบ',
-                        confirmButtonColor: '#51c3b7'
+                    
+                    let SectionNotFill = false;
+                    let QuestionNotFill = false;
+                    let OptionNotFill = false;
+                    
+                    $('.section-item').each(function() {
+                        let sectionName = $(this).find('.section-name').val().trim();
+                        if (!sectionName) {
+                            SectionNotFill = true;
+                            return false;
+                        }
+                        
+                        // ตรวจสอบว่ามีคำถามในหัวข้อนี้หรือไม่
+                        if ($(this).find('.question-in-section-item').length === 0) {
+                            QuestionNotFill = true;
+                            return false;
+                        }
+                        
+                        // ตรวจสอบคำถามในหัวข้อ
+                        $(this).find('.question-in-section-item').each(function() {
+                            if (!$(this).find('.question-text').val().trim()) {
+                                QuestionNotFill = true;
+                                return false;
+                            }
+                            
+                            // ตรวจสอบตัวเลือกและคะแนน
+                            $(this).find('.option-item').each(function() {
+                                let optionValue = $(this).find('.option-value').val();
+                                if (!optionValue) {
+                                    OptionNotFill = true;
+                                    return false;
+                                }
+                            });
+                            
+                            if (OptionNotFill) return false;
+                        });
+                        
+                        if (QuestionNotFill || OptionNotFill) return false;
                     });
-                    return;
+                    
+                    if (SectionNotFill) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'กรุณากรอกชื่อหัวข้อใหญ่ให้ครบถ้วน',
+                            text: 'มีหัวข้อใหญ่ที่ยังไม่ได้กรอกชื่อ กรุณาตรวจสอบ',
+                            confirmButtonColor: '#51c3b7'
+                        });
+                        return;
+                    }
+                    
+                    if (QuestionNotFill) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'กรุณาเพิ่มคำถามในแต่ละหัวข้อ',
+                            text: 'ทุกหัวข้อใหญ่ต้องมีคำถามอย่างน้อย 1 คำถาม',
+                            confirmButtonColor: '#51c3b7'
+                        });
+                        return;
+                    }
+                    
+                    if (OptionNotFill) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'กรุณากรอกคะแนนให้ครบถ้วน',
+                            text: 'มีตัวเลือกที่ยังไม่ได้กรอกคะแนน กรุณาตรวจสอบ',
+                            confirmButtonColor: '#51c3b7'
+                        });
+                        return;
+                    }
+                } else {
+                    // ตรวจสอบสำหรับประเภท 1 และ 2 (แบบเดิม)
+                    if ($('.question-item').length === 0) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'กรุณาเพิ่มคำถาม',
+                            text: 'กรุณาเพิ่มคำถามอย่างน้อย 1 คำถาม',
+                            confirmButtonColor: '#51c3b7'
+                        });
+                        return;
+                    }
+                    
+                    let QuestionNotFill = false;
+                    let OptionNotFill = false;
+                    $('.question-item').each(function() {
+                        if (!$(this).find('.question-text').val().trim()) {
+                            QuestionNotFill = true;
+                            return false;
+                        }
+                        
+                        // ตรวจสอบตัวเลือกและคะแนน
+                        $(this).find('.option-item').each(function() {
+                            let optionText = $(this).find('.option-text').val().trim();
+                            let optionValue = $(this).find('.option-value').val();
+                            
+                            // สำหรับประเภท 1 และ 2 ต้องมีข้อความและคะแนน
+                            if (selectedFormType === 1 || selectedFormType === 2) {
+                                if (!optionText || !optionValue) {
+                                    OptionNotFill = true;
+                                    return false;
+                                }
+                            }
+                        });
+                        
+                        if (OptionNotFill) return false;
+                    });
+                    
+                    if (QuestionNotFill) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'กรุณากรอกคำถามให้ครบถ้วน',
+                            text: 'มีคำถามที่ยังไม่ได้กรอกข้อความ กรุณาตรวจสอบ',
+                            confirmButtonColor: '#51c3b7'
+                        });
+                        return;
+                    }
+                    
+                    if (OptionNotFill) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'กรุณากรอกตัวเลือกให้ครบถ้วน',
+                            text: 'มีตัวเลือกที่ยังไม่ได้กรอกข้อความหรือคะแนน กรุณาตรวจสอบ',
+                            confirmButtonColor: '#51c3b7'
+                        });
+                        return;
+                    }
                 }
             }
             
@@ -348,30 +477,180 @@
         
         function addQuestion() {
             questionsCount++;
-            let questionHtml = `
-                <div class="question-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-question="${questionsCount}">
+            let questionHtml = '';
+            
+            if (selectedFormType === 1) {
+                // ประเภท 1: แบบประเมินมาตรฐาน
+                questionHtml = `
+                    <div class="question-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-question="${questionsCount}">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-primary mb-0"><i class="fas fa-question-circle me-2"></i>คำถามที่ ${questionsCount}</h6>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestion(${questionsCount})">
+                                <i class="fas fa-trash me-1"></i>ลบ
+                            </button>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control form-control-lg question-text" placeholder="กรอกคำถาม" required>
+                        </div>
+                        <div class="options-container" data-question="${questionsCount}">
+                            <div class="option-item mb-2">
+                                <div class="input-group">
+                                    <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ 1" required>
+                                    <input type="number" class="form-control option-value" style="max-width: 100px;" placeholder="คะแนน" required>
+                                    <button class="btn btn-outline-success" type="button" onclick="addOption(${questionsCount})">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            } else if (selectedFormType === 2) {
+                // ประเภท 2: แบบประเมินข้อความยาว
+                questionHtml = `
+                    <div class="question-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-question="${questionsCount}">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-success mb-0"><i class="fas fa-question-circle me-2"></i>คำถามที่ ${questionsCount}</h6>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestion(${questionsCount})">
+                                <i class="fas fa-trash me-1"></i>ลบ
+                            </button>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">คำถาม</label>
+                            <textarea class="form-control question-text" rows="3" placeholder="กรอกคำถาม (สามารถพิมพ์ข้อความยาวได้)" required></textarea>
+                        </div>
+                        <div class="options-container" data-question="${questionsCount}">
+                            <div class="option-item mb-3">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <label class="form-label">ตัวเลือกที่ 1</label>
+                                        <textarea class="form-control option-text" rows="2" placeholder="กรอกตัวเลือก (สามารถพิมพ์ข้อความยาวได้)" required></textarea>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">คะแนน</label>
+                                        <input type="number" class="form-control option-value" placeholder="คะแนน" required>
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button class="btn btn-outline-success w-100" type="button" onclick="addOption(${questionsCount})">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            }
+            
+            $('#questions-container').append(questionHtml);
+        }
+        
+        // ฟังก์ชันใหม่สำหรับเพิ่ม Section (ประเภท 3)
+        function addSection() {
+            questionsCount++;
+            let sectionHtml = `
+                <div class="section-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #fff8e1; border: 2px dashed #ffa726;" data-section="${questionsCount}">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="fw-bold text-primary mb-0"><i class="fas fa-question-circle me-2"></i>คำถามที่ ${questionsCount}</h6>
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestion(${questionsCount})">
+                        <h5 class="fw-bold text-warning mb-0"><i class="fas fa-folder-open me-2"></i>หัวข้อใหญ่ที่ ${questionsCount}</h5>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSection(${questionsCount})">
+                            <i class="fas fa-trash me-1"></i>ลบหัวข้อ
+                        </button>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">ชื่อหัวข้อใหญ่</label>
+                        <input type="text" class="form-control form-control-lg section-name" placeholder="เช่น ด้านกายภาพ, ด้านจิตใจ, ด้านสังคม" required>
+                    </div>
+                    
+                    <div class="questions-in-section" data-section="${questionsCount}">
+                        <!-- คำถามจะถูกเพิ่มที่นี่ -->
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-success" onclick="addQuestionToSection(${questionsCount})">
+                            <i class="fas fa-plus me-2"></i>เพิ่มคำถามในหัวข้อนี้
+                        </button>
+                    </div>
+                </div>`;
+            
+            $('#questions-container').append(sectionHtml);
+        }
+        
+        // ฟังก์ชันเพิ่มคำถามใน Section
+        function addQuestionToSection(sectionId) {
+            let sectionQuestionsCount = $(`.questions-in-section[data-section="${sectionId}"] .question-in-section-item`).length + 1;
+            let questionHtml = `
+                <div class="question-in-section-item mb-3 p-3 rounded-2" style="background: #ffffff; border: 1px solid #e0e0e0;" data-question="${sectionId}-${sectionQuestionsCount}">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-secondary mb-0"><i class="fas fa-question-circle me-2"></i>คำถามย่อยที่ ${sectionQuestionsCount}</h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestionFromSection('${sectionId}-${sectionQuestionsCount}')">
                             <i class="fas fa-trash me-1"></i>ลบ
                         </button>
                     </div>
                     <div class="mb-3">
-                        <input type="text" class="form-control form-control-lg question-text" placeholder="กรอกคำถาม">
+                        <input type="text" class="form-control question-text" placeholder="กรอกคำถาม" required>
                     </div>
-                    <div class="options-container" data-question="${questionsCount}">
+                    <div class="options-container" data-question="${sectionId}-${sectionQuestionsCount}">
                         <div class="option-item mb-2">
                             <div class="input-group">
-                                <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ 1">
-                                <input type="number" class="form-control option-value" style="max-width: 100px;" placeholder="คะแนน">
-                                <button class="btn btn-outline-success" type="button" onclick="addOption(${questionsCount})">
+                                <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ 1 (ไม่บังคับ)">
+                                <input type="number" class="form-control option-value" style="max-width: 100px;" placeholder="คะแนน" required>
+                                <button class="btn btn-outline-success" type="button" onclick="addOption('${sectionId}-${sectionQuestionsCount}')">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>`;
-            $('#questions-container').append(questionHtml);
+            
+            $(`.questions-in-section[data-section="${sectionId}"]`).append(questionHtml);
+        }
+        
+        // ฟังก์ชันลบ Section
+        function removeSection(sectionId) {
+            Swal.fire({
+                title: 'ต้องการลบหัวข้อใหญ่นี้หรือไม่?',
+                text: 'การดำเนินการนี้จะลบหัวข้อและคำถามทั้งหมดในหัวข้อนี้',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#51c3b7',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $(`.section-item[data-section="${sectionId}"]`).remove();
+                    Swal.fire({
+                        title: 'ลบสำเร็จ!',
+                        text: 'หัวข้อใหญ่ถูกลบแล้ว',
+                        icon: 'success',
+                        confirmButtonColor: '#51c3b7',
+                        timer: 1500
+                    });
+                }
+            });
+        }
+        
+        // ฟังก์ชันลบคำถามจาก Section
+        function removeQuestionFromSection(questionId) {
+            Swal.fire({
+                title: 'ต้องการลบคำถามนี้หรือไม่?',
+                text: 'การดำเนินการนี้ไม่สามารถยกเลิกได้',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#51c3b7',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $(`.question-in-section-item[data-question="${questionId}"]`).remove();
+                    Swal.fire({
+                        title: 'ลบสำเร็จ!',
+                        text: 'คำถามถูกลบแล้ว',
+                        icon: 'success',
+                        confirmButtonColor: '#51c3b7',
+                        timer: 1500
+                    });
+                }
+            });
         }
         
         function removeQuestion(questionId) {
@@ -401,16 +680,54 @@
         
         function addOption(questionId) {
             let optionCount = $(`.options-container[data-question="${questionId}"] .option-item`).length + 1;
-            let optionHtml = `
-                <div class="option-item mb-2">
-                    <div class="input-group">
-                        <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ ${optionCount}">
-                        <input type="number" class="form-control option-value" style="max-width: 100px;" placeholder="คะแนน" required>
-                        <button class="btn btn-outline-danger" type="button" onclick="$(this).closest('.option-item').remove()">
-                            <i class="fas fa-minus"></i>
-                        </button>
-                    </div>
-                </div>`;
+            let optionHtml = '';
+            
+            if (selectedFormType === 1) {
+                // ประเภท 1: แบบประเมินมาตรฐาน
+                optionHtml = `
+                    <div class="option-item mb-2">
+                        <div class="input-group">
+                            <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ ${optionCount}" required>
+                            <input type="number" class="form-control option-value" style="max-width: 100px;" placeholder="คะแนน" required>
+                            <button class="btn btn-outline-danger" type="button" onclick="$(this).closest('.option-item').remove()">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>`;
+            } else if (selectedFormType === 2) {
+                // ประเภท 2: แบบประเมินข้อความยาว
+                optionHtml = `
+                    <div class="option-item mb-3">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">ตัวเลือกที่ ${optionCount}</label>
+                                <textarea class="form-control option-text" rows="2" placeholder="กรอกตัวเลือก (สามารถพิมพ์ข้อความยาวได้)" required></textarea>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">คะแนน</label>
+                                <input type="number" class="form-control option-value" placeholder="คะแนน" required>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button class="btn btn-outline-danger w-100" type="button" onclick="$(this).closest('.option-item').remove()">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+            } else if (selectedFormType === 3) {
+                // ประเภท 3: แบบประเมินแบบมี Section
+                optionHtml = `
+                    <div class="option-item mb-2">
+                        <div class="input-group">
+                            <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ ${optionCount} (ไม่บังคับ)">
+                            <input type="number" class="form-control option-value" style="max-width: 100px;" placeholder="คะแนน" required>
+                            <button class="btn btn-outline-danger" type="button" onclick="$(this).closest('.option-item').remove()">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                        </div>
+                    </div>`;
+            }
+            
             $(`.options-container[data-question="${questionId}"]`).append(optionHtml);
         }
         
@@ -501,14 +818,28 @@
                 return;
             }
             
-            if ($('.question-item').length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'กรุณาเพิ่มคำถาม',
-                    text: 'กรุณาเพิ่มคำถามอย่างน้อย 1 คำถาม',
-                    confirmButtonColor: '#51c3b7'
-                });
-                return;
+            // ตรวจสอบสำหรับประเภท 3 ที่ใช้ Section
+            if (selectedFormType === 3) {
+                if ($('.section-item').length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'กรุณาเพิ่มหัวข้อใหญ่',
+                        text: 'กรุณาเพิ่มหัวข้อใหญ่อย่างน้อย 1 หัวข้อ',
+                        confirmButtonColor: '#51c3b7'
+                    });
+                    return;
+                }
+            } else {
+                // ตรวจสอบสำหรับประเภท 1 และ 2 (แบบเดิม)
+                if ($('.question-item').length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'กรุณาเพิ่มคำถาม',
+                        text: 'กรุณาเพิ่มคำถามอย่างน้อย 1 คำถาม',
+                        confirmButtonColor: '#51c3b7'
+                    });
+                    return;
+                }
             }
             
             if ($('.result-setting-item').length === 0) {
@@ -561,35 +892,75 @@
             
             // Prepare questions data
             let questionsData = [];
-            $('.question-item').each(function() {
-                let questionText = $(this).find('.question-text').val().trim();
-                
-                if (questionText) { // ตรวจสอบว่ามีคำถาม
-                    let question = {
-                        questionText: questionText,
-                        section: $(this).find('.question-section').val() || null,
-                        options: []
-                    };
+            
+            if (selectedFormType === 3) {
+                // สำหรับประเภท 3: ใช้ Section structure
+                $('.section-item').each(function() {
+                    let sectionName = $(this).find('.section-name').val().trim();
                     
-                    // เก็บข้อมูล options
-                    $(this).find('.option-item').each(function() {
-                        let optionText = $(this).find('.option-text').val().trim();
-                        let optionValue = $(this).find('.option-value').val();
-                        
-                        if (optionText) { // ตรวจสอบว่ามีข้อความตัวเลือก
-                            question.options.push({
-                                optionText: optionText,
-                                value: parseInt(optionValue) || 0
-                            });
-                        }
-                    });
-                    
-                    // เพิ่มคำถามเฉพาะเมื่อมี options
-                    if (question.options.length > 0) {
-                        questionsData.push(question);
+                    if (sectionName) {
+                        // เก็บคำถามในแต่ละ section
+                        $(this).find('.question-in-section-item').each(function() {
+                            let questionText = $(this).find('.question-text').val().trim();
+                            
+                            if (questionText) {
+                                let question = {
+                                    questionText: questionText,
+                                    section: sectionName, // เก็บชื่อ section
+                                    options: []
+                                };
+                                
+                                // เก็บข้อมูล options
+                                $(this).find('.option-item').each(function() {
+                                    let optionText = $(this).find('.option-text').val().trim();
+                                    let optionValue = $(this).find('.option-value').val();
+                                    
+                                    if (optionValue) { // ประเภท 3 ต้องมีคะแนนเท่านั้น
+                                        question.options.push({
+                                            optionText: optionText || '', // ตัวเลือกสามารถว่างได้
+                                            value: parseInt(optionValue) || 0
+                                        });
+                                    }
+                                });
+                                
+                                if (question.options.length > 0) {
+                                    questionsData.push(question);
+                                }
+                            }
+                        });
                     }
-                }
-            });
+                });
+            } else {
+                // สำหรับประเภท 1 และ 2: ใช้โครงสร้างเดิม
+                $('.question-item').each(function() {
+                    let questionText = $(this).find('.question-text').val().trim();
+                    
+                    if (questionText) {
+                        let question = {
+                            questionText: questionText,
+                            section: null,
+                            options: []
+                        };
+                        
+                        // เก็บข้อมูล options
+                        $(this).find('.option-item').each(function() {
+                            let optionText = $(this).find('.option-text').val().trim();
+                            let optionValue = $(this).find('.option-value').val();
+                            
+                            if (optionText && optionValue) {
+                                question.options.push({
+                                    optionText: optionText,
+                                    value: parseInt(optionValue) || 0
+                                });
+                            }
+                        });
+                        
+                        if (question.options.length > 0) {
+                            questionsData.push(question);
+                        }
+                    }
+                });
+            }
             
             // Prepare interpreters data
             let interpretersData = [];

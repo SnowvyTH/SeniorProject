@@ -3,20 +3,8 @@
   "WorkspaceRootPath": "D:\\Project\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\models\\entity\\form.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\models\\entity\\form.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\models\\entity\\evaluation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\models\\entity\\evaluation.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\pharma\\createform.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
       "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\pharma\\createform.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\home\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -35,51 +23,12 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Form.cs",
-              "DocumentMoniker": "D:\\Project\\Project\\Models\\Entity\\Form.cs",
-              "RelativeDocumentMoniker": "Project\\Models\\Entity\\Form.cs",
-              "ToolTip": "D:\\Project\\Project\\Models\\Entity\\Form.cs",
-              "RelativeToolTip": "Project\\Models\\Entity\\Form.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAsAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-30T07:50:22.468Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Evaluation.cs",
-              "DocumentMoniker": "D:\\Project\\Project\\Models\\Entity\\Evaluation.cs",
-              "RelativeDocumentMoniker": "Project\\Models\\Entity\\Evaluation.cs",
-              "ToolTip": "D:\\Project\\Project\\Models\\Entity\\Evaluation.cs",
-              "RelativeToolTip": "Project\\Models\\Entity\\Evaluation.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAAAAwA0AAAAiAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-30T07:45:36.498Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Home\\Index.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Home\\Index.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Home\\Index.cshtml",
-              "RelativeToolTip": "Project\\Views\\Home\\Index.cshtml",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAABgAAAAMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-07-30T06:31:59.528Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
               "Title": "CreateForm.cshtml",
               "DocumentMoniker": "D:\\Project\\Project\\Views\\Pharma\\CreateForm.cshtml",
               "RelativeDocumentMoniker": "Project\\Views\\Pharma\\CreateForm.cshtml",
               "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\CreateForm.cshtml",
               "RelativeToolTip": "Project\\Views\\Pharma\\CreateForm.cshtml",
-              "ViewState": "AgIAAI8AAAAAAAAAAAAUwJ4AAABUAAAAAAAAAA==",
+              "ViewState": "AgIAAGwDAAAAAAAAAAAAAIADAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-07-30T06:26:21.588Z",
               "EditorCaption": ""

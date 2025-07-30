@@ -43,7 +43,7 @@
                 <table class="table table-hover mb-0" id="formsTable">
                     <thead class="table-light">
                         <tr>
-                            <th width="8%">รหัส</th>
+                            <th width="8%">ลำดับ</th>
                             <th width="35%">ชื่อฟอร์ม</th>
                             <th width="15%">ประเภท</th>
                             <th width="12%">จำนวนคำถาม</th>
@@ -224,9 +224,10 @@
 
             forms.forEach(function(form) {
                 const formTypeText = getFormTypeText(form.formType);
+                let number = 1;
                 const row = `
                     <tr>
-                        <td><span class="badge bg-secondary">${form.formID}</span></td>
+                        <td><span class="badge bg-secondary">${number}</span></td>
                         <td>
                             <div class="fw-bold">${form.formName || 'ไม่ระบุ'}</div>
                         </td>
@@ -251,15 +252,15 @@
                     </tr>
                 `;
                 tbody.append(row);
+
             });
         }
 
         function getFormTypeText(formType) {
             switch(formType) {
                 case 1: return '<span class="badge bg-primary">แบบประเมินทั่วไป</span>';
-                case 2: return '<span class="badge bg-warning">แบบประเมินเฉพาะ</span>';
-                case 3: return '<span class="badge bg-success">แบบประเมินการรักษา</span>';
-                case 4: return '<span class="badge bg-info">แบบประเมินความพึงพอใจ</span>';
+                case 2: return '<span class="badge bg-danger">แบบประเมินข้อยาว</span>';
+                case 3: return '<span class="badge bg-success">แบบประเมินหัวข้อใหญ่</span>';
                 default: return '<span class="badge bg-secondary">ไม่ระบุ</span>';
             }
         }
