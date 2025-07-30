@@ -77,7 +77,8 @@ namespace Project.Controllers
                 {
                     formID = f.FormID,
                     formName = f.FormName,
-                    formType = f.FormType
+                    formType = f.FormType,
+                    scoring = f.Scoring
                 }).FirstOrDefaultAsync();
 
             if (form == null) return Json(new { success = false, message = "Form not found" });
@@ -126,13 +127,14 @@ namespace Project.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateForm([FromForm] string formName, [FromForm] int formType, [FromForm] string questionsJson, [FromForm] string interpretersJson)
+        public async Task<IActionResult> CreateForm([FromForm] string formName, [FromForm] int formType, [FromForm] string? scoring, [FromForm] string questionsJson, [FromForm] string interpretersJson)
         {
             try
             {
                 // Debug logging
                 Console.WriteLine($"Form Name: {formName}");
                 Console.WriteLine($"Form Type: {formType}");
+                Console.WriteLine($"Scoring Method: {scoring}");
                 Console.WriteLine($"Questions JSON: {questionsJson}");
                 Console.WriteLine($"Interpreters JSON: {interpretersJson}");
 
@@ -154,6 +156,7 @@ namespace Project.Controllers
                         {
                             FormName = formName,
                             FormType = formType,
+                            Scoring = scoring,
                             Questions = new List<Question>()
                         };
 
@@ -253,7 +256,7 @@ namespace Project.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateForm(int id, [FromForm] string formName, [FromForm] int formType)
+        public async Task<IActionResult> UpdateForm(int id, [FromForm] string formName, [FromForm] int formType, [FromForm] string? scoring)
         {
             try
             {
@@ -276,6 +279,7 @@ namespace Project.Controllers
 
                 form.FormName = formName;
                 form.FormType = formType;
+                form.Scoring = scoring;
 
                 await _db.SaveChangesAsync();
 

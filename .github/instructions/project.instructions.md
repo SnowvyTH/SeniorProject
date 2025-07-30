@@ -7,3 +7,4 @@ applyTo: '**'
 3. Make sure to overwrite each time so that it doesn't grow too big.
 4. There is a bug in the current version of Copilot that causes it to not read the output of commands correctly.
 5. This workaround allows you to read the output from the temporary file instead.
+6. If you want to run the project, you need to change the directory to the project folder with the command `cd d:\Project\Project; dotnet run` to run the project.
