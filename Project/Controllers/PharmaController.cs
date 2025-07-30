@@ -136,7 +136,10 @@ namespace Project.Controllers
             [HttpGet]
             public async Task<IActionResult> GetProvinces()
             {
-                var provinces = await _db.Province.OrderBy(p => p.PROVINCE_NAME).ToListAsync();
+                var provinces = await _db.Province
+                    .Where(p => p.PROVINCE_ID > 0)  // ไม่เอา ID = 0
+                    .OrderBy(p => p.PROVINCE_NAME)
+                    .ToListAsync();
                 return Json(provinces.Select(p => new
                 {
                     provinceID = p.PROVINCE_ID,
@@ -148,7 +151,7 @@ namespace Project.Controllers
             public async Task<IActionResult> GetAmphoes(int id)
             {
                 var amphoes = await _db.Amphur
-                    .Where(a => a.PROVINCE_ID == id)
+                    .Where(a => a.PROVINCE_ID == id && a.AMPHUR_ID > 0)  // ไม่เอา ID = 0
                     .OrderBy(a => a.AMPHUR_NAME)
                     .ToListAsync();
 
@@ -163,7 +166,7 @@ namespace Project.Controllers
             public async Task<IActionResult> GetTambons(int id)
             {
                 var districts = await _db.District
-                    .Where(d => d.AMPHUR_ID == id)
+                    .Where(d => d.AMPHUR_ID == id && d.DISTRICT_ID > 0)  // ไม่เอา ID = 0
                     .OrderBy(d => d.DISTRICT_NAME)
                     .ToListAsync();
 

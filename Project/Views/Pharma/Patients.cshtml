@@ -232,7 +232,7 @@
                         <div class="col-md-4">
                             <label class="form-label fw-bold">จังหวัด</label>
                             <select class="form-select" id="provinceId" onchange="loadAmphoes()" required>
-                                <option value="">เลือกจังหวัด</option>
+                                <option value="">--เลือกจังหวัด--</option>
                                 <!-- จะถูกเติมด้วย JavaScript -->
                             </select>
                         </div>
@@ -241,7 +241,7 @@
                         <div class="col-md-4">
                             <label class="form-label fw-bold">อำเภอ</label>
                             <select class="form-select" id="amphoeId" onchange="loadTambons()" required>
-                                <option value="">เลือกอำเภอ</option>
+                                <option value="">--เลือกอำเภอ--</option>
                                 <!-- จะถูกเติมด้วย JavaScript -->
                             </select>
                         </div>
@@ -250,7 +250,7 @@
                         <div class="col-md-4">
                             <label class="form-label fw-bold">ตำบล</label>
                             <select class="form-select" id="tambonId" required>
-                                <option value="">เลือกตำบล</option>
+                                <option value="">--เลือกตำบล--</option>
                                 <!-- จะถูกเติมด้วย JavaScript -->
                             </select>
                         </div>
@@ -644,19 +644,51 @@
                 return;
             }
 
+            // ตรวจสอบการเลือกข้อมูลที่จำเป็น
+            const titleId = $('#titleId').val();
+            const rightId = $('#rightId').val();
+            const tambonId = $('#tambonId').val();
+
+            if (!titleId || titleId === '0') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณาเลือกข้อมูล',
+                    text: 'กรุณาเลือกคำนำหน้า'
+                });
+                return;
+            }
+
+            if (!rightId || rightId === '0') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณาเลือกข้อมูล',
+                    text: 'กรุณาเลือกสิทธิ์การรักษา'
+                });
+                return;
+            }
+
+            if (!tambonId || tambonId === '0') {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณาเลือกข้อมูล',
+                    text: 'กรุณาเลือกตำบล'
+                });
+                return;
+            }
+
             const patientData = {
                 HN: $('#hn').val(),
                 CitizenID: $('#citizenId').val(),
-                TitleID: $('#titleId').val(),
+                TitleID: titleId,
                 FirstName: $('#firstName').val(),
                 LastName: $('#lastName').val(),
                 BirthDate: $('#birthDate').val(),
                 Weight: $('#weight').val() || null,
                 Height: $('#height').val() || null,
-                RightID: $('#rightId').val(),
+                RightID: rightId,
                 Phone: $('#phone').val(),
                 PatientType: $('#patientType').val(),
-                TambonID: $('#tambonId').val()
+                TambonID: tambonId
             };
 
             const url = isEditMode 
