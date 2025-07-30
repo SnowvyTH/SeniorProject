@@ -95,7 +95,14 @@
                                 <td>
                                     @if (!string.IsNullOrEmpty(patient.CitizenID))
                                     {
-                                        @($"XXXXXXXX{patient.CitizenID.Substring(patient.CitizenID.Length - 5)}")
+                                        @if (patient.CitizenID.Length >= 5)
+                                        {
+                                            @($"XXXXXXXX{patient.CitizenID.Substring(patient.CitizenID.Length - 5)}")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">ข้อมูลไม่ครบ</span>
+                                        }
                                     }
                                     else
                                     {
@@ -158,7 +165,7 @@
                         <!-- เลขบัตรประชาชน -->
                         <div class="col-md-6">
                             <label class="form-label fw-bold">เลขบัตรประชาชน</label>
-                            <input type="text" class="form-control" id="citizenId" placeholder="x-xxxx-xxxxx-xx-x" maxlength="13" required>
+                            <input type="text" class="form-control" id="citizenId" placeholder="x-xxxx-xxxxx-xx-x" maxlength="17" required oninput="formatCitizenId(this)">
                         </div>
                         
                         <!-- คำนำหน้า + ชื่อ -->
@@ -215,7 +222,7 @@
                         <!-- โทรศัพท์ -->
                         <div class="col-md-6">
                             <label class="form-label fw-bold">โทรศัพท์</label>
-                            <input type="tel" class="form-control" id="phone" placeholder="0x-xxxx-xxxx">
+                            <input type="tel" class="form-control" id="phone" placeholder="0x-xxxx-xxxx" maxlength="12" oninput="formatPhone(this)">
                         </div>
                         
                         <!-- ประเภทผู้ป่วย -->
@@ -505,6 +512,58 @@
             }
         }
 
+        // Format functions for input fields
+        function formatPhone(input) {
+            // เอาเฉพาะตัวเลข
+            let value = input.value.replace(/\D/g, '');
+            
+            // จำกัดไม่เกิน 10 ตัวเลข
+            if (value.length > 10) {
+                value = value.substring(0, 10);
+            }
+            
+            // Format เป็น 0x-xxxx-xxxx
+            if (value.length >= 6) {
+                value = value.substring(0, 2) + '-' + value.substring(2, 6) + '-' + value.substring(6);
+            } else if (value.length >= 2) {
+                value = value.substring(0, 2) + '-' + value.substring(2);
+            }
+            
+            input.value = value;
+        }
+
+        function formatCitizenId(input) {
+            // เอาเฉพาะตัวเลข
+            let value = input.value.replace(/\D/g, '');
+            
+            // จำกัดไม่เกิน 13 ตัวเลข
+            if (value.length > 13) {
+                value = value.substring(0, 13);
+            }
+            
+            // Format เป็น x-xxxx-xxxxx-xx-x
+            if (value.length >= 11) {
+                value = value.substring(0, 1) + '-' + value.substring(1, 5) + '-' + value.substring(5, 10) + '-' + value.substring(10, 12) + '-' + value.substring(12);
+            } else if (value.length >= 6) {
+                value = value.substring(0, 1) + '-' + value.substring(1, 5) + '-' + value.substring(5, 10) + '-' + value.substring(10);
+            } else if (value.length >= 2) {
+                value = value.substring(0, 1) + '-' + value.substring(1, 5) + '-' + value.substring(5);
+            } else if (value.length >= 1) {
+                value = value.substring(0, 1) + '-' + value.substring(1);
+            }
+            
+            input.value = value;
+        }
+
+        // Helper function to clean formatted data before sending to server
+        function cleanPhoneNumber(phone) {
+            return phone ? phone.replace(/\D/g, '') : '';
+        }
+
+        function cleanCitizenId(citizenId) {
+            return citizenId ? citizenId.replace(/\D/g, '') : '';
+        }
+
         function loadTitles() {
             $.ajax({
                 url: '@Url.Action("GetTitles", "Pharma")',
@@ -600,7 +659,11 @@
                 type: 'GET',
                 success: function(patient) {
                     $('#hn').val(patient.hn);
-                    $('#citizenId').val(patient.citizenID);
+                    // Format citizen ID and phone when loading data
+                    if (patient.citizenID) {
+                        $('#citizenId').val(patient.citizenID);
+                        formatCitizenId(document.getElementById('citizenId'));
+                    }
                     $('#titleId').val(patient.titleID);
                     $('#firstName').val(patient.firstName);
                     $('#lastName').val(patient.lastName);
@@ -608,7 +671,10 @@
                     $('#weight').val(patient.weight);
                     $('#height').val(patient.height);
                     $('#rightId').val(patient.rightID);
-                    $('#phone').val(patient.phone);
+                    if (patient.phone) {
+                        $('#phone').val(patient.phone);
+                        formatPhone(document.getElementById('phone'));
+                    }
                     $('#patientType').val(patient.patientType);
                     
                     if (patient.birthDate) {
@@ -678,7 +744,7 @@
 
             const patientData = {
                 HN: $('#hn').val(),
-                CitizenID: $('#citizenId').val(),
+                CitizenID: cleanCitizenId($('#citizenId').val()),
                 TitleID: titleId,
                 FirstName: $('#firstName').val(),
                 LastName: $('#lastName').val(),
@@ -686,7 +752,7 @@
                 Weight: $('#weight').val() || null,
                 Height: $('#height').val() || null,
                 RightID: rightId,
-                Phone: $('#phone').val(),
+                Phone: cleanPhoneNumber($('#phone').val()),
                 PatientType: $('#patientType').val(),
                 TambonID: tambonId
             };
