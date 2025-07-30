@@ -12,7 +12,7 @@
             </h2>
             <p class="text-muted mb-0">สร้างแบบประเมินสำหรับผู้ป่วยใหม่</p>
         </div>
-        <a href="@Url.Action("Forms", "Pharma")" class="btn btn-warning">
+        <a href="#" class="btn btn-warning" onclick="confirmGoBack()">
             <i class="fas fa-arrow-left me-2"></i>กลับไปหน้าแรก
         </a>
     </div>
@@ -162,9 +162,9 @@
                     <div class="m-4">
                         <label class="form-label fw-bold">วิธีการนับคะแนน</label>
                         <select class="form-select form-select-lg" id="scoringMethod">
-                            <option value="highest">นับจากตัวเลือกที่มีคะแนนสูงสุด</option>
+                            <option value="max">ตัวเลือกคะแนนมากสุด</option>
+                            <option value="min">ตัวเลือกคะแนนน้อยสุด</option>
                             <option value="sum">รวมคะแนนทั้งหมด</option>
-                            <option value="average">คะแนนเฉลี่ย</option>  
                         </select>
                     </div>
                     
@@ -283,6 +283,23 @@
                     break;
             }
             $('#preview-container').html(preview);
+        }
+        
+        function confirmGoBack() {
+            Swal.fire({
+                title: 'ต้องการย้อนกลับหรือไม่?',
+                text: 'ข้อมูลที่กรอกจะหายไปทั้งหมด',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#51c3b7',
+                confirmButtonText: 'ย้อนกลับ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '@Url.Action("Forms", "Pharma")';
+                }
+            });
         }
         
         function nextStep() {

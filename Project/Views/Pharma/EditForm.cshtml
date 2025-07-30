@@ -1,0 +1,1020 @@
+@{
+    ViewData["Title"] = "แก้ไขแบบประเมิน";
+    Layout = "~/Views/Shared/_PharmaLayout.cshtml";
+}
+
+<div class="container">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+        <div>
+            <h2 class="page-title">
+                <i class="fas fa-edit me-2"></i>แก้ไขแบบประเมิน
+            </h2>
+            <p class="text-muted mb-0">แก้ไขแบบประเมินที่มีอยู่ในระบบ</p>
+        </div>
+        <a href="#" class="btn btn-warning" onclick="confirmGoBack()">
+            <i class="fas fa-arrow-left me-2"></i>กลับไปหน้าจัดการ
+        </a>
+    </div>
+
+<div id="step1" class="step-container">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="modern-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>ข้อมูลพื้นฐาน</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4 m-3">
+                        <label for="formName" class="form-label fw-bold">ชื่อแบบประเมิน</label>
+                        <input type="text" class="form-control form-control-lg" id="formName" 
+                               placeholder="กรุณากรอกชื่อแบบประเมิน" onblur="checkFormNameExists()">
+                        <div id="formNameFeedback" class="invalid-feedback" style="display: none;"></div>
+                    </div>
+                    
+                    <div class="mb-4 m-3">
+                        <label class="form-label fw-bold">ประเภทแบบประเมิน</label>
+                        <p class="text-muted small mb-3">ประเภทแบบประเมินไม่สามารถเปลี่ยนแปลงได้หลังจากสร้างแล้ว</p>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-type-display" id="formType1" style="display: none;">
+                                    <div class="card h-100 border-primary">
+                                        <div class="card-body text-center p-4">
+                                            <div class="mb-3">
+                                                <i class="fas fa-list-ul fa-3x text-primary"></i>
+                                            </div>
+                                            <h5 class="card-title fw-bold">แบบประเมิน ประเภท 1</h5>
+                                            <p class="text-muted mb-4">แบบประเมินแบบมาตรฐาน</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-type-display" id="formType2" style="display: none;">
+                                    <div class="card h-100 border-success">
+                                        <div class="card-body text-center p-4">
+                                            <div class="mb-3">
+                                                <i class="fas fa-check-circle fa-3x text-success"></i>
+                                            </div>
+                                            <h5 class="card-title fw-bold">แบบประเมิน ประเภท 2</h5>
+                                            <p class="text-muted mb-0">แบบประเมินคำตอบมีข้อความยาว</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-type-display" id="formType3" style="display: none;">
+                                    <div class="card h-100 border-warning">
+                                        <div class="card-body text-center p-4">
+                                            <div class="mb-3">
+                                                <i class="fas fa-star fa-3x text-warning"></i>
+                                            </div>
+                                            <h5 class="card-title fw-bold">แบบประเมิน ประเภท 3</h5>
+                                            <p class="text-muted mb-4">แบบประเมินแบบมีหัวข้อใหญ่</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-pharma btn-lg px-4 mb-4 mx-4" onclick="nextStep()">
+                            ถัดไป <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="modern-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-lightbulb me-2"></i>คำแนะนำ</h5>
+                </div>
+                <div class="card-body pb-4">
+                    <div class="alert alert-info border-0 rounded-1 mb-0">
+                        <h6 class="fw-bold"><i class="fas fa-info-circle me-2"></i>การแก้ไข</h6>
+                        <ul class="mb-0 ps-3">
+                            <li>สามารถแก้ไขชื่อแบบประเมินได้</li>
+                            <li>สามารถแก้ไขคำถามและตัวเลือกได้</li>
+                            <li>ไม่สามารถเปลี่ยนประเภทแบบประเมินได้</li>
+                        </ul>
+                    </div>
+                    
+                    <div id="preview-container" class="text-center">
+                        <div class="text-muted mt-4">
+                            <i class="fa-solid fa-edit fa-2x"></i>
+                            <p class="mb-0">กำลังโหลดข้อมูลแบบประเมิน</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="step2" class="step-container" style="display: none;">
+    <div class="row">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-edit me-2"></i>แก้ไขคำถาม</h5>
+                </div>
+                <div class="card-body">
+                    <div id="questions-container">
+                       
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <div>
+                            <button type="button" class="btn btn-success btn-lg px-4 m-4" onclick="addQuestion()" id="addQuestionBtn">
+                                <i class="fas fa-plus me-2"></i>เพิ่มคำถาม
+                            </button>
+                            <button type="button" class="btn btn-warning btn-lg px-4 m-4" onclick="addSection()" id="addSectionBtn" style="display: none;">
+                                <i class="fas fa-plus me-2"></i>เพิ่มหัวข้อใหญ่
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary me-2" onclick="prevStep()">
+                                <i class="fas fa-arrow-left me-2"></i>กลับ
+                            </button>
+                            <button type="button" class="btn btn-pharma btn-lg px-4 mx-2 me-4" onclick="nextStep()">
+                                <i class="fas fa-arrow-right me-2"></i>ถัดไป
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="step3" class="step-container" style="display: none;">
+    <div class="row">
+        <div class="col-12">
+            <div class="modern-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-calculator me-2"></i>การตั้งค่าผลลัพธ์การประเมิน</h5>
+                </div>
+                <div class="card-body">
+                    <div class="m-4">
+                        <label class="form-label fw-bold">วิธีการนับคะแนน</label>
+                        <select class="form-select form-select-lg" id="scoringMethod">
+                            <option value="max">ตัวเลือกคะแนนมากสุด</option>
+                            <option value="min">ตัวเลือกคะแนนน้อยสุด</option>
+                            <option value="sum">รวมคะแนนทั้งหมด</option>
+                        </select>
+                    </div>
+                    
+                    <div class="result-settings">
+                        <div class="d-flex justify-content-between align-items-center m-4">
+                            <div>
+                                <h6 class="fw-bold mb-1"><i class="fas fa-star me-2"></i>ช่วงคะแนนและผลลัพธ์</h6>
+                                <p class="text-muted small mb-0">กำหนดช่วงคะแนนและการแปลผล</p>
+                            </div>
+                            <button type="button" class="btn btn-success" onclick="addResultSetting()">
+                                <i class="fas fa-plus me-2"></i>เพิ่มช่วงคะแนน
+                            </button>
+                        </div>
+                        
+                        <div id="result-settings-container">
+                            
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center m-4">
+                        <button type="button" class="btn btn-secondary mb-3" onclick="prevStep()">
+                            <i class="fas fa-arrow-left me-2"></i>กลับ
+                        </button>
+                        <button type="button" class="btn btn-success btn-lg px-4 mb-3" onclick="updateForm()">
+                            <i class="fas fa-save me-2"></i>บันทึกการแก้ไข
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div> <!-- Close container -->
+
+@section Scripts {
+    <script>
+        let currentStep = 1;
+        let selectedFormType = 0;
+        let questionsCount = 0;
+        let resultSettingsCount = 0;
+        let formId = 0;
+        let excludeFormId = 0; // สำหรับตรวจสอบชื่อซ้ำ
+        
+        $(document).ready(function() {
+            // Get formId from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            formId = urlParams.get('formId');
+            excludeFormId = formId;
+            
+            if (formId) {
+                loadFormData(formId);
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่พบข้อมูลฟอร์ม',
+                    text: 'กลับไปหน้าจัดการฟอร์มเพื่อเลือกฟอร์มที่ต้องการแก้ไข',
+                    confirmButtonColor: '#51c3b7'
+                }).then(() => {
+                    window.location.href = '@Url.Action("Forms", "Pharma")';
+                });
+            }
+        });
+        
+        function loadFormData(formId) {
+            // Show loading
+            Swal.fire({
+                title: 'กำลังโหลดข้อมูล...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            $.ajax({
+                url: '@Url.Action("GetForm", "Pharma")/' + formId,
+                type: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        populateFormData(response.data);
+                        Swal.close();
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: response.message || 'ไม่สามารถโหลดข้อมูลฟอร์มได้',
+                            confirmButtonColor: '#51c3b7'
+                        }).then(() => {
+                            window.location.href = '@Url.Action("Forms", "Pharma")';
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้',
+                        confirmButtonColor: '#51c3b7'
+                    }).then(() => {
+                        window.location.href = '@Url.Action("Forms", "Pharma")';
+                    });
+                }
+            });
+        }
+        
+        function confirmGoBack() {
+            Swal.fire({
+                title: 'ต้องการย้อนกลับหรือไม่?',
+                text: 'การแก้ไขที่ยังไม่ได้บันทึกจะหายไป',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#51c3b7',
+                confirmButtonText: 'ย้อนกลับ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '@Url.Action("Forms", "Pharma")';
+                }
+            });
+        }
+        
+        function populateFormData(formData) {
+            // Set form name
+            $('#formName').val(formData.formName);
+            
+            // Set form type (display only)
+            selectedFormType = formData.formType;
+            $('#formType' + selectedFormType).show();
+            
+            // Show/hide appropriate buttons
+            if (selectedFormType === 3) {
+                $('#addQuestionBtn').hide();
+                $('#addSectionBtn').show();
+            } else {
+                $('#addQuestionBtn').show();
+                $('#addSectionBtn').hide();
+            }
+            
+            // Load questions
+            loadQuestionsData(formData.questions);
+            
+            // Load scoring method
+            $('#scoringMethod').val(formData.scoring || 'highest');
+            
+            // Load interpreters
+            loadInterpretersData(formData.interpreters);
+            
+            showPreview(selectedFormType);
+        }
+        
+        function loadQuestionsData(questions) {
+            $('#questions-container').empty();
+            questionsCount = 0;
+            
+            if (selectedFormType === 3) {
+                // Group questions by section for type 3
+                const sections = {};
+                questions.forEach(question => {
+                    const section = question.section || 'ไม่ระบุหัวข้อ';
+                    if (!sections[section]) {
+                        sections[section] = [];
+                    }
+                    sections[section].push(question);
+                });
+                
+                Object.keys(sections).forEach(sectionName => {
+                    addSection(sectionName, sections[sectionName]);
+                });
+            } else {
+                // Load questions for type 1 and 2
+                questions.forEach(question => {
+                    addQuestion(question);
+                });
+            }
+        }
+        
+        function loadInterpretersData(interpreters) {
+            $('#result-settings-container').empty();
+            resultSettingsCount = 0;
+            
+            interpreters.forEach(interpreter => {
+                addResultSetting(interpreter);
+            });
+        }
+        
+        function checkFormNameExists() {
+            let formName = $('#formName').val().trim();
+            let feedbackDiv = $('#formNameFeedback');
+            let formNameInput = $('#formName');
+            
+            if (!formName) {
+                formNameInput.removeClass('is-invalid is-valid');
+                feedbackDiv.hide();
+                return;
+            }
+            
+            $.ajax({
+                url: '@Url.Action("CheckFormNameExists", "Pharma")',
+                type: 'POST',
+                data: JSON.stringify({ 
+                    formName: formName, 
+                    excludeFormId: excludeFormId
+                }),
+                contentType: 'application/json',
+                success: function(result) {
+                    if (result.exists) {
+                        formNameInput.removeClass('is-valid').addClass('is-invalid');
+                        feedbackDiv.text('ชื่อแบบประเมินนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น').show();
+                    } else {
+                        formNameInput.removeClass('is-invalid').addClass('is-valid');
+                        feedbackDiv.hide();
+                    }
+                },
+                error: function() {
+                    formNameInput.removeClass('is-invalid is-valid');
+                    feedbackDiv.hide();
+                }
+            });
+        }
+        
+        function showPreview(type) {
+            let preview = '';
+            switch(type) {
+                case 1:
+                    preview = '<div class="preview-card"><h6 class="fw-bold text-primary">แบบประเมิน ประเภท 1</h6><p class="text-muted mb-2">แบบประเมิน Mod-SAS</p><img class="img-thumbnail" src="/img/form1.png" /></div>';
+                    break;
+                case 2:
+                    preview = '<div class="preview-card"><h6 class="fw-bold text-success">แบบประเมิน ประเภท 2</h6><p class="text-muted mb-2">แบบประเมิน Mod-BARS</p><img class="img-thumbnail" src="/img/form2.png" /></div>';
+                    break;
+                case 3:
+                    preview = '<div class="preview-card"><h6 class="fw-bold text-warning">แบบประเมิน ประเภท 3</h6><p class="text-muted mb-2">แบบประเมิน Mod-AIMS</p><img class="img-thumbnail" src="/img/form3.png" /></div>';
+                    break;
+            }
+            $('#preview-container').html(preview);
+        }
+        
+        function nextStep() {
+            if (currentStep === 1) {
+                if (!$('#formName').val().trim()) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'กรุณากรอกชื่อแบบประเมิน',
+                        text: 'โปรดระบุชื่อแบบประเมินก่อนดำเนินการต่อ',
+                        confirmButtonColor: '#51c3b7'
+                    });
+                    return;
+                }
+                
+                // Check if form name is invalid (duplicate)
+                if ($('#formName').hasClass('is-invalid')) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ชื่อแบบประเมินซ้ำ',
+                        text: 'ชื่อแบบประเมินซ้ำกับที่มีอยู่แล้ว กรุณาเปลี่ยนชื่อก่อนดำเนินการต่อ',
+                        confirmButtonColor: '#51c3b7'
+                    });
+                    $('#formName').focus();
+                    return;
+                }
+            }
+            
+            if (currentStep === 2) {
+                // Validation logic similar to CreateForm
+                if (selectedFormType === 3) {
+                    if ($('.section-item').length === 0) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'กรุณาเพิ่มหัวข้อใหญ่',
+                            text: 'กรุณาเพิ่มหัวข้อใหญ่อย่างน้อย 1 หัวข้อ',
+                            confirmButtonColor: '#51c3b7'
+                        });
+                        return;
+                    }
+                } else {
+                    if ($('.question-item').length === 0) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'กรุณาเพิ่มคำถาม',
+                            text: 'กรุณาเพิ่มคำถามอย่างน้อย 1 คำถาม',
+                            confirmButtonColor: '#51c3b7'
+                        });
+                        return;
+                    }
+                }
+            }
+            
+            if (currentStep < 3) {
+                $('#step' + currentStep).hide();
+                currentStep++;
+                $('#step' + currentStep).show();
+            }
+        }
+        
+        function prevStep() {
+            if (currentStep > 1) {
+                $('#step' + currentStep).hide();
+                currentStep--;
+                $('#step' + currentStep).show();
+            }
+        }
+        
+        // Copy all the functions from CreateForm.cshtml for handling questions, sections, and options
+        function addQuestion(questionData = null) {
+            questionsCount++;
+            let questionHtml = '';
+            
+            if (selectedFormType === 1) {
+                // ประเภท 1: แบบประเมินมาตรฐาน
+                questionHtml = `
+                    <div class="question-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-question="${questionsCount}">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-primary mb-0"><i class="fas fa-question-circle me-2"></i>คำถามที่ ${questionsCount}</h6>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestion(${questionsCount})">
+                                <i class="fas fa-trash me-1"></i>ลบ
+                            </button>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" class="form-control form-control-lg question-text" placeholder="กรอกคำถาม" value="${questionData ? questionData.questionText : ''}" required>
+                        </div>
+                        <div class="options-container" data-question="${questionsCount}">
+                        </div>
+                    </div>`;
+            } else if (selectedFormType === 2) {
+                // ประเภท 2: แบบประเมินข้อความยาว
+                questionHtml = `
+                    <div class="question-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-question="${questionsCount}">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold text-success mb-0"><i class="fas fa-question-circle me-2"></i>คำถามที่ ${questionsCount}</h6>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestion(${questionsCount})">
+                                <i class="fas fa-trash me-1"></i>ลบ
+                            </button>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">คำถาม</label>
+                            <textarea class="form-control question-text" rows="3" placeholder="กรอกคำถาม (สามารถพิมพ์ข้อความยาวได้)" required>${questionData ? questionData.questionText : ''}</textarea>
+                        </div>
+                        <div class="options-container" data-question="${questionsCount}">
+                        </div>
+                    </div>`;
+            }
+            
+            $('#questions-container').append(questionHtml);
+            
+            // Load existing options if provided
+            if (questionData && questionData.options) {
+                questionData.options.forEach(option => {
+                    addOption(questionsCount, option);
+                });
+            } else {
+                // Add default option
+                addOption(questionsCount);
+            }
+        }
+        
+        function addSection(sectionName = '', questions = []) {
+            questionsCount++;
+            let sectionHtml = `
+                <div class="section-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #fff8e1; border: 2px dashed #ffa726;" data-section="${questionsCount}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold text-warning mb-0"><i class="fas fa-folder-open me-2"></i>หัวข้อใหญ่ที่ ${questionsCount}</h5>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeSection(${questionsCount})">
+                            <i class="fas fa-trash me-1"></i>ลบหัวข้อ
+                        </button>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">ชื่อหัวข้อใหญ่</label>
+                        <input type="text" class="form-control form-control-lg section-name" placeholder="เช่น ด้านกายภาพ, ด้านจิตใจ, ด้านสังคม" value="${sectionName}" required>
+                    </div>
+                    
+                    <div class="questions-in-section" data-section="${questionsCount}">
+                        <!-- คำถามจะถูกเพิ่มที่นี่ -->
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button type="button" class="btn btn-success" onclick="addQuestionToSection(${questionsCount})">
+                            <i class="fas fa-plus me-2"></i>เพิ่มคำถามในหัวข้อนี้
+                        </button>
+                    </div>
+                </div>`;
+            
+            $('#questions-container').append(sectionHtml);
+            
+            // Load existing questions in this section
+            questions.forEach(question => {
+                addQuestionToSection(questionsCount, question);
+            });
+        }
+        
+        function addQuestionToSection(sectionId, questionData = null) {
+            let sectionQuestionsCount = $(`.questions-in-section[data-section="${sectionId}"] .question-in-section-item`).length + 1;
+            let questionHtml = `
+                <div class="question-in-section-item mb-3 p-3 rounded-2" style="background: #ffffff; border: 1px solid #e0e0e0;" data-question="${sectionId}-${sectionQuestionsCount}">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-secondary mb-0"><i class="fas fa-question-circle me-2"></i>คำถามย่อยที่ ${sectionQuestionsCount}</h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestionFromSection('${sectionId}-${sectionQuestionsCount}')">
+                            <i class="fas fa-trash me-1"></i>ลบ
+                        </button>
+                    </div>
+                    <div class="mb-3">
+                        <input type="text" class="form-control question-text" placeholder="กรอกคำถาม" value="${questionData ? questionData.questionText : ''}" required>
+                    </div>
+                    <div class="options-container" data-question="${sectionId}-${sectionQuestionsCount}">
+                    </div>
+                </div>`;
+            
+            $(`.questions-in-section[data-section="${sectionId}"]`).append(questionHtml);
+            
+            // Load existing options if provided
+            if (questionData && questionData.options) {
+                questionData.options.forEach(option => {
+                    addOption(`${sectionId}-${sectionQuestionsCount}`, option);
+                });
+            } else {
+                // Add default option
+                addOption(`${sectionId}-${sectionQuestionsCount}`);
+            }
+        }
+        
+        function addOption(questionId, optionData = null) {
+            let optionCount = $(`.options-container[data-question="${questionId}"] .option-item`).length + 1;
+            let optionHtml = '';
+            
+            if (selectedFormType === 1) {
+                // ประเภท 1: แบบประเมินมาตรฐาน
+                optionHtml = `
+                    <div class="option-item mb-2">
+                        <div class="input-group">
+                            <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ ${optionCount}" value="${optionData ? optionData.optionText : ''}" required>
+                            <input type="number" class="form-control option-value" style="max-width: 100px;" placeholder="คะแนน" value="${optionData ? optionData.value : ''}" required>
+                            ${optionCount === 1 ? `<button class="btn btn-outline-success" type="button" onclick="addOption('${questionId}')"><i class="fas fa-plus"></i></button>` : ''}
+                            ${optionCount > 1 ? `<button class="btn btn-outline-danger" type="button" onclick="$(this).closest('.option-item').remove()"><i class="fas fa-minus"></i></button>` : ''}
+                        </div>
+                    </div>`;
+            } else if (selectedFormType === 2) {
+                // ประเภท 2: แบบประเมินข้อความยาว
+                optionHtml = `
+                    <div class="option-item mb-3">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <label class="form-label">ตัวเลือกที่ ${optionCount}</label>
+                                <textarea class="form-control option-text" rows="2" placeholder="กรอกตัวเลือก (สามารถพิมพ์ข้อความยาวได้)" required>${optionData ? optionData.optionText : ''}</textarea>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">คะแนน</label>
+                                <input type="number" class="form-control option-value" placeholder="คะแนน" value="${optionData ? optionData.value : ''}" required>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                ${optionCount === 1 ? `<button class="btn btn-outline-success w-100 mb-2" type="button" onclick="addOption('${questionId}')"><i class="fas fa-plus"></i></button>` : ''}
+                                ${optionCount > 1 ? `<button class="btn btn-outline-danger w-100" type="button" onclick="$(this).closest('.option-item').remove()"><i class="fas fa-minus"></i></button>` : ''}
+                            </div>
+                        </div>
+                    </div>`;
+            } else if (selectedFormType === 3) {
+                // ประเภท 3: แบบประเมินแบบมี Section
+                optionHtml = `
+                    <div class="option-item mb-2">
+                        <div class="input-group">
+                            <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ ${optionCount} (ไม่บังคับ)" value="${optionData ? optionData.optionText : ''}">
+                            <input type="number" class="form-control option-value" style="max-width: 100px;" placeholder="คะแนน" value="${optionData ? optionData.value : ''}" required>
+                            ${optionCount === 1 ? `<button class="btn btn-outline-success" type="button" onclick="addOption('${questionId}')"><i class="fas fa-plus"></i></button>` : ''}
+                            ${optionCount > 1 ? `<button class="btn btn-outline-danger" type="button" onclick="$(this).closest('.option-item').remove()"><i class="fas fa-minus"></i></button>` : ''}
+                        </div>
+                    </div>`;
+            }
+            
+            $(`.options-container[data-question="${questionId}"]`).append(optionHtml);
+        }
+        
+        function removeQuestion(questionId) {
+            Swal.fire({
+                title: 'ต้องการลบคำถามนี้หรือไม่?',
+                text: 'การดำเนินการนี้ไม่สามารถยกเลิกได้',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#51c3b7',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $(`.question-item[data-question="${questionId}"]`).remove();
+                    Swal.fire({
+                        title: 'ลบสำเร็จ!',
+                        text: 'คำถามถูกลบแล้ว',
+                        icon: 'success',
+                        confirmButtonColor: '#51c3b7',
+                        timer: 1500
+                    });
+                }
+            });
+        }
+        
+        function removeSection(sectionId) {
+            Swal.fire({
+                title: 'ต้องการลบหัวข้อใหญ่นี้หรือไม่?',
+                text: 'การดำเนินการนี้จะลบหัวข้อและคำถามทั้งหมดในหัวข้อนี้',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#51c3b7',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $(`.section-item[data-section="${sectionId}"]`).remove();
+                    Swal.fire({
+                        title: 'ลบสำเร็จ!',
+                        text: 'หัวข้อใหญ่ถูกลบแล้ว',
+                        icon: 'success',
+                        confirmButtonColor: '#51c3b7',
+                        timer: 1500
+                    });
+                }
+            });
+        }
+        
+        function removeQuestionFromSection(questionId) {
+            Swal.fire({
+                title: 'ต้องการลบคำถามนี้หรือไม่?',
+                text: 'การดำเนินการนี้ไม่สามารถยกเลิกได้',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#51c3b7',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $(`.question-in-section-item[data-question="${questionId}"]`).remove();
+                    Swal.fire({
+                        title: 'ลบสำเร็จ!',
+                        text: 'คำถามถูกลบแล้ว',
+                        icon: 'success',
+                        confirmButtonColor: '#51c3b7',
+                        timer: 1500
+                    });
+                }
+            });
+        }
+        
+        function addResultSetting(interpreterData = null) {
+            resultSettingsCount++;
+            let resultSettingHtml = `
+                <div class="result-setting-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-result-setting="${resultSettingsCount}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-primary mb-0"><i class="fas fa-chart-line me-2"></i>ช่วงคะแนนที่ ${resultSettingsCount}</h6>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeResultSetting(${resultSettingsCount})">
+                            <i class="fas fa-trash me-1"></i>ลบ
+                        </button>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">คะแนนต่ำสุด</label>
+                            <input type="number" class="form-control min-score" placeholder="0" min="0" value="${interpreterData ? interpreterData.minScore : ''}" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">คะแนนสูงสุด</label>
+                            <input type="number" class="form-control max-score" placeholder="10" min="0" value="${interpreterData ? interpreterData.maxScore : ''}" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">ระดับความรุนแรง</label>
+                            <input type="text" class="form-control result-name" placeholder="Mild, Moderate, Severe" value="${interpreterData ? interpreterData.interName : ''}">
+                        </div>
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold">แนวทางปฎิบัติ</label>
+                            <textarea class="form-control result-text" rows="2" placeholder="Consult แพทย์">${interpreterData ? interpreterData.interText : ''}</textarea>
+                        </div>
+                    </div>
+                </div>`;
+            $('#result-settings-container').append(resultSettingHtml);
+        }
+        
+        function removeResultSetting(resultSettingId) {
+            Swal.fire({
+                title: 'ต้องการลบการตั้งค่าผลลัพธ์นี้หรือไม่?',
+                text: 'การดำเนินการนี้ไม่สามารถยกเลิกได้',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#51c3b7',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $(`.result-setting-item[data-result-setting="${resultSettingId}"]`).remove();
+                    Swal.fire({
+                        title: 'ลบสำเร็จ!',
+                        text: 'การตั้งค่าผลลัพธ์ถูกลบแล้ว',
+                        icon: 'success',
+                        confirmButtonColor: '#51c3b7',
+                        timer: 1500
+                    });
+                }
+            });
+        }
+        
+        function updateForm() {
+            // Similar to saveForm but for updating
+            if (!$('#formName').val().trim()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณากรอกชื่อแบบประเมิน',
+                    confirmButtonColor: '#51c3b7'
+                });
+                return;
+            }
+            
+            // Check for duplicate form name
+            if ($('#formName').hasClass('is-invalid')) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ชื่อแบบประเมินซ้ำ',
+                    text: 'ชื่อแบบประเมินซ้ำกับที่มีอยู่แล้ว กรุณาเปลี่ยนชื่อ',
+                    confirmButtonColor: '#51c3b7'
+                });
+                return;
+            }
+            
+            // Validate questions
+            if (selectedFormType === 3) {
+                if ($('.section-item').length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'กรุณาเพิ่มหัวข้อใหญ่',
+                        text: 'กรุณาเพิ่มหัวข้อใหญ่อย่างน้อย 1 หัวข้อ',
+                        confirmButtonColor: '#51c3b7'
+                    });
+                    return;
+                }
+            } else {
+                if ($('.question-item').length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'กรุณาเพิ่มคำถาม',
+                        text: 'กรุณาเพิ่มคำถามอย่างน้อย 1 คำถาม',
+                        confirmButtonColor: '#51c3b7'
+                    });
+                    return;
+                }
+            }
+
+            // Validate result settings
+            if ($('.result-setting-item').length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณาเพิ่มการตั้งค่าผลลัพธ์',
+                    text: 'กรุณาเพิ่มช่วงคะแนนและผลลัพธ์อย่างน้อย 1 ช่วง',
+                    confirmButtonColor: '#51c3b7'
+                });
+                return;
+            }
+            
+            // Show loading
+            Swal.fire({
+                title: 'กำลังบันทึก...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Prepare questions data
+            let questionsData = [];
+            
+            if (selectedFormType === 3) {
+                // Type 3: Section-based
+                $('.section-item').each(function() {
+                    let sectionName = $(this).find('.section-name').val();
+                    $(this).find('.question-in-section-item').each(function() {
+                        let questionText = $(this).find('.question-text').val();
+                        let questionId = $(this).data('question');
+                        let options = [];
+                        
+                        $(this).find('.option-item').each(function() {
+                            let optionText = $(this).find('.option-text').val();
+                            let optionValue = $(this).find('.option-value').val();
+                            if (optionValue) {
+                                options.push({
+                                    optionText: optionText || '',
+                                    value: parseInt(optionValue)
+                                });
+                            }
+                        });
+                        
+                        if (questionText.trim()) {
+                            questionsData.push({
+                                questionText: questionText,
+                                section: sectionName,
+                                options: options
+                            });
+                        }
+                    });
+                });
+            } else {
+                // Type 1 and 2: Standard questions
+                $('.question-item').each(function() {
+                    let questionText = $(this).find('.question-text').val();
+                    let options = [];
+                    
+                    $(this).find('.option-item').each(function() {
+                        let optionText = $(this).find('.option-text').val();
+                        let optionValue = $(this).find('.option-value').val();
+                        if (optionText.trim() && optionValue) {
+                            options.push({
+                                optionText: optionText,
+                                value: parseInt(optionValue)
+                            });
+                        }
+                    });
+                    
+                    if (questionText.trim() && options.length > 0) {
+                        questionsData.push({
+                            questionText: questionText,
+                            section: null,
+                            options: options
+                        });
+                    }
+                });
+            }
+            
+            // Prepare interpreters data
+            let interpretersData = [];
+            $('.result-setting-item').each(function() {
+                let minScore = $(this).find('.min-score').val();
+                let maxScore = $(this).find('.max-score').val();
+                let interName = $(this).find('.result-name').val();
+                let interText = $(this).find('.result-text').val();
+                
+                if (minScore && maxScore) {
+                    interpretersData.push({
+                        minScore: parseInt(minScore),
+                        maxScore: parseInt(maxScore),
+                        interName: interName || '',
+                        interText: interText || ''
+                    });
+                }
+            });
+            
+            let formData = new FormData();
+            formData.append('formId', formId);
+            formData.append('formName', $('#formName').val());
+            formData.append('formType', selectedFormType);
+            formData.append('scoring', $('#scoringMethod').val());
+            formData.append('questionsJson', JSON.stringify(questionsData));
+            formData.append('interpretersJson', JSON.stringify(interpretersData));
+            
+            $.ajax({
+                url: '@Url.Action("UpdateForm", "Pharma")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(result) {
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'บันทึกสำเร็จ!',
+                            text: 'แก้ไขแบบประเมินเรียบร้อยแล้ว',
+                            confirmButtonColor: '#51c3b7'
+                        }).then(() => {
+                            window.location.href = '@Url.Action("Forms", "Pharma")';
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: 'เกิดข้อผิดพลาดในการบันทึก: ' + result.message,
+                            confirmButtonColor: '#51c3b7'
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'เกิดข้อผิดพลาดในการบันทึก: ' + error,
+                        confirmButtonColor: '#51c3b7'
+                    });
+                }
+            });
+        }
+    </script>
+    
+    <style>
+        .form-type-display {
+            opacity: 0.6;
+        }
+        
+        .question-item, .result-setting-item, .section-item {
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+        
+        .question-item:hover, .result-setting-item:hover, .section-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .step-container {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .btn-pharma {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            border: none;
+            color: white;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-pharma:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(81, 195, 183, 0.3);
+            color: white;
+        }
+        
+        .form-control:focus {
+            border-color: var(--mint-green);
+            box-shadow: 0 0 0 0.2rem rgba(81, 195, 183, 0.25);
+        }
+        
+        .form-select:focus {
+            border-color: var(--mint-green);
+            box-shadow: 0 0 0 0.2rem rgba(81, 195, 183, 0.25);
+        }
+        
+        .container {
+            max-width: 1200px;
+        }
+        
+        .preview-card {
+            border: 2px dashed #dee2e6;
+            padding: 20px;
+            border-radius: 10px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        
+        :root {
+            --mint-green: #51c3b7;
+            --dark-green: #05685e;
+        }
+    </style>
+}

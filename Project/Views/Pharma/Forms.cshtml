@@ -170,6 +170,7 @@
 }
 
 @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
             loadForms();
@@ -222,12 +223,12 @@
                 return;
             }
 
-            forms.forEach(function(form) {
+            forms.forEach(function(form, index) {
                 const formTypeText = getFormTypeText(form.formType);
-                let number = 1;
+                const rowNumber = index + 1; // ลำดับเริ่มจาก 1
                 const row = `
                     <tr>
-                        <td><span class="badge bg-secondary">${form.formID}</span></td>
+                        <td><span class="badge bg-secondary">${rowNumber}</span></td>
                         <td>
                             <div class="fw-bold">${form.formName || 'ไม่ระบุ'}</div>
                         </td>
@@ -240,7 +241,7 @@
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <a href="/Pharma/CreateForm?editId=${form.formID}" class="btn btn-outline-primary btn-sm" title="แก้ไข">
+                                <a href="/Pharma/EditForm?formId=${form.formID}" class="btn btn-outline-primary btn-sm" title="แก้ไข">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <button type="button" class="btn btn-outline-danger btn-sm" 
@@ -266,24 +267,61 @@
         }
 
         function deleteForm(formId, formName) {
-            if (confirm(`คุณต้องการลบฟอร์ม "${formName}" หรือไม่?\n\nการลบจะไม่สามารถกู้คืนได้`)) {
-                $.ajax({
-                    url: '/Pharma/DeleteForm/' + formId,
-                    type: 'DELETE',
-                    success: function(response) {
-                        if (response.success) {
-                            showSuccess('ลบฟอร์มเรียบร้อยแล้ว');
-                            loadForms();
-                            loadStats();
-                        } else {
-                            showError(response.message);
+            Swal.fire({
+                title: 'ต้องการลบฟอร์มนี้หรือไม่?',
+                text: `ฟอร์ม "${formName}" และข้อคำถามตัวเลือกทั้งหมดจะถูกลบออก`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'กำลังลบ...',
+                        text: 'กรุณารอสักครู่',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
                         }
-                    },
-                    error: function() {
-                        showError('เกิดข้อผิดพลาดในการลบฟอร์ม');
-                    }
-                });
-            }
+                    });
+                    
+                    $.ajax({
+                        url: '/Pharma/DeleteForm/' + formId,
+                        type: 'DELETE',
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'ลบสำเร็จ!',
+                                    text: 'ลบฟอร์มเรียบร้อยแล้ว',
+                                    confirmButtonColor: '#198754'
+                                }).then(() => {
+                                    loadForms();
+                                    loadStats();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'เกิดข้อผิดพลาด',
+                                    text: response.message || 'ไม่สามารถลบฟอร์มได้',
+                                    confirmButtonColor: '#dc3545'
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    });
+                }
+            });
         }
 
         function clearSearch() {
