@@ -1,5 +1,430 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "จัดการสิทธิ์การรักษา";
+    Layout = "~/Views/Shared/_PharmaLayout.cshtml";
+}
+
+<div class="container">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">
+                <i class="fas fa-id-card me-2 mt-4"></i>จัดการสิทธิ์การรักษา
+            </h2>
+            <p class="text-muted mb-0">เพิ่ม แก้ไข และจัดการสิทธิ์การรักษาในระบบ</p>
+        </div>
+        <button type="button" class="btn btn-primary mt-4" onclick="openAddTreatmentModal()">
+            <i class="fas fa-plus me-2"></i>เพิ่มสิทธิ์ใหม่
+        </button>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="modern-card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-10">
+                    <label class="form-label fw-bold">ค้นหาสิทธิ์การรักษา</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchInput" placeholder="ค้นหาชื่อสิทธิ์การรักษา...">
+                    </div>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                        <i class="fas fa-times me-2"></i>ล้าง
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Treatments Table -->
+    <div class="modern-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="treatmentsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="15%">ID</th>
+                            <th width="65%">ชื่อสิทธิ์การรักษา</th>
+                            <th width="20%">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="loadingSpinner" class="text-center p-4" style="display: none;">
+                <div class="spinner-border text-pharma" role="status">
+                    <span class="visually-hidden">กำลังโหลด...</span>
+                </div>
+            </div>
+            <div id="noDataMessage" class="text-center p-4" style="display: none;">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">ไม่พบข้อมูลสิทธิ์การรักษา</h5>
+                <p class="text-muted">ลองเพิ่มสิทธิ์ใหม่หรือปรับเปลี่ยนการค้นหา</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Treatment Modal -->
+<div class="modal fade" id="treatmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="treatmentModalTitle">
+                    <i class="fas fa-id-card me-2"></i>ข้อมูลสิทธิ์การรักษา
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="treatmentForm">
+                    <input type="hidden" id="treatmentId" value="0">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ชื่อสิทธิ์การรักษา</label>
+                        <input type="text" class="form-control" id="treatmentName" placeholder="กรอกชื่อสิทธิ์การรักษา" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-primary" onclick="saveTreatment()">
+                    <i class="fas fa-save me-2"></i>บันทึก
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        :root {
+            --mint-green: #51c3b7;
+            --dark-green: #05685e;
+        }
+
+        .modern-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: none;
+        }
+
+        .modern-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .input-group-text {
+            background-color: var(--mint-green);
+            color: white;
+            border: 1px solid var(--mint-green);
+            border-radius: 8px 0 0 8px;
+        }
+
+        .input-group .form-control {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--dark-green) 0%, var(--mint-green) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(81, 195, 183, 0.3);
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #e0e6ed;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--mint-green);
+            box-shadow: 0 0 0 0.2rem rgba(81, 195, 183, 0.25);
+        }
+
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+            background-color: #f8f9fa;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(81, 195, 183, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+
+        .page-title {
+            color: var(--dark-green);
+            font-weight: 700;
+        }
+
+        .spinner-border.text-pharma {
+            color: var(--mint-green) !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        let isEditMode = false;
+        let currentTreatmentId = null;
+
+        $(document).ready(function() {
+            loadTreatments();
+            setupFilters();
+        });
+
+        function setupFilters() {
+            $('#searchInput').on('input', function() {
+                loadTreatments();
+            });
+        }
+
+        function loadTreatments() {
+            $('#loadingSpinner').show();
+            $('#noDataMessage').hide();
+            
+            const search = $('#searchInput').val();
+
+            $.get('/Pharma/GetTreatments', {
+                search: search
+            })
+                .done(function(data) {
+                    displayTreatments(data);
+                })
+                .fail(function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถโหลดข้อมูลสิทธิ์การรักษาได้'
+                    });
+                })
+                .always(function() {
+                    $('#loadingSpinner').hide();
+                });
+        }
+
+        function displayTreatments(treatments) {
+            const tbody = $('#treatmentsTable tbody');
+            tbody.empty();
+
+            if (treatments.length === 0) {
+                $('#noDataMessage').show();
+                return;
+            }
+
+            treatments.forEach(function(treatment) {
+                const row = `
+                    <tr>
+                        <td class="fw-bold text-primary">${treatment.rightID}</td>
+                        <td>
+                            <div class="fw-bold">${treatment.rightName || 'ไม่ระบุ'}</div>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button type="button" class="btn btn-outline-warning btn-sm" 
+                                        onclick="openEditTreatmentModal(${treatment.rightID}, '${treatment.rightName}')" title="แก้ไข">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-danger btn-sm" 
+                                        onclick="deleteTreatment(${treatment.rightID}, '${treatment.rightName}')" title="ลบ">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        function openAddTreatmentModal() {
+            isEditMode = false;
+            currentTreatmentId = null;
+            $('#treatmentModalTitle').html('<i class="fas fa-plus me-2"></i>เพิ่มสิทธิ์การรักษาใหม่');
+            clearTreatmentForm();
+            $('#treatmentModal').modal('show');
+        }
+
+        function openEditTreatmentModal(id, name) {
+            isEditMode = true;
+            currentTreatmentId = id;
+            $('#treatmentModalTitle').html('<i class="fas fa-edit me-2"></i>แก้ไขข้อมูลสิทธิ์การรักษา');
+            $('#treatmentId').val(id);
+            $('#treatmentName').val(name);
+            $('#treatmentModal').modal('show');
+        }
+
+        function clearTreatmentForm() {
+            $('#treatmentForm')[0].reset();
+            $('#treatmentId').val('0');
+        }
+
+        function saveTreatment() {
+            if (!$('#treatmentForm')[0].checkValidity()) {
+                $('#treatmentForm')[0].reportValidity();
+                return;
+            }
+
+            const treatmentName = $('#treatmentName').val().trim();
+            
+            if (!treatmentName) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณากรอกข้อมูล',
+                    text: 'กรุณากรอกชื่อสิทธิ์การรักษา'
+                });
+                return;
+            }
+
+            const treatmentData = {
+                RightID: isEditMode ? currentTreatmentId : 0,
+                RightName: treatmentName
+            };
+
+            const url = isEditMode 
+                ? '/Pharma/UpdateTreatment'
+                : '/Pharma/CreateTreatment';
+
+            // Show loading
+            Swal.fire({
+                title: isEditMode ? 'กำลังแก้ไข...' : 'กำลังเพิ่ม...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: JSON.stringify(treatmentData),
+                contentType: 'application/json',
+                success: function(result) {
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ!',
+                            text: isEditMode ? 'แก้ไขข้อมูลเรียบร้อยแล้ว' : 'เพิ่มสิทธิ์การรักษาเรียบร้อยแล้ว',
+                            confirmButtonColor: '#198754'
+                        }).then(() => {
+                            $('#treatmentModal').modal('hide');
+                            loadTreatments();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: result.message || 'ไม่สามารถบันทึกข้อมูลได้'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้'
+                    });
+                }
+            });
+        }
+
+        function deleteTreatment(id, name) {
+            Swal.fire({
+                title: 'ต้องการลบสิทธิ์การรักษานี้หรือไม่?',
+                text: `สิทธิ์การรักษา "${name}" จะถูกลบออกจากระบบ`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'กำลังลบ...',
+                        text: 'กรุณารอสักครู่',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    $.ajax({
+                        url: '/Pharma/DeleteTreatment/' + id,
+                        type: 'DELETE',
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'ลบสำเร็จ!',
+                                    text: 'ลบสิทธิ์การรักษาเรียบร้อยแล้ว',
+                                    confirmButtonColor: '#198754'
+                                }).then(() => {
+                                    loadTreatments();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'เกิดข้อผิดพลาด',
+                                    text: response.message || 'ไม่สามารถลบสิทธิ์การรักษาได้'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        function clearFilters() {
+            $('#searchInput').val('');
+            loadTreatments();
+        }
+    </script>
 }

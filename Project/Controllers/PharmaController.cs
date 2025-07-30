@@ -67,6 +67,14 @@ namespace Project.Controllers
                 return View();
             }
 
+            public IActionResult Treatments()
+            {
+                ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
+                ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
+
+                return View();
+            }
+
             public async Task<IActionResult> Patients()
             {
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
@@ -787,6 +795,136 @@ namespace Project.Controllers
                                   (request.ExcludeFormId == null || f.FormID != request.ExcludeFormId));
 
                 return Json(new { exists = exists });
+            }
+
+            // Treatment CRUD methods
+            [HttpGet]
+            public async Task<IActionResult> GetTreatments(string search = "")
+            {
+                var query = _db.Treatment.AsQueryable();
+
+                // Apply search filter
+                if (!string.IsNullOrEmpty(search))
+                {
+                    query = query.Where(t => t.TreatmentName != null && t.TreatmentName.Contains(search));
+                }
+
+                var treatments = await query.Select(t => new
+                {
+                    rightID = t.TreatmentID,
+                    rightName = t.TreatmentName
+                }).OrderBy(t => t.rightID).ToListAsync();
+
+                return Json(treatments);
+            }
+
+            [HttpPost]
+            public async Task<IActionResult> CreateTreatment([FromBody] TreatmentCreateModel model)
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(model.RightName))
+                    {
+                        return Json(new { success = false, message = "กรุณากรอกชื่อสิทธิ์การรักษา" });
+                    }
+
+                    // Check if treatment name already exists
+                    var existingTreatment = await _db.Treatment
+                        .FirstOrDefaultAsync(t => t.TreatmentName == model.RightName);
+
+                    if (existingTreatment != null)
+                    {
+                        return Json(new { success = false, message = "ชื่อสิทธิ์การรักษานี้มีอยู่แล้ว" });
+                    }
+
+                    var treatment = new Treatment
+                    {
+                        TreatmentName = model.RightName
+                    };
+
+                    _db.Treatment.Add(treatment);
+                    await _db.SaveChangesAsync();
+
+                    return Json(new { success = true, message = "เพิ่มสิทธิ์การรักษาสำเร็จ" });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = "เกิดข้อผิดพลาด: " + ex.Message });
+                }
+            }
+
+            [HttpPost]
+            public async Task<IActionResult> UpdateTreatment([FromBody] TreatmentCreateModel model)
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(model.RightName))
+                    {
+                        return Json(new { success = false, message = "กรุณากรอกชื่อสิทธิ์การรักษา" });
+                    }
+
+                    var treatment = await _db.Treatment.FindAsync(model.RightID);
+                    if (treatment == null)
+                    {
+                        return Json(new { success = false, message = "ไม่พบข้อมูลสิทธิ์การรักษา" });
+                    }
+
+                    // Check if treatment name already exists (excluding current treatment)
+                    var existingTreatment = await _db.Treatment
+                        .FirstOrDefaultAsync(t => t.TreatmentName == model.RightName && t.TreatmentID != model.RightID);
+
+                    if (existingTreatment != null)
+                    {
+                        return Json(new { success = false, message = "ชื่อสิทธิ์การรักษานี้มีอยู่แล้ว" });
+                    }
+
+                    treatment.TreatmentName = model.RightName;
+                    await _db.SaveChangesAsync();
+
+                    return Json(new { success = true, message = "แก้ไขสิทธิ์การรักษาสำเร็จ" });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = "เกิดข้อผิดพลาด: " + ex.Message });
+                }
+            }
+
+            [HttpDelete]
+            public async Task<IActionResult> DeleteTreatment(int id)
+            {
+                try
+                {
+                    var treatment = await _db.Treatment.FindAsync(id);
+                    if (treatment == null)
+                    {
+                        return Json(new { success = false, message = "ไม่พบข้อมูลสิทธิ์การรักษา" });
+                    }
+
+                    // Check if treatment is being used by any patient
+                    var patientsUsingTreatment = await _db.Patient
+                        .Where(p => p.TreatmentID == id)
+                        .CountAsync();
+
+                    if (patientsUsingTreatment > 0)
+                    {
+                        return Json(new { success = false, message = $"ไม่สามารถลบได้ เนื่องจากมีผู้ป่วย {patientsUsingTreatment} คน ที่ใช้สิทธิ์การรักษานี้" });
+                    }
+
+                    _db.Treatment.Remove(treatment);
+                    await _db.SaveChangesAsync();
+
+                    return Json(new { success = true, message = "ลบสิทธิ์การรักษาสำเร็จ" });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = "เกิดข้อผิดพลาด: " + ex.Message });
+                }
+            }
+
+            public class TreatmentCreateModel
+            {
+                public int RightID { get; set; }
+                public string RightName { get; set; } = string.Empty;
             }
         }
     }
