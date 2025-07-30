@@ -225,10 +225,10 @@
 
             forms.forEach(function(form, index) {
                 const formTypeText = getFormTypeText(form.formType);
-                const rowNumber = index + 1; // ลำดับเริ่มจาก 1
+                const rowNumber = index + 1;
                 const row = `
                     <tr>
-                        <td><span class="badge bg-secondary">${rowNumber}</span></td>
+                        <th><span class="text-center mx-4">${rowNumber}</span></th>
                         <td>
                             <div class="fw-bold">${form.formName || 'ไม่ระบุ'}</div>
                         </td>

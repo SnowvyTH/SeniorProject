@@ -37,40 +37,52 @@
                         <p class="text-muted small mb-3">ประเภทแบบประเมินไม่สามารถเปลี่ยนแปลงได้หลังจากสร้างแล้ว</p>
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <div class="form-type-display" id="formType1" style="display: none;">
-                                    <div class="card h-100 border-primary">
+                                <div class="form-type-display" id="formType1">
+                                    <div class="card h-100 border-primary form-type-card" data-type="1">
                                         <div class="card-body text-center p-4">
                                             <div class="mb-3">
                                                 <i class="fas fa-list-ul fa-3x text-primary"></i>
                                             </div>
                                             <h5 class="card-title fw-bold">แบบประเมิน ประเภท 1</h5>
                                             <p class="text-muted mb-4">แบบประเมินแบบมาตรฐาน</p>
+                                            <div class="selected-indicator" style="display: none;">
+                                                <i class="fas fa-check-circle text-success fa-2x"></i>
+                                                <p class="text-success fw-bold mt-2 mb-0">แบบฟอร์มที่เลือก</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="form-type-display" id="formType2" style="display: none;">
-                                    <div class="card h-100 border-success">
+                                <div class="form-type-display" id="formType2">
+                                    <div class="card h-100 border-success form-type-card" data-type="2">
                                         <div class="card-body text-center p-4">
                                             <div class="mb-3">
                                                 <i class="fas fa-check-circle fa-3x text-success"></i>
                                             </div>
                                             <h5 class="card-title fw-bold">แบบประเมิน ประเภท 2</h5>
-                                            <p class="text-muted mb-0">แบบประเมินคำตอบมีข้อความยาว</p>
+                                            <p class="text-muted mb-4">แบบประเมินคำตอบมีข้อความยาว</p>
+                                            <div class="selected-indicator" style="display: none;">
+                                                <i class="fas fa-check-circle text-success fa-2x"></i>
+                                                <p class="text-success fw-bold mt-2 mb-0">แบบฟอร์มที่เลือก</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="form-type-display" id="formType3" style="display: none;">
-                                    <div class="card h-100 border-warning">
+                                <div class="form-type-display" id="formType3">
+                                    <div class="card h-100 border-warning form-type-card" data-type="3">
                                         <div class="card-body text-center p-4">
                                             <div class="mb-3">
                                                 <i class="fas fa-star fa-3x text-warning"></i>
                                             </div>
                                             <h5 class="card-title fw-bold">แบบประเมิน ประเภท 3</h5>
                                             <p class="text-muted mb-4">แบบประเมินแบบมีหัวข้อใหญ่</p>
+                                            <div class="selected-indicator" style="display: none;">
+                                                <i class="fas fa-check-circle text-success fa-2x"></i>
+                                                <p class="text-success fw-bold mt-2 mb-0">แบบฟอร์มที่เลือก</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -161,8 +173,8 @@
                     <div class="m-4">
                         <label class="form-label fw-bold">วิธีการนับคะแนน</label>
                         <select class="form-select form-select-lg" id="scoringMethod">
-                            <option value="max">ตัวเลือกคะแนนมากสุด</option>
-                            <option value="min">ตัวเลือกคะแนนน้อยสุด</option>
+                            <option value="max">ตัวเลือกคะแนนมากที่สุด</option>
+                            <option value="min">ตัวเลือกคะแนนน้อยที่สุด</option>
                             <option value="sum">รวมคะแนนทั้งหมด</option>
                         </select>
                     </div>
@@ -291,9 +303,18 @@
             // Set form name
             $('#formName').val(formData.formName);
             
-            // Set form type (display only)
+            // Set form type (display only) - แสดงทั้ง 3 แบบ แต่ highlight แบบที่เลือก
             selectedFormType = formData.formType;
-            $('#formType' + selectedFormType).show();
+            
+            // แสดงทั้ง 3 แบบฟอร์ม
+            $('.form-type-display').show();
+            
+            // เอา highlight เก่าออก
+            $('.form-type-card').removeClass('selected-form-type');
+            $('.selected-indicator').hide();
+            
+            // Highlight แบบฟอร์มที่เลือก
+            $(`#formType${selectedFormType} .form-type-card`).addClass('selected-form-type');
             
             // Show/hide appropriate buttons
             if (selectedFormType === 3) {
@@ -953,6 +974,42 @@
     <style>
         .form-type-display {
             opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+        
+        .form-type-card.selected-form-type {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(81, 195, 183, 0.3);
+            border: 3px solid #51c3b7 !important;
+        }
+        
+        .form-type-display:has(.selected-form-type) {
+            opacity: 1;
+        }
+        
+        .selected-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            padding: 5px;
+        }
+        
+        .form-type-card {
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: not-allowed;
+        }
+        
+        .form-type-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .form-type-card.selected-form-type:hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 10px 30px rgba(81, 195, 183, 0.4);
         }
         
         .question-item, .result-setting-item, .section-item {
