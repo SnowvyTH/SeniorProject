@@ -1,5 +1,700 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<Project.Models.Entity.Patient>
 @{
+    ViewData["Title"] = "ทะเบียนผู้ป่วย";
+    Layout = "~/Views/Shared/_PharmaLayout.cshtml";
+}
+
+<div class="container">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
+        <div>
+            <h2 class="page-title">
+                <i class="fas fa-users me-2"></i>ทะเบียนผู้ป่วยทั้งหมด
+            </h2>
+            <p class="text-muted mb-0">จัดการข้อมูลผู้ป่วยในระบบ</p>
+        </div>
+        <button type="button" class="btn btn-primary btn-lg" onclick="openAddPatientModal()">
+            <i class="fas fa-plus me-2"></i>เพิ่มผู้ป่วยใหม่
+        </button>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="modern-card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">ค้นหาผู้ป่วย</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchInput" placeholder="ค้นหา HN, ชื่อ, หรือนามสกุล...">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">จังหวัด</label>
+                    <select class="form-select" id="provinceFilter">
+                        <option value="">ทั้งหมด</option>
+                        <!-- จะถูกเติมด้วย JavaScript -->
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">ประเภทผู้ป่วย</label>
+                    <select class="form-select" id="patientTypeFilter">
+                        <option value="">ทั้งหมด</option>
+                        <option value="OPD">ผู้ป่วยนอก (OPD)</option>
+                        <option value="WARD">ผู้ป่วยใน (WARD)</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                        <i class="fas fa-times me-2"></i>ล้าง
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patients Table -->
+    <div class="modern-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="patientsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%">ลำดับ</th>
+                            <th width="20%">ชื่อผู้ป่วย</th>
+                            <th width="17%">เลขบัตรประชาชน</th>
+                            <th width="5%">อายุ</th>
+                            <th width="12%">จังหวัด</th>
+                            <th width="12%">อำเภอ</th>
+                            <th width="12%">ตำบล</th>
+                            <th width="10%">สิทธิ์การรักษา</th>
+                            <th width="7%">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientsTableBody">
+                        @{int index = 1;}
+                        @foreach (var patient in Model)
+                        {
+                            <tr class="patient-row" 
+                                data-hn="@patient.HN" 
+                                data-name="@(patient.Title?.TitleName) @patient.FirstName @patient.LastName" 
+                                data-type="@patient.PatientType"
+                                data-province="@(patient.District?.Amphur?.Province?.PROVINCE_NAME ?? "")">
+                                <td class="text-center">@index</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2">
+                                            <i class="fas fa-user-injured"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">@(patient.Title?.TitleName) @patient.FirstName @patient.LastName</div>
+                                            <small class="text-muted">@patient.HN</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(patient.CitizenID))
+                                    {
+                                        @($"XXXXXXXX{patient.CitizenID.Substring(patient.CitizenID.Length - 5)}")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (patient.BirthDate.HasValue)
+                                    {
+                                        @((DateTime.Now.Year - patient.BirthDate.Value.Year)) @:ปี
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>@(patient.District?.Amphur?.Province?.PROVINCE_NAME ?? "-")</td>
+                                <td>@(patient.District?.Amphur?.AMPHUR_NAME ?? "-")</td>
+                                <td>@(patient.District?.DISTRICT_NAME ?? "-")</td>
+                                <td>@(patient.Treatment?.TreatmentName ?? "-")</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-outline-warning" onclick="openEditPatientModal('@patient.HN')" title="แก้ไข">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            index++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div id="noDataMessage" class="text-center p-4" style="display: none;">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">ไม่พบข้อมูลผู้ป่วย</h5>
+                <p class="text-muted">ลองปรับเปลี่ยนเงื่อนไขการค้นหา</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Patient Modal -->
+<div class="modal fade" id="patientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="patientModalTitle">
+                    <i class="fas fa-user me-2"></i>ข้อมูลผู้ป่วย
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="patientForm">
+                    <div class="row g-3">
+                        <!-- HN -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">HN</label>
+                            <input type="text" class="form-control" id="hn" readonly style="background-color: #f8f9fa;">
+                        </div>
+                        
+                        <!-- เลขบัตรประชาชน -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">เลขบัตรประชาชน</label>
+                            <input type="text" class="form-control" id="citizenId" placeholder="x-xxxx-xxxxx-xx-x" maxlength="13" required>
+                        </div>
+                        
+                        <!-- คำนำหน้า + ชื่อ -->
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">คำนำหน้า</label>
+                            <select class="form-select" id="titleId" required>
+                                <option value="">เลือกคำนำหน้า</option>
+                                <!-- จะถูกเติมด้วย JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-9">
+                            <label class="form-label fw-bold">ชื่อจริง</label>
+                            <input type="text" class="form-control" id="firstName" placeholder="กรอกชื่อจริง" required>
+                        </div>
+                        
+                        <!-- นามสกุล -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">นามสกุล</label>
+                            <input type="text" class="form-control" id="lastName" placeholder="กรอกนามสกุล" required>
+                        </div>
+                        
+                        <!-- วันเดือนปีเกิด + อายุ -->
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">วันเดือนปีเกิด</label>
+                            <input type="date" class="form-control" id="birthDate" onchange="calculateAge()" required>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">อายุ</label>
+                            <input type="text" class="form-control" id="age" readonly style="background-color: #f8f9fa;" placeholder="อายุ (ปี)">
+                        </div>
+                        
+                        <!-- น้ำหนัก + ส่วนสูง -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">น้ำหนัก (กก.)</label>
+                            <input type="number" class="form-control" id="weight" placeholder="น้ำหนัก" step="0.1" min="0">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">ส่วนสูง (ซม.)</label>
+                            <input type="number" class="form-control" id="height" placeholder="ส่วนสูง" step="0.1" min="0">
+                        </div>
+                        
+                        <!-- สิทธิ์รักษา -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">สิทธิ์รักษา</label>
+                            <select class="form-select" id="rightId" required>
+                                <option value="">เลือกสิทธิ์รักษา</option>
+                                <!-- จะถูกเติมด้วย JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <!-- โทรศัพท์ -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">โทรศัพท์</label>
+                            <input type="tel" class="form-control" id="phone" placeholder="0x-xxxx-xxxx">
+                        </div>
+                        
+                        <!-- ประเภทผู้ป่วย -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">ประเภทผู้ป่วย</label>
+                            <select class="form-select" id="patientType" required>
+                                <option value="">เลือกประเภทผู้ป่วย</option>
+                                <option value="OPD">ผู้ป่วยนอก (OPD)</option>
+                                <option value="WARD">ผู้ป่วยใน (WARD)</option>
+                            </select>
+                        </div>
+                        
+                        <!-- จังหวัด -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">จังหวัด</label>
+                            <select class="form-select" id="provinceId" onchange="loadAmphoes()" required>
+                                <option value="">เลือกจังหวัด</option>
+                                <!-- จะถูกเติมด้วย JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <!-- อำเภอ -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">อำเภอ</label>
+                            <select class="form-select" id="amphoeId" onchange="loadTambons()" required>
+                                <option value="">เลือกอำเภอ</option>
+                                <!-- จะถูกเติมด้วย JavaScript -->
+                            </select>
+                        </div>
+                        
+                        <!-- ตำบล -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">ตำบล</label>
+                            <select class="form-select" id="tambonId" required>
+                                <option value="">เลือกตำบล</option>
+                                <!-- จะถูกเติมด้วย JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-primary" onclick="savePatient()">
+                    <i class="fas fa-save me-2"></i>บันทึก
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .modern-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: none;
+        }
+
+        .modern-card .card-header {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+
+        .modern-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .avatar-sm {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+            background-color: #f8f9fa;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(81, 195, 183, 0.1);
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--dark-green) 0%, var(--mint-green) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(81, 195, 183, 0.3);
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #e0e6ed;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--mint-green);
+            box-shadow: 0 0 0 0.2rem rgba(81, 195, 183, 0.25);
+        }
+
+        .input-group-text {
+            background-color: var(--mint-green);
+            color: white;
+            border: 1px solid var(--mint-green);
+            border-radius: 8px 0 0 8px;
+        }
+
+        .input-group .form-control {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+
+        :root {
+            --mint-green: #51c3b7;
+            --dark-green: #05685e;
+        }
+
+        .page-title {
+            color: var(--dark-green);
+            font-weight: 700;
+        }
+
+        .patient-row.hidden {
+            display: none;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        let isEditMode = false;
+        let currentPatientHN = null;
+
+        $(document).ready(function() {
+            loadInitialData();
+            setupFilters();
+        });
+
+        function loadInitialData() {
+            // Load dropdown data
+            loadTitles();
+            loadRights();
+            loadProvinces();
+        }
+
+        function setupFilters() {
+            $('#searchInput').on('input', filterPatients);
+            $('#provinceFilter, #patientTypeFilter').on('change', filterPatients);
+        }
+
+        function filterPatients() {
+            const searchQuery = $('#searchInput').val().toLowerCase();
+            const provinceFilter = $('#provinceFilter').val();
+            const patientTypeFilter = $('#patientTypeFilter').val();
+            
+            let visibleCount = 0;
+            
+            $('.patient-row').each(function() {
+                const $row = $(this);
+                const hn = $row.data('hn').toString().toLowerCase();
+                const name = $row.data('name').toString().toLowerCase();
+                const patientType = $row.data('type').toString();
+                const province = $row.data('province').toString();
+                
+                let showRow = true;
+                
+                if (searchQuery && !hn.includes(searchQuery) && !name.includes(searchQuery)) {
+                    showRow = false;
+                }
+                
+                if (patientTypeFilter && patientType !== patientTypeFilter) {
+                    showRow = false;
+                }
+                
+                if (provinceFilter && province !== provinceFilter) {
+                    showRow = false;
+                }
+                
+                if (showRow) {
+                    $row.show();
+                    visibleCount++;
+                } else {
+                    $row.hide();
+                }
+            });
+            
+            $('#noDataMessage').toggle(visibleCount === 0);
+        }
+
+        function clearFilters() {
+            $('#searchInput').val('');
+            $('#provinceFilter').val('');
+            $('#patientTypeFilter').val('');
+            $('.patient-row').show();
+            $('#noDataMessage').hide();
+        }
+
+        function openAddPatientModal() {
+            isEditMode = false;
+            currentPatientHN = null;
+            $('#patientModalTitle').html('<i class="fas fa-plus me-2"></i>เพิ่มผู้ป่วยใหม่');
+            clearPatientForm();
+            generateNextHN();
+            $('#patientModal').modal('show');
+        }
+
+        function openEditPatientModal(hn) {
+            isEditMode = true;
+            currentPatientHN = hn;
+            $('#patientModalTitle').html('<i class="fas fa-edit me-2"></i>แก้ไขข้อมูลผู้ป่วย');
+            loadPatientData(hn);
+            $('#patientModal').modal('show');
+        }
+
+        function clearPatientForm() {
+            $('#patientForm')[0].reset();
+            $('#age').val('');
+            $('#amphoeId').html('<option value="">เลือกอำเภอ</option>');
+            $('#tambonId').html('<option value="">เลือกตำบล</option>');
+        }
+
+        function generateNextHN() {
+            $.ajax({
+                url: '@Url.Action("GetNextHN", "Pharma")',
+                type: 'GET',
+                success: function(result) {
+                    $('#hn').val(result.nextHN);
+                },
+                error: function() {
+                    console.error('Error generating HN');
+                }
+            });
+        }
+
+        function calculateAge() {
+            const birthDate = new Date($('#birthDate').val());
+            const today = new Date();
+            
+            if (birthDate && birthDate <= today) {
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const monthDiff = today.getMonth() - birthDate.getMonth();
+                
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                
+                $('#age').val(age + ' ปี');
+            } else {
+                $('#age').val('');
+            }
+        }
+
+        function loadTitles() {
+            $.ajax({
+                url: '@Url.Action("GetTitles", "Pharma")',
+                type: 'GET',
+                success: function(titles) {
+                    const select = $('#titleId');
+                    select.html('<option value="">เลือกคำนำหน้า</option>');
+                    titles.forEach(title => {
+                        select.append(`<option value="${title.titleID}">${title.titleName}</option>`);
+                    });
+                }
+            });
+        }
+
+        function loadRights() {
+            $.ajax({
+                url: '@Url.Action("GetRights", "Pharma")',
+                type: 'GET',
+                success: function(rights) {
+                    const select = $('#rightId');
+                    select.html('<option value="">เลือกสิทธิ์รักษา</option>');
+                    rights.forEach(right => {
+                        select.append(`<option value="${right.rightID}">${right.rightName}</option>`);
+                    });
+                }
+            });
+        }
+
+        function loadProvinces() {
+            $.ajax({
+                url: '@Url.Action("GetProvinces", "Pharma")',
+                type: 'GET',
+                success: function(provinces) {
+                    const select = $('#provinceId');
+                    const filterSelect = $('#provinceFilter');
+                    
+                    select.html('<option value="">เลือกจังหวัด</option>');
+                    filterSelect.html('<option value="">ทั้งหมด</option>');
+                    
+                    provinces.forEach(province => {
+                        select.append(`<option value="${province.provinceID}">${province.provinceName}</option>`);
+                        filterSelect.append(`<option value="${province.provinceName}">${province.provinceName}</option>`);
+                    });
+                }
+            });
+        }
+
+        function loadAmphoes() {
+            const provinceId = $('#provinceId').val();
+            if (!provinceId) {
+                $('#amphoeId').html('<option value="">เลือกอำเภอ</option>');
+                $('#tambonId').html('<option value="">เลือกตำบล</option>');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("GetAmphoes", "Pharma")/' + provinceId,
+                type: 'GET',
+                success: function(amphoes) {
+                    const select = $('#amphoeId');
+                    select.html('<option value="">เลือกอำเภอ</option>');
+                    amphoes.forEach(amphoe => {
+                        select.append(`<option value="${amphoe.amphID}">${amphoe.amphName}</option>`);
+                    });
+                    $('#tambonId').html('<option value="">เลือกตำบล</option>');
+                }
+            });
+        }
+
+        function loadTambons() {
+            const amphoeId = $('#amphoeId').val();
+            if (!amphoeId) {
+                $('#tambonId').html('<option value="">เลือกตำบล</option>');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("GetTambons", "Pharma")/' + amphoeId,
+                type: 'GET',
+                success: function(tambons) {
+                    const select = $('#tambonId');
+                    select.html('<option value="">เลือกตำบล</option>');
+                    tambons.forEach(tambon => {
+                        select.append(`<option value="${tambon.tambonID}">${tambon.tambonName}</option>`);
+                    });
+                }
+            });
+        }
+
+        function loadPatientData(hn) {
+            $.ajax({
+                url: '@Url.Action("GetPatient", "Pharma")/' + hn,
+                type: 'GET',
+                success: function(patient) {
+                    $('#hn').val(patient.hn);
+                    $('#citizenId').val(patient.citizenID);
+                    $('#titleId').val(patient.titleID);
+                    $('#firstName').val(patient.firstName);
+                    $('#lastName').val(patient.lastName);
+                    $('#birthDate').val(patient.birthDate ? patient.birthDate.split('T')[0] : '');
+                    $('#weight').val(patient.weight);
+                    $('#height').val(patient.height);
+                    $('#rightId').val(patient.rightID);
+                    $('#phone').val(patient.phone);
+                    $('#patientType').val(patient.patientType);
+                    
+                    if (patient.birthDate) {
+                        calculateAge();
+                    }
+                    
+                    // Load location data
+                    if (patient.provinceID) {
+                        $('#provinceId').val(patient.provinceID);
+                        loadAmphoes();
+                        setTimeout(() => {
+                            $('#amphoeId').val(patient.amphoeID);
+                            loadTambons();
+                            setTimeout(() => {
+                                $('#tambonId').val(patient.tambonID);
+                            }, 500);
+                        }, 500);
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถโหลดข้อมูลผู้ป่วยได้'
+                    });
+                }
+            });
+        }
+
+        function savePatient() {
+            if (!$('#patientForm')[0].checkValidity()) {
+                $('#patientForm')[0].reportValidity();
+                return;
+            }
+
+            const patientData = {
+                HN: $('#hn').val(),
+                CitizenID: $('#citizenId').val(),
+                TitleID: $('#titleId').val(),
+                FirstName: $('#firstName').val(),
+                LastName: $('#lastName').val(),
+                BirthDate: $('#birthDate').val(),
+                Weight: $('#weight').val() || null,
+                Height: $('#height').val() || null,
+                RightID: $('#rightId').val(),
+                Phone: $('#phone').val(),
+                PatientType: $('#patientType').val(),
+                TambonID: $('#tambonId').val()
+            };
+
+            const url = isEditMode 
+                ? '@Url.Action("UpdatePatient", "Pharma")'
+                : '@Url.Action("CreatePatient", "Pharma")';
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: JSON.stringify(patientData),
+                contentType: 'application/json',
+                success: function(result) {
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ!',
+                            text: isEditMode ? 'แก้ไขข้อมูลผู้ป่วยเรียบร้อยแล้ว' : 'เพิ่มผู้ป่วยใหม่เรียบร้อยแล้ว',
+                            timer: 1500
+                        }).then(() => {
+                            $('#patientModal').modal('hide');
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: result.message
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถบันทึกข้อมูลได้'
+                    });
+                }
+            });
+        }
+    </script>
 }
