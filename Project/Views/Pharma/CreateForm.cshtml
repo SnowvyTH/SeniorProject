@@ -287,13 +287,13 @@
         
         function confirmGoBack() {
             Swal.fire({
-                title: 'ต้องการย้อนกลับหรือไม่?',
+                title: 'ต้องการกลับไปหน้าแรกหรือไม่?',
                 text: 'ข้อมูลที่กรอกจะหายไปทั้งหมด',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#51c3b7',
-                confirmButtonText: 'ย้อนกลับ',
+                confirmButtonColor: '#51c3b7',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'ตกลง',
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
                 if (result.isConfirmed) {

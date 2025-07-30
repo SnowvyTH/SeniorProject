@@ -1,5 +1,485 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "แก้ไขข้อมูลส่วนตัว";
+    Layout = "~/Views/Shared/_PharmaLayout.cshtml";
+}
+
+<div class="container">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">
+                <i class="fas fa-user-edit me-2 mt-4"></i>แก้ไขข้อมูลส่วนตัว
+            </h2>
+            <p class="text-muted mb-0">จัดการข้อมูลส่วนตัวและรหัสผ่านของคุณ</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Profile Information Card -->
+            <div class="modern-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>ข้อมูลส่วนตัว
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="profileForm">
+                        <div class="row g-3">
+                            <!-- Username (Read-only) -->
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">ชื่อผู้ใช้</label>
+                                <input type="text" class="form-control bg-light" id="username" readonly>
+                                <small class="form-text text-muted">ไม่สามารถแก้ไขชื่อผู้ใช้ได้</small>
+                            </div>
+
+                            <!-- Title -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">คำนำหน้า</label>
+                                <select class="form-select" id="titleId" required>
+                                    <option value="">เลือกคำนำหน้า</option>
+                                    <!-- จะถูกเติมด้วย JavaScript -->
+                                </select>
+                            </div>
+
+                            <!-- First Name -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">ชื่อจริง</label>
+                                <input type="text" class="form-control" id="firstName" placeholder="กรอกชื่อจริง" required>
+                            </div>
+
+                            <!-- Last Name -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">นามสกุล</label>
+                                <input type="text" class="form-control" id="lastName" placeholder="กรอกนามสกุล" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Password Change Card -->
+            <div class="modern-card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lock me-2"></i>เปลี่ยนรหัสผ่าน
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="passwordForm">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            หากไม่ต้องการเปลี่ยนรหัสผ่าน สามารถเว้นช่องนี้ไว้ได้
+                        </div>
+                        
+                        <div class="row g-3">
+                            <!-- Current Password -->
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">รหัสผ่านปัจจุบัน</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="currentPassword" placeholder="กรอกรหัสผ่านปัจจุบัน">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('currentPassword')">
+                                        <i class="fas fa-eye" id="currentPasswordIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- New Password -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">รหัสผ่านใหม่</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="newPassword" placeholder="กรอกรหัสผ่านใหม่">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('newPassword')">
+                                        <i class="fas fa-eye" id="newPasswordIcon"></i>
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร</small>
+                            </div>
+
+                            <!-- Confirm New Password -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">ยืนยันรหัสผ่านใหม่</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="confirmPassword" placeholder="ยืนยันรหัสผ่านใหม่">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('confirmPassword')">
+                                        <i class="fas fa-eye" id="confirmPasswordIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex justify-content-end mt-4 gap-2">
+                <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                    <i class="fas fa-undo me-2"></i>รีเซ็ต
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveProfile()">
+                    <i class="fas fa-save me-2"></i>บันทึกการเปลี่ยนแปลง
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        :root {
+            --mint-green: #51c3b7;
+            --dark-green: #05685e;
+        }
+
+        .modern-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: none;
+        }
+
+        .modern-card .card-header {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+
+        .modern-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #e0e6ed;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--mint-green);
+            box-shadow: 0 0 0 0.2rem rgba(81, 195, 183, 0.25);
+        }
+
+        .form-control.bg-light {
+            background-color: #f8f9fa !important;
+            cursor: not-allowed;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--dark-green) 0%, var(--mint-green) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(81, 195, 183, 0.3);
+        }
+
+        .alert-info {
+            background-color: rgba(81, 195, 183, 0.1);
+            border-color: var(--mint-green);
+            color: var(--dark-green);
+            border-radius: 8px;
+        }
+
+        .page-title {
+            color: var(--dark-green);
+            font-weight: 700;
+        }
+
+        .input-group .btn {
+            border-color: #e0e6ed;
+        }
+
+        .input-group .btn:hover {
+            background-color: var(--mint-green);
+            border-color: var(--mint-green);
+            color: white;
+        }
+
+        .form-text {
+            font-size: 0.875rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            // Load titles first, then load user profile
+            loadTitles();
+            
+            // Add a fallback timer in case the API calls fail
+            setTimeout(function() {
+                if (!$('#username').val()) {
+                    loadUserProfileData();
+                }
+            }, 2000);
+        });
+
+        function loadUserProfile() {
+            $.get('/Pharma/GetUserProfile')
+                .done(function(data) {
+                    if (data.success) {
+                        $('#username').val(data.username);
+                        $('#titleId').val(data.titleID);
+                        $('#firstName').val(data.firstName);
+                        $('#lastName').val(data.lastName);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: data.message || 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้'
+                        });
+                    }
+                })
+                .fail(function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้'
+                    });
+                });
+        }
+
+        function loadTitles() {
+            $.get('/Pharma/GetTitles')
+                .done(function(titles) {
+                    const select = $('#titleId');
+                    // Clear existing options except the first one
+                    select.find('option:not(:first)').remove();
+                    
+                    titles.forEach(title => {
+                        select.append(`<option value="${title.titleID}">${title.titleName}</option>`);
+                    });
+                    
+                    // Reload user profile after titles are loaded to set the correct selected title
+                    loadUserProfileData();
+                })
+                .fail(function(xhr, status, error) {
+                    console.error('Error loading titles:', xhr.responseText);
+                    // Try to load user profile anyway even if titles fail
+                    loadUserProfileData();
+                });
+        }
+
+        function loadUserProfileData() {
+            $.get('/Pharma/GetUserProfile')
+                .done(function(data) {
+                    if (data.success) {
+                        $('#username').val(data.username || '');
+                        $('#firstName').val(data.firstName || '');
+                        $('#lastName').val(data.lastName || '');
+                        
+                        // Set title after options are loaded
+                        if (data.titleID && data.titleID > 0) {
+                            $('#titleId').val(data.titleID);
+                        } else {
+                            $('#titleId').val(''); // Reset to default
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: data.message || 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้'
+                        });
+                    }
+                })
+                .fail(function(xhr, status, error) {
+                    console.error('Profile load request failed:', xhr.responseText);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถโหลดข้อมูลผู้ใช้ได้'
+                    });
+                });
+        }
+
+        function togglePasswordVisibility(fieldId) {
+            const field = document.getElementById(fieldId);
+            const icon = document.getElementById(fieldId + 'Icon');
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        function validatePasswordFields() {
+            const currentPassword = $('#currentPassword').val();
+            const newPassword = $('#newPassword').val();
+            const confirmPassword = $('#confirmPassword').val();
+
+            // ถ้าไม่มีการกรอกรหัสผ่านใดๆ ถือว่าไม่ต้องการเปลี่ยน
+            if (!currentPassword && !newPassword && !confirmPassword) {
+                return { valid: true, changePassword: false };
+            }
+
+            // ถ้ากรอกบางช่อง ต้องกรอกครบทุกช่อง
+            if (!currentPassword) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณากรอกข้อมูล',
+                    text: 'กรุณากรอกรหัสผ่านปัจจุบัน'
+                });
+                return { valid: false };
+            }
+
+            if (!newPassword) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณากรอกข้อมูล',
+                    text: 'กรุณากรอกรหัสผ่านใหม่'
+                });
+                return { valid: false };
+            }
+
+            if (newPassword.length < 6) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'รหัสผ่านไม่ถูกต้อง',
+                    text: 'รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร'
+                });
+                return { valid: false };
+            }
+
+            if (newPassword !== confirmPassword) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'รหัสผ่านไม่ตรงกัน',
+                    text: 'รหัสผ่านใหม่และการยืนยันไม่ตรงกัน'
+                });
+                return { valid: false };
+            }
+
+            return { valid: true, changePassword: true, currentPassword, newPassword };
+        }
+
+        function saveProfile() {
+            // Validate basic profile data
+            if (!$('#profileForm')[0].checkValidity()) {
+                $('#profileForm')[0].reportValidity();
+                return;
+            }
+
+            // Validate password fields
+            const passwordValidation = validatePasswordFields();
+            if (!passwordValidation.valid) {
+                return;
+            }
+
+            const profileData = {
+                TitleID: $('#titleId').val(),
+                FirstName: $('#firstName').val(),
+                LastName: $('#lastName').val()
+            };
+
+            // Add password data if user wants to change password
+            if (passwordValidation.changePassword) {
+                profileData.CurrentPassword = passwordValidation.currentPassword;
+                profileData.NewPassword = passwordValidation.newPassword;
+            }
+
+            // Show loading
+            Swal.fire({
+                title: 'กำลังบันทึก...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '/Pharma/UpdateUserProfile',
+                type: 'POST',
+                data: JSON.stringify(profileData),
+                contentType: 'application/json',
+                success: function(result) {
+                    if (result.success) {
+                        // Clear password fields first
+                        $('#currentPassword').val('');
+                        $('#newPassword').val('');
+                        $('#confirmPassword').val('');
+                        
+                        // Check if password was changed
+                        if (passwordValidation.changePassword) {
+                            // Password was changed - require re-login
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'สำเร็จ!',
+                                text: 'บันทึกข้อมูลเรียบร้อยแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้ง',
+                                confirmButtonColor: '#198754',
+                                confirmButtonText: 'ตกลง',
+                                allowOutsideClick: false
+                            }).then(() => {
+                                // Redirect to logout/login page
+                                window.location.href = '/Home/Logout';
+                            });
+                        } else {
+                            // Only profile info was changed - redirect to index
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'สำเร็จ!',
+                                text: 'บันทึกข้อมูลเรียบร้อยแล้ว',
+                                confirmButtonColor: '#198754',
+                                confirmButtonText: 'ตกลง'
+                            }).then(() => {
+                                // Redirect to pharma index
+                                window.location.href = '/Pharma/Index';
+                            });
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: result.message || 'ไม่สามารถบันทึกข้อมูลได้'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้'
+                    });
+                }
+            });
+        }
+
+        function resetForm() {
+            Swal.fire({
+                title: 'ต้องการรีเซ็ตฟอร์มหรือไม่?',
+                text: 'การเปลี่ยนแปลงที่ยังไม่ได้บันทึกจะหายไป',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#6c757d',
+                cancelButtonColor: '#dc3545',
+                confirmButtonText: 'รีเซ็ต',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Clear password fields first
+                    $('#currentPassword').val('');
+                    $('#newPassword').val('');
+                    $('#confirmPassword').val('');
+                    
+                    // Reload user profile data
+                    loadUserProfileData();
+                }
+            });
+        }
+    </script>
 }

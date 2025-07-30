@@ -4,7 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Project.Models;
 using Project.Models.Entity;
 using Project.Data;
+using Project.Services;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Project.Controllers
 {
@@ -68,6 +70,14 @@ namespace Project.Controllers
             }
 
             public IActionResult Treatments()
+            {
+                ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
+                ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
+
+                return View();
+            }
+
+            public IActionResult Profile()
             {
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
                 ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
@@ -925,6 +935,156 @@ namespace Project.Controllers
             {
                 public int RightID { get; set; }
                 public string RightName { get; set; } = string.Empty;
+            }
+
+            // User Profile methods
+            [HttpGet]
+            public async Task<IActionResult> GetUserProfile()
+            {
+                try
+                {
+                    // Use ClaimTypes.NameIdentifier instead of "UserID"
+                    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    
+                    if (string.IsNullOrEmpty(userId))
+                    {
+                        return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้ในระบบ" });
+                    }
+
+                    var user = await _db.User
+                        .Include(u => u.Title)
+                        .FirstOrDefaultAsync(u => u.UserID == int.Parse(userId));
+
+                    if (user == null)
+                    {
+                        return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้ในฐานข้อมูล" });
+                    }
+
+                    return Json(new
+                    {
+                        success = true,
+                        username = user.Username,
+                        titleID = user.TitleID,
+                        firstName = user.FirstName,
+                        lastName = user.LastName
+                    });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = "เกิดข้อผิดพลาด: " + ex.Message });
+                }
+            }
+
+            [HttpPost]
+            public async Task<IActionResult> UpdateUserProfile([FromBody] UserProfileUpdateModel model)
+            {
+                try
+                {
+                    // Use ClaimTypes.NameIdentifier instead of "UserID"
+                    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (string.IsNullOrEmpty(userId))
+                    {
+                        return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
+                    }
+
+                    var user = await _db.User.FirstOrDefaultAsync(u => u.UserID == int.Parse(userId));
+                    if (user == null)
+                    {
+                        return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
+                    }
+
+                    // Validate required fields
+                    if (string.IsNullOrEmpty(model.FirstName) || string.IsNullOrEmpty(model.LastName))
+                    {
+                        return Json(new { success = false, message = "กรุณากรอกชื่อและนามสกุล" });
+                    }
+
+                    // Handle password change if provided
+                    if (!string.IsNullOrEmpty(model.CurrentPassword))
+                    {
+                        if (string.IsNullOrEmpty(model.NewPassword))
+                        {
+                            return Json(new { success = false, message = "กรุณากรอกรหัสผ่านใหม่" });
+                        }
+
+                        // Create password service instance for verification
+                        var passwordService = new PasswordService();
+                        
+                        // Verify current password
+                        if (!passwordService.VerifyPassword(model.CurrentPassword, user.PasswordHash))
+                        {
+                            return Json(new { success = false, message = "รหัสผ่านปัจจุบันไม่ถูกต้อง" });
+                        }
+
+                        if (model.NewPassword.Length < 6)
+                        {
+                            return Json(new { success = false, message = "รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร" });
+                        }
+
+                        // Hash new password
+                        user.PasswordHash = passwordService.HashPassword(model.NewPassword);
+                    }
+
+                    // Update profile information
+                    user.TitleID = model.TitleID;
+                    user.FirstName = model.FirstName;
+                    user.LastName = model.LastName;
+
+                    await _db.SaveChangesAsync();
+
+                    // Update claims if profile info changed (not password)
+                    if (string.IsNullOrEmpty(model.CurrentPassword))
+                    {
+                        // Reload user with title for updated claims
+                        var updatedUser = await _db.User
+                            .Include(u => u.Title)
+                            .Include(u => u.Role)
+                            .FirstOrDefaultAsync(u => u.UserID == user.UserID);
+
+                        if (updatedUser != null)
+                        {
+                            // Create new claims with updated information
+                            var claims = new List<System.Security.Claims.Claim>
+                            {
+                                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, updatedUser.UserID.ToString()),
+                                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Name, updatedUser.Username),
+                                new System.Security.Claims.Claim("FirstName", updatedUser.FirstName ?? ""),
+                                new System.Security.Claims.Claim("LastName", updatedUser.LastName ?? ""),
+                                new System.Security.Claims.Claim("RoleID", updatedUser.RoleID?.ToString() ?? ""),
+                                new System.Security.Claims.Claim("RoleName", updatedUser.Role?.RoleName ?? ""),
+                                new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, updatedUser.Role?.RoleName ?? ""),
+                                new System.Security.Claims.Claim("TitleID", updatedUser.TitleID?.ToString() ?? ""),
+                                new System.Security.Claims.Claim("TitleName", updatedUser.Title?.TitleName ?? "")
+                            };
+
+                            var claimsIdentity = new System.Security.Claims.ClaimsIdentity(claims, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
+                            
+                            var authProperties = new Microsoft.AspNetCore.Authentication.AuthenticationProperties
+                            {
+                                IsPersistent = true,
+                                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
+                            };
+
+                            await HttpContext.SignInAsync(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme,
+                                new System.Security.Claims.ClaimsPrincipal(claimsIdentity), authProperties);
+                        }
+                    }
+
+                    return Json(new { success = true, message = "บันทึกข้อมูลสำเร็จ" });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = "เกิดข้อผิดพลาด: " + ex.Message });
+                }
+            }
+
+            public class UserProfileUpdateModel
+            {
+                public int TitleID { get; set; }
+                public string FirstName { get; set; } = string.Empty;
+                public string LastName { get; set; } = string.Empty;
+                public string CurrentPassword { get; set; } = string.Empty;
+                public string NewPassword { get; set; } = string.Empty;
             }
         }
     }
