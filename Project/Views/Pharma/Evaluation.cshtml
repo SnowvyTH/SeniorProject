@@ -1,5 +1,377 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "ทำแบบประเมิน";
+    Layout = "~/Views/Shared/_PharmaLayout.cshtml";
+}
+
+<div class="container">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">
+                <i class="fas fa-clipboard-list me-2 mt-4"></i>ทำแบบประเมิน
+            </h2>
+            <p class="text-muted mb-0">เลือกผู้ป่วยและแบบประเมินเพื่อเริ่มการประเมิน</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Patient Selection -->
+        <div class="col-md-6">
+            <div class="modern-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-search me-2"></i>เลือกผู้ป่วย
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">ค้นหาผู้ป่วย</label>
+                        <input type="text" class="form-control" id="patientSearch" 
+                               placeholder="กรอก HN หรือชื่อผู้ป่วย (อย่างน้อย 2 ตัวอักษร)">
+                        <div id="patientFeedback" class="invalid-feedback"></div>
+                    </div>
+                    
+                    <input type="hidden" id="selectedPatientId" value="">
+                    <input type="hidden" id="originalPatientText" value="">
+                    
+                    <div id="patientInfo" class="patient-info-box">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-user-plus fa-3x mb-3"></i>
+                            <p>ยังไม่ได้เลือกผู้ป่วย</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Selection -->
+        <div class="col-md-6">
+            <div class="modern-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>เลือกแบบประเมิน
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">แบบประเมิน</label>
+                        <select class="form-select" id="formSelect">
+                            <option value="">เลือกแบบประเมิน</option>
+                            @foreach (var form in ViewBag.Forms)
+                            {
+                                <option value="@form.FormID">@form.FormName</option>
+                            }
+                        </select>
+                    </div>
+                    
+                    <div id="formInfo" class="form-info-box text-center text-muted">
+                        <i class="fas fa-clipboard fa-3x mb-3"></i>
+                        <p>ยังไม่ได้เลือกแบบประเมิน</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Button -->
+    <div class="text-center mt-4">
+        <button type="button" class="btn btn-secondary btn-lg" id="startFormBtn" disabled>
+            <i class="fas fa-play me-2"></i>เริ่มทำแบบประเมิน
+        </button>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        :root {
+            --mint-green: #51c3b7;
+            --dark-green: #05685e;
+        }
+
+        .modern-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: none;
+            height: 100%;
+        }
+
+        .modern-card .card-header {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+
+        .modern-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .patient-info-box, .form-info-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 2rem;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #e0e6ed;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--mint-green);
+            box-shadow: 0 0 0 0.2rem rgba(81, 195, 183, 0.25);
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--dark-green) 0%, var(--mint-green) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(81, 195, 183, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+        }
+
+        .page-title {
+            color: var(--dark-green);
+            font-weight: 700;
+        }
+
+        .dropdown-menu {
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(81, 195, 183, 0.1);
+            color: var(--dark-green);
+        }
+
+        .badge {
+            font-size: 0.75rem;
+        }
+
+        .bg-primary {
+            background-color: var(--mint-green) !important;
+        }
+
+        .bg-success {
+            background-color: var(--dark-green) !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize autocomplete for patient search
+            $('#patientSearch').on('input', function() {
+                const term = $(this).val();
+                const selectedPatientId = $('#selectedPatientId').val();
+                const originalText = $('#originalPatientText').val();
+                
+                // If there's a selected patient and the current text doesn't match original
+                if (selectedPatientId && term !== originalText) {
+                    validatePatientInput(term, originalText);
+                }
+                
+                if (term.length >= 2 && !selectedPatientId) {
+                    searchPatients(term);
+                } else if (term.length < 2 && !selectedPatientId) {
+                    $('#patient-dropdown').remove();
+                }
+            });
+            
+            // Handle form selection
+            $('#formSelect').on('change', function() {
+                updateFormInfo();
+                updateStartButton();
+            });
+
+            // Handle start button click
+            $('#startFormBtn').on('click', function() {
+                const patientId = $('#selectedPatientId').val();
+                const formId = $('#formSelect').val();
+                
+                if (patientId && formId) {
+                    window.location.href = `/Pharma/StartEvaluation?patientId=${patientId}&formId=${formId}`;
+                }
+            });
+        });
+        
+        function validatePatientInput(currentText, originalText) {
+            const patientFeedback = $('#patientFeedback');
+            const patientInput = $('#patientSearch');
+            
+            if (currentText !== originalText) {
+                patientInput.removeClass('is-valid').addClass('is-invalid');
+                patientFeedback.text('ข้อมูลผู้ป่วยไม่ตรงกับที่เลือกไว้ กรุณาเลือกผู้ป่วยใหม่หรือลบข้อความแล้วค้นหาใหม่').show();
+                // Clear selected patient
+                $('#selectedPatientId').val('');
+                $('#originalPatientText').val('');
+                updatePatientInfo(false);
+                updateStartButton();
+            } else {
+                patientInput.removeClass('is-invalid').addClass('is-valid');
+                patientFeedback.hide();
+                updateStartButton();
+            }
+        }
+        
+        function updateStartButton() {
+            const patientId = $('#selectedPatientId').val();
+            const formId = $('#formSelect').val();
+            const isPatientValid = patientId && !$('#patientSearch').hasClass('is-invalid');
+            
+            const startBtn = $('#startFormBtn');
+            if (isPatientValid && formId) {
+                startBtn.prop('disabled', false).removeClass('btn-secondary').addClass('btn-primary');
+            } else {
+                startBtn.prop('disabled', true).removeClass('btn-primary').addClass('btn-secondary');
+            }
+        }
+        
+        function searchPatients(term) {
+            $.ajax({
+                url: '/Pharma/SearchPatients',
+                type: 'GET',
+                data: { term: term },
+                success: function(data) {
+                    showPatientResults(data);
+                },
+                error: function() {
+                    console.log('Error searching patients');
+                }
+            });
+        }
+        
+        function showPatientResults(patients) {
+            // Remove existing dropdown
+            $('#patient-dropdown').remove();
+            
+            if (patients.length === 0) {
+                return;
+            }
+            
+            let dropdown = '<div id="patient-dropdown" class="dropdown-menu show" style="position: absolute; top: 100%; left: 0; right: 0; z-index: 1000;">';
+            
+            patients.forEach(function(patient) {
+                dropdown += `
+                    <a class="dropdown-item" href="#" onclick="selectPatient('${patient.id}', '${patient.text}', '${patient.patientType}', '${patient.birthDate}')">
+                        <div>
+                            <strong>${patient.text}</strong>
+                            <br>
+                            <small class="text-muted">ประเภท: ${patient.patientType} | เกิด: ${patient.birthDate}</small>
+                        </div>
+                    </a>`;
+            });
+            
+            dropdown += '</div>';
+            
+            $('#patientSearch').parent().css('position', 'relative').append(dropdown);
+            
+            // Close dropdown when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('#patientSearch').length) {
+                    $('#patient-dropdown').remove();
+                }
+            });
+        }
+        
+        function selectPatient(id, text, patientType, birthDate) {
+            $('#selectedPatientId').val(id);
+            $('#originalPatientText').val(text);
+            $('#patientSearch').val(text);
+            $('#patient-dropdown').remove();
+            
+            // Update patient input styling
+            $('#patientSearch').removeClass('is-invalid').addClass('is-valid');
+            $('#patientFeedback').hide();
+            
+            // Show patient info
+            updatePatientInfo(true, text, patientType, birthDate);
+            updateStartButton();
+        }
+        
+        function updatePatientInfo(hasPatient, text = '', patientType = '', birthDate = '') {
+            let patientInfo;
+            
+            if (hasPatient) {
+                patientInfo = `
+                    <div class="text-center">
+                        <i class="fas fa-user-check fa-3x text-success mb-3"></i>
+                        <h6>${text}</h6>
+                        <p class="text-muted mb-2">
+                            <span class="badge ${patientType === 'OPD' ? 'bg-primary' : 'bg-success'}">${patientType}</span>
+                        </p>
+                        <p class="text-muted">
+                            <i class="fas fa-calendar"></i> ${birthDate}
+                        </p>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearPatient()">
+                            <i class="fas fa-times"></i> ลบการเลือก
+                        </button>
+                    </div>`;
+            } else {
+                patientInfo = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-user-plus fa-3x mb-3"></i>
+                        <p>ยังไม่ได้เลือกผู้ป่วย</p>
+                    </div>`;
+            }
+            
+            $('#patientInfo').html(patientInfo);
+        }
+
+        function updateFormInfo() {
+            const formSelect = $('#formSelect');
+            const selectedText = formSelect.find('option:selected').text();
+            
+            if (formSelect.val()) {
+                $('#formInfo').html(`
+                    <div class="text-center">
+                        <i class="fas fa-clipboard-check fa-3x text-success mb-3"></i>
+                        <h6>${selectedText}</h6>
+                        <p class="text-muted">พร้อมสำหรับการประเมิน</p>
+                    </div>
+                `);
+            } else {
+                $('#formInfo').html(`
+                    <div class="text-center text-muted">
+                        <i class="fas fa-clipboard fa-3x mb-3"></i>
+                        <p>ยังไม่ได้เลือกแบบประเมิน</p>
+                    </div>
+                `);
+            }
+        }
+        
+        function clearPatient() {
+            $('#selectedPatientId').val('');
+            $('#originalPatientText').val('');
+            $('#patientSearch').val('').removeClass('is-invalid is-valid');
+            $('#patientFeedback').hide();
+            updatePatientInfo(false);
+            updateStartButton();
+            $('#patientSearch').focus();
+        }
+    </script>
 }

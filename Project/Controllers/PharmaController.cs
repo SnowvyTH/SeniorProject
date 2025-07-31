@@ -85,6 +85,116 @@ namespace Project.Controllers
                 return View();
             }
 
+            public async Task<IActionResult> Evaluation()
+            {
+                ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
+                ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
+
+                var forms = await _db.Form.OrderBy(f => f.FormName).ToListAsync();
+                ViewBag.Forms = forms;
+
+                return View();
+            }
+
+            [HttpGet]
+            public async Task<IActionResult> SearchPatients(string term)
+            {
+                if (string.IsNullOrWhiteSpace(term) || term.Length < 2)
+                {
+                    return Json(new List<object>());
+                }
+
+                var patients = await _db.Patient
+                    .Include(p => p.Title)
+                    .Where(p => p.HN.Contains(term) || 
+                               (p.FirstName != null && p.FirstName.Contains(term)) ||
+                               (p.LastName != null && p.LastName.Contains(term)))
+                    .Select(p => new
+                    {
+                        id = p.HN,
+                        text = $"{p.HN} - {p.Title!.TitleName}{p.FirstName} {p.LastName}",
+                        patientType = p.PatientType ?? "ไม่ระบุ",
+                        birthDate = p.BirthDate != null ? p.BirthDate.Value.ToString("dd/MM/yyyy") : "ไม่ระบุ"
+                    })
+                    .Take(10)
+                    .ToListAsync();
+
+                return Json(patients);
+            }
+
+            [HttpGet]
+            public async Task<IActionResult> StartEvaluation(string patientId, int formId)
+            {
+                var patient = await _db.Patient
+                    .Include(p => p.Title)
+                    .FirstOrDefaultAsync(p => p.HN == patientId);
+
+                var form = await _db.Form
+                    .Include(f => f.Questions)
+                        .ThenInclude(q => q.Options)
+                    .Include(f => f.Interpreters)
+                    .FirstOrDefaultAsync(f => f.FormID == formId);
+
+                if (patient == null || form == null)
+                {
+                    return RedirectToAction("Evaluation");
+                }
+
+                ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
+                ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
+                ViewBag.Patient = patient;
+                ViewBag.Form = form;
+
+                return View("EvaluationForm");
+            }
+
+            [HttpPost]
+            public async Task<IActionResult> SubmitEvaluation([FromBody] EvaluationSubmissionModel model)
+            {
+                try
+                {
+                    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (string.IsNullOrEmpty(userId))
+                    {
+                        return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
+                    }
+
+                    // Create evaluation record
+                    var evaluation = new Evaluation
+                    {
+                        HN = model.PatientId,
+                        FormID = model.FormId,
+                        UserID = int.Parse(userId),
+                        RecordDate = DateTime.Now,
+                        Result = model.Result
+                    };
+
+                    _db.Evaluation.Add(evaluation);
+                    await _db.SaveChangesAsync();
+
+                    // Create evaluation detail records
+                    foreach (var answer in model.Answers)
+                    {
+                        var evaluationDetail = new EvaluationDetail
+                        {
+                            EvaID = evaluation.EvaID,
+                            QuestionID = answer.QuestionId,
+                            Score = answer.Score
+                        };
+
+                        _db.EvaluationDetail.Add(evaluationDetail);
+                    }
+
+                    await _db.SaveChangesAsync();
+
+                    return Json(new { success = true, message = "บันทึกผลการประเมินเรียบร้อยแล้ว" });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = "เกิดข้อผิดพลาด: " + ex.Message });
+                }
+            }
+
             public async Task<IActionResult> Patients()
             {
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
@@ -755,17 +865,17 @@ namespace Project.Controllers
                 }
             }
 
-            public class QuestionData
-            {
-                [JsonPropertyName("questionText")]
-                public string? QuestionText { get; set; }
+        public class QuestionData
+        {
+            [JsonPropertyName("questionText")]
+            public string? QuestionText { get; set; }
 
-                [JsonPropertyName("section")]
-                public string? Section { get; set; }
+            [JsonPropertyName("section")]
+            public string? Section { get; set; }
 
-                [JsonPropertyName("options")]
-                public List<OptionData>? Options { get; set; }
-            }
+            [JsonPropertyName("options")]
+            public List<OptionData>? Options { get; set; }
+        }
 
             public class OptionData
             {
@@ -1085,6 +1195,20 @@ namespace Project.Controllers
                 public string LastName { get; set; } = string.Empty;
                 public string CurrentPassword { get; set; } = string.Empty;
                 public string NewPassword { get; set; } = string.Empty;
+            }
+
+            public class EvaluationSubmissionModel
+            {
+                public string PatientId { get; set; } = string.Empty;
+                public int FormId { get; set; }
+                public string Result { get; set; } = string.Empty;
+                public List<EvaluationAnswerModel> Answers { get; set; } = new List<EvaluationAnswerModel>();
+            }
+
+            public class EvaluationAnswerModel
+            {
+                public int QuestionId { get; set; }
+                public int Score { get; set; }
             }
         }
     }

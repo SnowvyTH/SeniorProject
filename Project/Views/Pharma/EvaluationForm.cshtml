@@ -1,0 +1,454 @@
+@{
+    ViewData["Title"] = "ทำแบบประเมิน";
+    Layout = "~/Views/Shared/_PharmaLayout.cshtml";
+    var patient = ViewBag.Patient as Project.Models.Entity.Patient;
+    var form = ViewBag.Form as Project.Models.Entity.Form;
+}
+
+<div class="container">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">
+                <i class="fas fa-clipboard-list me-2 mt-4"></i>@form!.FormName
+            </h2>
+            <p class="text-muted mb-0">ผู้ป่วย: @($"{patient!.HN} - {patient.Title?.TitleName}{patient.FirstName} {patient.LastName}")</p>
+            <p class="text-muted mb-0">
+                <small>
+                    <i class="fas fa-calculator me-1"></i>
+                    วิธีการนับคะแนน: 
+                    @{
+                        string scoringText = form.Scoring switch
+                        {
+                            "max" => "คะแนนสูงสุด",
+                            "min" => "คะแนนต่ำสุด", 
+                            "sum" => "รวมคะแนน",
+                            _ => "รวมคะแนน"
+                        };
+                    }
+                    @scoringText
+                </small>
+            </p>
+        </div>
+        <div>
+            <a href="/Pharma/Evaluation" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>กลับ
+            </a>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="row">
+        <!-- Questions Form -->
+        <div class="col-md-8">
+            <form id="evaluationForm">
+                <input type="hidden" id="patientId" value="@patient.HN">
+                <input type="hidden" id="formId" value="@form.FormID">
+                
+                @foreach (var question in form.Questions.OrderBy(q => q.QuestionID))
+                {
+                    <div class="modern-card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-question-circle me-2"></i>
+                                คำถามที่ @question.QuestionID
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="question-text mb-3">@question.QuestionText</p>
+                            
+                            <div class="choices-container">
+                                @foreach (var choice in question.Options.OrderBy(c => c.OptionID))
+                                {
+                                    <div class="form-check choice-item">
+                                        <input class="form-check-input" type="radio" 
+                                               name="question_@question.QuestionID" 
+                                               id="choice_@choice.OptionID"
+                                               value="@choice.Value"
+                                               data-question="@question.QuestionID"
+                                               onchange="updateProgress()">
+                                        <label class="form-check-label" for="choice_@choice.OptionID">
+                                            @choice.OptionText
+                                            <span class="badge bg-info ms-2">@choice.Value คะแนน</span>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                
+                <!-- Submit Button -->
+                <div class="text-center mt-4">
+                    <button type="button" class="btn btn-success btn-lg" id="submitBtn" onclick="submitEvaluation()">
+                        <i class="fas fa-save me-2"></i>บันทึกผลการประเมิน
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Progress Bar Sidebar -->
+        <div class="col-md-4">
+            <div class="modern-card sticky-top" style="top: 20px;">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>ความคืบหน้า
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="progress-circle-container">
+                            <div class="progress-circle" id="progressCircle">
+                                <span id="progressText">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress mb-3">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 0%" 
+                             id="progressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <p class="mb-1">
+                            <span class="fw-bold" id="answeredCount">0</span> / @form.Questions.Count คำถาม
+                        </p>
+                        <small class="text-muted">ที่ตอบแล้ว</small>
+                    </div>
+                    
+                    <div class="mt-3 pt-3 border-top">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            กรุณาตอบคำถามให้ครบทุกข้อ
+                        </small>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-calculator me-1"></i>
+                                วิธีการนับ: @scoringText
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        :root {
+            --mint-green: #51c3b7;
+            --dark-green: #05685e;
+        }
+
+        .modern-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: none;
+        }
+
+        .modern-card .card-header {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+
+        .modern-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .choice-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .choice-item:hover {
+            background: rgba(81, 195, 183, 0.1);
+            transform: translateX(5px);
+        }
+
+        .choice-item input[type="radio"]:checked + label {
+            color: var(--dark-green);
+            font-weight: 600;
+        }
+
+        .form-check-input:checked {
+            background-color: var(--mint-green);
+            border-color: var(--mint-green);
+        }
+
+        .form-check-input:focus {
+            border-color: var(--mint-green);
+            box-shadow: 0 0 0 0.2rem rgba(81, 195, 183, 0.25);
+        }
+
+        .progress {
+            height: 20px;
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease;
+            font-weight: 600;
+        }
+
+        .progress-circle-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .progress-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(var(--mint-green) 0deg, #e9ecef 0deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: background 0.5s ease;
+        }
+
+        .progress-circle::before {
+            content: '';
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            position: absolute;
+        }
+
+        .progress-circle span {
+            position: relative;
+            z-index: 1;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--dark-green);
+        }
+
+        .sticky-top {
+            position: sticky !important;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border: none;
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .page-title {
+            color: var(--dark-green);
+            font-weight: 700;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+        }
+
+        .bg-info {
+            background-color: var(--mint-green) !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function() {
+            updateProgress();
+        });
+
+        function getScoringMethodText(method) {
+            switch(method) {
+                case 'max':
+                    return 'คะแนนสูงสุด';
+                case 'min':
+                    return 'คะแนนต่ำสุด';
+                case 'sum':
+                    return 'รวมคะแนน';
+                default:
+                    return 'รวมคะแนน';
+            }
+        }
+
+        function updateProgress() {
+            const totalQuestions = @form.Questions.Count;
+            const answeredQuestions = $('input[type="radio"]:checked').length;
+            const percentage = Math.round((answeredQuestions / totalQuestions) * 100);
+            
+            // Update progress bar
+            $('#progressBar').css('width', percentage + '%');
+            $('#progressText').text(percentage + '%');
+            $('#answeredCount').text(answeredQuestions);
+            
+            // Update progress circle
+            const degrees = (percentage / 100) * 360;
+            const progressCircle = $('#progressCircle');
+            
+            if (percentage === 0) {
+                progressCircle.css('background', `conic-gradient(#e9ecef 0deg)`);
+            } else {
+                let color = '#dc3545'; // Red
+                if (percentage >= 50 && percentage < 100) {
+                    color = '#ffc107'; // Yellow
+                } else if (percentage === 100) {
+                    color = '#28a745'; // Green
+                }
+                
+                progressCircle.css('background', 
+                    `conic-gradient(${color} ${degrees}deg, #e9ecef ${degrees}deg)`
+                );
+            }
+            
+            // Update progress bar color
+            if (percentage < 50) {
+                $('#progressBar').removeClass('bg-warning bg-success').addClass('bg-danger');
+            } else if (percentage < 100) {
+                $('#progressBar').removeClass('bg-danger bg-success').addClass('bg-warning');
+            } else {
+                $('#progressBar').removeClass('bg-danger bg-warning').addClass('bg-success');
+            }
+        }
+
+        function submitEvaluation() {
+            const totalQuestions = @form.Questions.Count;
+            const answeredQuestions = $('input[type="radio"]:checked').length;
+            
+            if (answeredQuestions < totalQuestions) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'คำถามยังไม่ครบ',
+                    text: `กรุณาตอบคำถามให้ครบทั้ง ${totalQuestions} ข้อ (ตอบแล้ว ${answeredQuestions} ข้อ)`,
+                    confirmButtonColor: '#ffc107'
+                });
+                return;
+            }
+
+            // Collect answers
+            const answers = [];
+            const scores = [];
+            
+            $('input[type="radio"]:checked').each(function() {
+                const questionId = parseInt($(this).data('question'));
+                const score = parseInt($(this).val());
+                
+                answers.push({
+                    QuestionId: questionId,
+                    Score: score
+                });
+                
+                scores.push(score);
+            });
+
+            // Calculate final score based on scoring method
+            const scoringMethod = '@form.Scoring'; // Get scoring method from form
+            let finalScore = 0;
+            
+            switch(scoringMethod) {
+                case 'max':
+                    finalScore = Math.max(...scores);
+                    break;
+                case 'min':
+                    finalScore = Math.min(...scores);
+                    break;
+                case 'sum':
+                default:
+                    finalScore = scores.reduce((sum, score) => sum + score, 0);
+                    break;
+            }
+
+            // Determine result based on final score using interpreter data
+            const interpreters = @Html.Raw(Json.Serialize(form.Interpreters.Select(i => new { 
+                minScore = i.MinScore, 
+                maxScore = i.MaxScore, 
+                interName = i.InterName, 
+                interText = i.InterText 
+            }).OrderBy(i => i.minScore)));
+            
+            let result = 'ไม่สามารถประเมินผลได้';
+            let resultText = '';
+            
+            for (let interpreter of interpreters) {
+                if (finalScore >= interpreter.minScore && finalScore <= interpreter.maxScore) {
+                    result = interpreter.interName || `ระดับ ${interpreter.minScore}-${interpreter.maxScore}`;
+                    resultText = interpreter.interText || '';
+                    break;
+                }
+            }
+
+            // Create submission data with scoring method info
+            const submissionData = {
+                PatientId: $('#patientId').val(),
+                FormId: parseInt($('#formId').val()),
+                Result: `${result}`,
+                Answers: answers
+            };
+
+            // Show loading
+            Swal.fire({
+                title: 'กำลังบันทึก...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Submit to server
+            $.ajax({
+                url: '/Pharma/SubmitEvaluation',
+                type: 'POST',
+                data: JSON.stringify(submissionData),
+                contentType: 'application/json',
+                success: function(result) {
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ!',
+                            text: 'บันทึกผลการประเมินเรียบร้อยแล้ว',
+                            confirmButtonColor: '#28a745'
+                        }).then(() => {
+                            window.location.href = '/Pharma/';
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: result.message || 'ไม่สามารถบันทึกผลการประเมินได้'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้'
+                    });
+                }
+            });
+        }
+    </script>
+}
