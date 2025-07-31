@@ -1,5 +1,348 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model Project.Models.Entity.Evaluation
 @{
+    ViewData["Title"] = "รายละเอียดการประเมิน";
+    Layout = "~/Views/Shared/_PharmaLayout.cshtml";
+}
+
+<div class="container">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">
+                <i class="fas fa-file-medical me-2 mt-4"></i>รายละเอียดการประเมิน
+            </h2>
+            <p class="text-muted mb-0">ผลการประเมินของผู้ป่วย</p>
+        </div>
+        <div>
+            <a href="/Pharma/" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>กลับ
+            </a>
+        </div>
+    </div>
+
+    <!-- Patient Information -->
+    <div class="modern-card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-user-injured me-2"></i>ข้อมูลผู้ป่วย
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-item mb-3">
+                        <label class="fw-bold text-muted">HN:</label>
+                        <span class="ms-2">@Model.Patient?.HN</span>
+                    </div>
+                    <div class="info-item mb-3">
+                        <label class="fw-bold text-muted">ชื่อ-นามสกุล:</label>
+                        <span class="ms-2">@($"{Model.Patient?.Title?.TitleName}{Model.Patient?.FirstName} {Model.Patient?.LastName}")</span>
+                    </div>
+                    <div class="info-item mb-3">
+                        <label class="fw-bold text-muted">ประเภทผู้ป่วย:</label>
+                        <span class="badge @(Model.Patient?.PatientType == "OPD" ? "bg-primary" : "bg-success") ms-2">
+                            @Model.Patient?.PatientType
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item mb-3">
+                        <label class="fw-bold text-muted">วันที่ประเมิน:</label>
+                        <span class="ms-2">@Model.RecordDate.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                    <div class="info-item mb-3">
+                        <label class="fw-bold text-muted">ผู้ทำการประเมิน:</label>
+                        <span class="ms-2">@($"{Model.User?.Title?.TitleName}{Model.User?.FirstName} {Model.User?.LastName}")</span>
+                    </div>
+                    <div class="info-item mb-3">
+                        <label class="fw-bold text-muted">แบบประเมิน:</label>
+                        <span class="ms-2">@Model.Form?.FormName</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluation Result -->
+    <div class="modern-card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-chart-line me-2"></i>ผลการประเมิน
+            </h5>
+        </div>
+        <div class="card-body text-center">
+            <div class="result-display">
+                <div class="result-badge mb-3">
+                    <h3 class="badge bg-warning p-3 fs-5">@Model.Result</h3>
+                </div>
+                <p class="text-muted">ระดับความรุนแรงจากการประเมิน</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluation Details -->
+    <div class="modern-card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-list-check me-2"></i>รายละเอียดการตอบ
+            </h5>
+        </div>
+        <div class="card-body">
+            @if (Model.EvaluationDetails?.Any() == true)
+            {
+                <div class="evaluation-details">
+                    @if (Model.Form?.FormType == 3)
+                    {
+                        // แบบประเมินแบบกลุ่ม - แสดงตาม section
+                        var groupedQuestions = Model.EvaluationDetails
+                            .Where(d => d.Question != null)
+                            .GroupBy(d => d.Question!.Section)
+                            .OrderBy(g => g.Key);
+                        
+                        int overallQuestionIndex = 0;
+                        
+                        @foreach (var sectionGroup in groupedQuestions)
+                        {
+                            <div class="section-group mb-4">
+                                <div class="section-header mb-3 p-3 bg-primary text-white rounded">
+                                    <h5 class="mb-0">
+                                        <i class="fas fa-layer-group me-2"></i>
+                                        @(sectionGroup.Key ?? "ไม่ระบุหมวดหมู่")
+                                    </h5>
+                                </div>
+                                
+                                @foreach (var detail in sectionGroup.OrderBy(d => d.Question?.QuestionID))
+                                {
+                                    overallQuestionIndex++;
+                                    <div class="detail-item mb-3 p-3 border rounded ms-3">
+                                        <div class="question-header mb-2">
+                                            <h6 class="fw-bold text-primary">
+                                                <i class="fas fa-question-circle me-2"></i>
+                                                คำถามที่ @overallQuestionIndex
+                                            </h6>
+                                            <p class="mb-2">@Html.Raw(detail.Question?.QuestionText?.Replace("\n", "<br>"))</p>
+                                        </div>
+                                        <div class="answer-section">
+                                            <div class="selected-answer p-2 bg-light rounded">
+                                                <strong>คำตอบที่เลือก:</strong>
+                                                <span class="badge bg-success ms-2">@detail.Score คะแนน</span>
+                                                <div class="mt-1">
+                                                    @{
+                                                        var selectedOption = detail.Question?.Options?.FirstOrDefault(o => o.Value == detail.Score);
+                                                    }
+                                                    @if (selectedOption != null)
+                                                    {
+                                                        <span class="text-muted">@Html.Raw(selectedOption.OptionText?.Replace("\n", "<br>"))</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        // แบบประเมินมาตรฐาน - แสดงตามลำดับ
+                        int questionIndex = 0;
+                        @foreach (var detail in Model.EvaluationDetails.OrderBy(d => d.Question?.QuestionID))
+                        {
+                            questionIndex++;
+                            <div class="detail-item mb-4 p-3 border rounded">
+                                <div class="question-header mb-2">
+                                    <h6 class="fw-bold text-primary">
+                                        <i class="fas fa-question-circle me-2"></i>
+                                        คำถามที่ @questionIndex
+                                    </h6>
+                                    <p class="mb-2">@Html.Raw(detail.Question?.QuestionText?.Replace("\n", "<br>"))</p>
+                                </div>
+                                <div class="answer-section">
+                                    <div class="selected-answer p-2 bg-light rounded">
+                                        <strong>คำตอบที่เลือก:</strong>
+                                        <span class="badge bg-success ms-2">@detail.Score คะแนน</span>
+                                        <div class="mt-1">
+                                            @{
+                                                var selectedOption = detail.Question?.Options?.FirstOrDefault(o => o.Value == detail.Score);
+                                            }
+                                            @if (selectedOption != null)
+                                            {
+                                                <span class="text-muted">@Html.Raw(selectedOption.OptionText?.Replace("\n", "<br>"))</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center text-muted">
+                    <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                    <p>ไม่พบรายละเอียดการตอบคำถาม</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Form Information -->
+    <div class="modern-card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-info-circle me-2"></i>ข้อมูลแบบประเมิน
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-item mb-2">
+                        <label class="fw-bold text-muted">ชื่อแบบประเมิน:</label>
+                        <span class="ms-2">@Model.Form?.FormName</span>
+                    </div>
+                    <div class="info-item mb-2">
+                        <label class="fw-bold text-muted">ประเภท:</label>
+                        <span class="ms-2">
+                            @{
+                                string formTypeText = Model.Form?.FormType switch
+                                {
+                                    1 => "แบบประเมินมาตรฐาน",
+                                    2 => "แบบประเมินข้อความยาว",
+                                    3 => "แบบประเมินแบบกลุ่ม",
+                                    _ => "ไม่ระบุ"
+                                };
+                            }
+                            @formTypeText
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-item mb-2">
+                        <label class="fw-bold text-muted">วิธีการนับคะแนน:</label>
+                        <span class="ms-2">
+                            @{
+                                string scoringText = Model.Form?.Scoring switch
+                                {
+                                    "max" => "คะแนนสูงสุด",
+                                    "min" => "คะแนนต่ำสุด",
+                                    "sum" => "รวมคะแนน",
+                                    _ => "รวมคะแนน"
+                                };
+                            }
+                            @scoringText
+                        </span>
+                    </div>
+                    <div class="info-item mb-2">
+                        <label class="fw-bold text-muted">จำนวนคำถาม:</label>
+                        <span class="ms-2">@(Model.Form?.Questions?.Count ?? 0) ข้อ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        :root {
+            --mint-green: #51c3b7;
+            --dark-green: #05685e;
+        }
+
+        .modern-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: none;
+        }
+
+        .modern-card .card-header {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+
+        .modern-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .page-title {
+            color: var(--dark-green);
+            font-weight: 700;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .info-item label {
+            min-width: 140px;
+            margin-bottom: 0;
+        }
+
+        .result-display {
+            padding: 2rem;
+        }
+
+        .result-badge .badge {
+            font-size: 1.2rem;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .detail-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .question-header h6 {
+            color: var(--dark-green);
+        }
+
+        .selected-answer {
+            border-left: 4px solid var(--mint-green);
+        }
+
+        .section-group {
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%) !important;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(81, 195, 183, 0.3);
+        }
+
+        .section-group .detail-item {
+            border-left: 4px solid var(--mint-green);
+            background: #fff;
+        }
+
+        .section-group .detail-item:hover {
+            border-left-color: var(--dark-green);
+        }
+
+        .badge {
+            border-radius: 6px;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+    </style>
 }

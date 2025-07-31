@@ -56,14 +56,14 @@
     <!-- Patients Table -->
     <div class="modern-card">
         <div class="card-body p-0">
-            <div class="table-responsive mt-4">
+            <div class="table-responsive mt-4" style="overflow: visible;">
                 <table class="table table-hover mb-0" id="patientsTable">
                     <thead class="table-light">
                         <tr>
                             <th width="25%">ชื่อผู้ป่วย</th>
                             <th width="12%">ประเภทผู้ป่วย</th>
                             <th width="25%">ประวัติการตรวจ</th>
-                            <th width="15%">ผู้ประเมิน</th>
+                            <th width="15%">ความรุนแรง</th>
                             <th width="13%">การจัดการ</th>
                         </tr>
                     </thead>
@@ -98,7 +98,7 @@
                                             <ul class="dropdown-menu">
                                                 @foreach (var record in patient.Evaluations.OrderByDescending(r => r.RecordDate))
                                                 {
-                                                    <li><a class="dropdown-item" href="#" data-record-id="@record.EvaID">
+                                                    <li><a class="dropdown-item evaluation-item" href="#" data-record-id="@record.EvaID" data-result="@record.Result" data-patient-hn="@patient.HN">
                                                             <i class="fas fa-file-alt me-2"></i>@(record.Form?.FormName) - @(record.RecordDate.ToString("dd/MM/yyyy"))
                                                         </a></li>
                                                 }
@@ -115,12 +115,9 @@
                                 <td>
                                     @if (patient.Evaluations.Any())
                                     {
-                                        var firstRecord = patient.Evaluations.OrderBy(r => r.RecordDate).First();
-                                        <div class="d-flex align-items-center">
-                                            <div class="avatar-xs me-2">
-                                                <i class="fas fa-user-md"></i>
-                                            </div>
-                                            <small>@($"{firstRecord.User?.Title?.TitleName}{firstRecord.User?.FirstName} {firstRecord.User?.LastName}")</small>
+                                        var latestEvaluation = patient.Evaluations.OrderByDescending(r => r.RecordDate).First();
+                                        <div class="severity-display" id="severity-@patient.HN">
+                                            <span class="badge bg-warning">@(latestEvaluation.Result ?? "ไม่ระบุ")</span>
                                         </div>
                                     }
                                     else
@@ -130,7 +127,7 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="viewPatientDetails('@patient.HN')" title="ดูรายละเอียด">
+                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="viewEvaluationDetail('@patient.HN')" title="ดูรายละเอียดการประเมิน">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                         <button type="button" class="btn btn-sm btn-outline-success" onclick="printEvaluation('@patient.HN')" title="พิมพ์">
@@ -246,10 +243,20 @@
             color: #495057;
         }
 
+        .table td {
+            overflow: visible !important;
+            position: relative;
+        }
+
+        .table-responsive {
+            overflow: visible !important;
+        }
+
         .modern-card {
             border-radius: 15px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             border: none;
+            overflow: visible !important;
         }
 
         .modern-card .card-header {
@@ -263,6 +270,7 @@
 
         .modern-card .card-body {
             padding: 1.5rem;
+            overflow: visible !important;
         }
 
         .btn {
@@ -296,6 +304,72 @@
 
         .dropdown-menu {
             border-radius: 6px;
+            min-width: 280px;
+            max-width: 350px;
+            z-index: 1050 !important;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0,0,0,.125);
+            position: absolute !important;
+            transform: none !important;
+            inset: auto !important;
+            margin: 0 !important;
+        }
+
+        .dropdown {
+            position: static !important;
+        }
+
+        .table-responsive .dropdown-menu {
+            position: absolute !important;
+            will-change: transform;
+        }
+
+        .dropdown-menu.show {
+            display: block !important;
+            position: absolute !important;
+            top: 100% !important;
+            left: 0 !important;
+            right: auto !important;
+            bottom: auto !important;
+        }
+
+        .severity-display .badge {
+            font-size: 0.85rem;
+            padding: 0.5rem 0.8rem;
+        }
+
+        .evaluation-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .evaluation-item {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        /* Fix Bootstrap dropdown overflow issues */
+        .table-responsive,
+        .table-responsive .table,
+        .modern-card,
+        .modern-card .card-body {
+            position: static !important;
+            overflow: visible !important;
+        }
+
+        /* Force dropdown to show outside container */
+        .dropdown-toggle {
+            position: relative;
+        }
+
+        .dropdown .dropdown-menu {
+            z-index: 9999 !important;
+            transform: none !important;
+            top: auto !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            margin: 0 !important;
+            will-change: auto !important;
         }
     </style>
 }
@@ -303,6 +377,70 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            // Fix dropdown positioning
+            $('.dropdown').on('show.bs.dropdown', function () {
+                // Close all other open dropdowns first
+                $('.dropdown').not(this).each(function() {
+                    $(this).find('.dropdown-toggle').dropdown('hide');
+                });
+                
+                const dropdown = $(this);
+                const dropdownMenu = dropdown.find('.dropdown-menu');
+                const dropdownToggle = dropdown.find('.dropdown-toggle');
+                
+                // Get button position
+                const buttonOffset = dropdownToggle.offset();
+                const buttonHeight = dropdownToggle.outerHeight();
+                
+                // Position dropdown menu
+                dropdownMenu.css({
+                    'position': 'fixed',
+                    'top': buttonOffset.top + buttonHeight + 'px',
+                    'left': buttonOffset.left + 'px',
+                    'z-index': '9999',
+                    'display': 'block'
+                });
+            });
+
+            $('.dropdown').on('hide.bs.dropdown', function () {
+                const dropdown = $(this);
+                const dropdownMenu = dropdown.find('.dropdown-menu');
+                
+                // Reset positioning
+                dropdownMenu.css({
+                    'position': '',
+                    'top': '',
+                    'left': '',
+                    'display': ''
+                });
+            });
+
+            // Close dropdown on scroll to prevent floating menu
+            $(window).on('scroll', function() {
+                $('.dropdown-menu.show').each(function() {
+                    const dropdown = $(this).closest('.dropdown');
+                    dropdown.find('.dropdown-toggle').dropdown('hide');
+                });
+            });
+
+            // Close dropdown on table scroll
+            $('.table-responsive').on('scroll', function() {
+                $('.dropdown-menu.show').each(function() {
+                    const dropdown = $(this).closest('.dropdown');
+                    dropdown.find('.dropdown-toggle').dropdown('hide');
+                });
+            });
+
+            // Close dropdown when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.dropdown').length) {
+                    $('.dropdown-menu.show').each(function() {
+                        const dropdown = $(this).closest('.dropdown');
+                        dropdown.find('.dropdown-toggle').dropdown('hide');
+                    });
+                }
+            });
+            
             // Search and filter functionality
             function filterPatients() {
                 const searchQuery = $('#searchInput').val().toLowerCase();
@@ -381,6 +519,27 @@
             $('#searchInput').on('input', filterPatients);
             $('#patientTypeFilter, #evaluationFilter').on('change', filterPatients);
             
+            // Handle evaluation dropdown selection
+            $(document).on('click', '.evaluation-item', function(e) {
+                e.preventDefault();
+                const recordId = $(this).data('record-id');
+                const result = $(this).data('result');
+                const patientHN = $(this).data('patient-hn');
+                
+                // Update severity display in real-time
+                const severityDisplay = $(`#severity-${patientHN}`);
+                severityDisplay.html(`<span class="badge bg-warning">${result || 'ไม่ระบุ'}</span>`);
+                
+                // Update dropdown button HTML (preserve icon)
+                const dropdownButton = $(this).closest('.dropdown').find('.dropdown-toggle');
+                const itemHtml = $(this).html(); // Get the full HTML content including icons
+                dropdownButton.html(itemHtml);
+                
+                // Close dropdown
+                $(this).closest('.dropdown-menu').removeClass('show');
+                $(this).closest('.dropdown').find('.dropdown-toggle').removeClass('show');
+            });
+            
             // Initialize
             updateResultsCount($('.patient-row').length);
         });
@@ -403,9 +562,18 @@
             $('#patientsCount').text('@Model.Count() รายการ');
         }
 
-        function viewPatientDetails(hn) {
-            alert('ดูรายละเอียดผู้ป่วย HN: ' + hn);
-            // TODO: Navigate to patient details page
+        function viewEvaluationDetail(patientHN) {
+            // Get currently selected evaluation or latest one
+            const severityDisplay = $(`#severity-${patientHN}`);
+            const latestEvaluationItem = $(`.evaluation-item[data-patient-hn="${patientHN}"]`).first();
+            const recordId = latestEvaluationItem.data('record-id');
+            
+            if (recordId) {
+                // Navigate to evaluation detail page
+                window.location.href = `/Pharma/EvaluationDetail?evaId=${recordId}`;
+            } else {
+                alert('ไม่พบข้อมูลการประเมิน');
+            }
         }
 
         function printEvaluation(patientId) {

@@ -195,6 +195,33 @@ namespace Project.Controllers
                 }
             }
 
+            [HttpGet]
+            public async Task<IActionResult> EvaluationDetail(int evaId)
+            {
+                var evaluation = await _db.Evaluation
+                    .Include(e => e.Patient)
+                        .ThenInclude(p => p!.Title)
+                    .Include(e => e.Form)
+                        .ThenInclude(f => f!.Questions)
+                        .ThenInclude(q => q.Options)
+                    .Include(e => e.User)
+                        .ThenInclude(u => u!.Title)
+                    .Include(e => e.EvaluationDetails)
+                        .ThenInclude(ed => ed.Question)
+                        .ThenInclude(q => q!.Options)
+                    .FirstOrDefaultAsync(e => e.EvaID == evaId);
+
+                if (evaluation == null)
+                {
+                    return RedirectToAction("Index");
+                }
+
+                ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
+                ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
+
+                return View(evaluation);
+            }
+
             public async Task<IActionResult> Patients()
             {
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;

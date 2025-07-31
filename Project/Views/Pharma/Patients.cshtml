@@ -97,7 +97,8 @@
                                     {
                                         @if (patient.CitizenID.Length >= 5)
                                         {
-                                            @($"XXXXXXXX{patient.CitizenID.Substring(patient.CitizenID.Length - 5)}")
+                                            var last5 = patient.CitizenID.Substring(patient.CitizenID.Length - 5);
+                                            @($"x-xxxx-xxx{last5.Substring(0, 2)}-{last5.Substring(2, 2)}-{last5.Substring(4, 1)}")
                                         }
                                         else
                                         {
@@ -205,20 +206,20 @@
                         
                         <!-- น้ำหนัก + ส่วนสูง -->
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">น้ำหนัก (กก.)</label>
+                            <label class="form-label fw-bold">น้ำหนัก (กก.) <small class="text-muted">(ไม่บังคับ)</small></label>
                             <input type="number" class="form-control" id="weight" placeholder="น้ำหนัก" step="0.1" min="0">
                         </div>
                         
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">ส่วนสูง (ซม.)</label>
+                            <label class="form-label fw-bold">ส่วนสูง (ซม.) <small class="text-muted">(ไม่บังคับ)</small></label>
                             <input type="number" class="form-control" id="height" placeholder="ส่วนสูง" step="0.1" min="0">
                         </div>
                         
                         <!-- สิทธิ์รักษา -->
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">สิทธิ์รักษา</label>
-                            <select class="form-select" id="rightId" required>
-                                <option value="">เลือกสิทธิ์รักษา</option>
+                            <label class="form-label fw-bold">สิทธิ์รักษา <small class="text-muted">(ไม่บังคับ)</small></label>
+                            <select class="form-select" id="rightId">
+                                <option value="">ว่าง</option>
                                 <!-- จะถูกเติมด้วย JavaScript -->
                             </select>
                         </div>
@@ -233,7 +234,7 @@
                         <div class="col-md-12">
                             <label class="form-label fw-bold">ประเภทผู้ป่วย</label>
                             <select class="form-select" id="patientType" required>
-                                <option value="">เลือกประเภทผู้ป่วย</option>
+                                <option value="">--เลือกประเภทผู้ป่วย--</option>
                                 <option value="OPD">ผู้ป่วยนอก (OPD)</option>
                                 <option value="WARD">ผู้ป่วยใน (WARD)</option>
                             </select>
@@ -588,7 +589,7 @@
                 type: 'GET',
                 success: function(rights) {
                     const select = $('#rightId');
-                    select.html('<option value="">เลือกสิทธิ์รักษา</option>');
+                    select.html('<option value="">ว่าง</option>');
                     rights.forEach(right => {
                         select.append(`<option value="${right.rightID}">${right.rightName}</option>`);
                     });
@@ -716,7 +717,6 @@
 
             // ตรวจสอบการเลือกข้อมูลที่จำเป็น
             const titleId = $('#titleId').val();
-            const rightId = $('#rightId').val();
             const tambonId = $('#tambonId').val();
 
             if (!titleId || titleId === '0') {
@@ -724,15 +724,6 @@
                     icon: 'warning',
                     title: 'กรุณาเลือกข้อมูล',
                     text: 'กรุณาเลือกคำนำหน้า'
-                });
-                return;
-            }
-
-            if (!rightId || rightId === '0') {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'กรุณาเลือกข้อมูล',
-                    text: 'กรุณาเลือกสิทธิ์การรักษา'
                 });
                 return;
             }
@@ -755,7 +746,7 @@
                 BirthDate: $('#birthDate').val(),
                 Weight: $('#weight').val() || null,
                 Height: $('#height').val() || null,
-                RightID: rightId,
+                RightID: $('#rightId').val() || null,
                 Phone: cleanPhoneNumber($('#phone').val()),
                 PatientType: $('#patientType').val(),
                 TambonID: tambonId
