@@ -24,6 +24,7 @@ namespace Project.Models.Entity
         public string? LastName { get; set; }
 
         public bool IsActive { get; set; }
+        public string? Picture { get; set; }
 
         [ForeignKey("Role")]
         public int? RoleID { get; set; }

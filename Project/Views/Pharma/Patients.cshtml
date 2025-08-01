@@ -170,7 +170,8 @@
                         <!-- เลขบัตรประชาชน -->
                         <div class="col-md-6">
                             <label class="form-label fw-bold">เลขบัตรประชาชน</label>
-                            <input type="text" class="form-control" id="citizenId" placeholder="x-xxxx-xxxxx-xx-x" maxlength="17" required oninput="formatCitizenId(this)">
+                            <input type="text" class="form-control" id="citizenId" placeholder="x-xxxx-xxxxx-xx-x" maxlength="17" required oninput="formatAndValidateCitizenId(this)">
+                            <div id="citizenidFeedback" class="invalid-feedback"></div>
                         </div>
                         
                         <!-- คำนำหน้า + ชื่อ -->
@@ -537,6 +538,11 @@
             input.value = value;
         }
 
+        function formatAndValidateCitizenId(input) {
+            formatCitizenId(input);
+            validateCitizenId(input);
+        }
+
         function formatCitizenId(input) {
             // เอาเฉพาะตัวเลข
             let value = input.value.replace(/\D/g, '');
@@ -558,6 +564,60 @@
             }
             
             input.value = value;
+        }
+
+        function validateCitizenId(input) {
+            const citizenidFeedback = $('#citizenidFeedback');
+            const citizenInput = $(input);
+            
+            // ดึงเฉพาะตัวเลข
+            const cleanValue = input.value.replace(/\D/g, '');
+            
+            // ตรวจสอบความยาว
+            if (cleanValue.length === 0) {
+                citizenInput.removeClass('is-valid is-invalid');
+                citizenidFeedback.hide();
+                return;
+            }
+            
+            if (cleanValue.length !== 13) {
+                citizenInput.removeClass('is-valid').addClass('is-invalid');
+                citizenidFeedback.text('เลขบัตรประชาชนต้องมี 13 หลัก').show();
+                return;
+            }
+            
+            // ตรวจสอบ Check Digit
+            if (isValidCitizenId(cleanValue)) {
+                citizenInput.removeClass('is-invalid').addClass('is-valid');
+                citizenidFeedback.hide();
+            } else {
+                citizenInput.removeClass('is-valid').addClass('is-invalid');
+                citizenidFeedback.text('เลขบัตรประชาชนไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง').show();
+            }
+        }
+
+        function isValidCitizenId(citizenId) {
+            // ตรวจสอบความยาว
+            if (citizenId.length !== 13) {
+                return false;
+            }
+            
+            // ตรวจสอบว่าเป็นตัวเลขทั้งหมด
+            if (!/^\d{13}$/.test(citizenId)) {
+                return false;
+            }
+            
+            // คำนวณ Check Digit
+            let sum = 0;
+            for (let i = 0; i < 12; i++) {
+                sum += parseInt(citizenId.charAt(i)) * (13 - i);
+            }
+            
+            let remainder = sum % 11;
+            let checkDigit = (11 - remainder) % 10;
+            
+            // เปรียบเทียบกับหลักสุดท้าย
+            return checkDigit === parseInt(citizenId.charAt(12));
         }
 
         // Helper function to clean formatted data before sending to server
@@ -667,7 +727,7 @@
                     // Format citizen ID and phone when loading data
                     if (patient.citizenID) {
                         $('#citizenId').val(patient.citizenID);
-                        formatCitizenId(document.getElementById('citizenId'));
+                        formatAndValidateCitizenId(document.getElementById('citizenId'));
                     }
                     $('#titleId').val(patient.titleID);
                     $('#firstName').val(patient.firstName);
@@ -737,9 +797,32 @@
                 return;
             }
 
+            // ตรวจสอบความถูกต้องของเลขบัตรประชาชน
+            const citizenIdInput = $('#citizenId');
+            if (citizenIdInput.hasClass('is-invalid')) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ข้อมูลไม่ถูกต้อง',
+                    text: 'กรุณาตรวจสอบเลขบัตรประชาชนให้ถูกต้อง'
+                });
+                citizenIdInput.focus();
+                return;
+            }
+
+            // ตรวจสอบเลขบัตรประชาชนอีกครั้งก่อนบันทึก
+            const cleanCitizenIdValue = cleanCitizenId($('#citizenId').val());
+            if (cleanCitizenIdValue && !isValidCitizenId(cleanCitizenIdValue)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เลขบัตรประชาชนไม่ถูกต้อง',
+                    text: 'กรุณาตรวจสอบเลขบัตรประชาชนให้ถูกต้อง'
+                });
+                return;
+            }
+
             const patientData = {
                 HN: $('#hn').val(),
-                CitizenID: cleanCitizenId($('#citizenId').val()),
+                CitizenID: cleanCitizenIdValue,
                 TitleID: titleId,
                 FirstName: $('#firstName').val(),
                 LastName: $('#lastName').val(),
