@@ -84,7 +84,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge @(patient.PatientType == "OPD" ? "bg-primary" : "bg-success") mx-4 mt-2">
+                                    <span class="badge @(patient.PatientType == "OPD" ? "bg-primary" : "bg-success") mx-4">
                                         @patient.PatientType
                                     </span>
                                 </td>
@@ -116,7 +116,7 @@
                                     @if (patient.Evaluations.Any())
                                     {
                                         var latestEvaluation = patient.Evaluations.OrderByDescending(r => r.RecordDate).First();
-                                        <div class="severity-display" id="severity-@patient.HN">
+                                        <div class="severity-display mx-1" id="severity-@patient.HN">
                                             <span class="badge bg-warning">@(latestEvaluation.Result ?? "ไม่ระบุ")</span>
                                         </div>
                                     }
@@ -126,8 +126,8 @@
                                     }
                                 </td>
                                 <td>
-                                    <div class="action-buttons">
-                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="viewEvaluationDetail('@patient.HN')" title="ดูรายละเอียดการประเมิน">
+                                    <div class="action-buttons mx-2">
+                                        <button type="button" class="btn btn-sm btn-outline-info mx-1" onclick="viewEvaluationDetail('@patient.HN')" title="ดูรายละเอียดการประเมิน">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                         <button type="button" class="btn btn-sm btn-outline-success" onclick="printEvaluation('@patient.HN')" title="พิมพ์">
@@ -270,7 +270,6 @@
 
         .modern-card .card-body {
             padding: 1.5rem;
-            overflow: visible !important;
         }
 
         .btn {
@@ -325,10 +324,8 @@
         }
 
         .dropdown-menu.show {
-            display: block !important;
+            display: block;
             position: absolute !important;
-            top: 100% !important;
-            left: 0 !important;
             right: auto !important;
             bottom: auto !important;
         }
@@ -348,29 +345,11 @@
         }
 
         /* Fix Bootstrap dropdown overflow issues */
-        .table-responsive,
-        .table-responsive .table,
-        .modern-card,
-        .modern-card .card-body {
+        .table-responsive .table {
             position: static !important;
             overflow: visible !important;
         }
 
-        /* Force dropdown to show outside container */
-        .dropdown-toggle {
-            position: relative;
-        }
-
-        .dropdown .dropdown-menu {
-            z-index: 9999 !important;
-            transform: none !important;
-            top: auto !important;
-            left: auto !important;
-            right: auto !important;
-            bottom: auto !important;
-            margin: 0 !important;
-            will-change: auto !important;
-        }
     </style>
 }
 
@@ -395,9 +374,7 @@
                 // Position dropdown menu
                 dropdownMenu.css({
                     'position': 'fixed',
-                    'top': buttonOffset.top + buttonHeight + 'px',
                     'left': buttonOffset.left + 'px',
-                    'z-index': '9999',
                     'display': 'block'
                 });
             });

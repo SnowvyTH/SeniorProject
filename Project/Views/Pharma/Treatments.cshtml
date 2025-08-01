@@ -44,13 +44,13 @@
                 <table class="table table-hover mb-0" id="treatmentsTable">
                     <thead class="table-light">
                         <tr>
-                            <th width="15%">ID</th>
-                            <th width="65%">ชื่อสิทธิ์การรักษา</th>
+                            <th width="10%">ลำดับ</th>
+                            <th width="75%">ชื่อสิทธิ์การรักษา</th>
                             <th width="20%">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Data will be loaded here -->
+                        <!-- Data  -->
                     </tbody>
                 </table>
             </div>
@@ -253,13 +253,13 @@
             treatments.forEach(function(treatment) {
                 const row = `
                     <tr>
-                        <td class="fw-bold text-primary">${treatment.rightID}</td>
+                        <td><span class="mx-4">${treatment.rightID}</span></td>
                         <td>
-                            <div class="fw-bold">${treatment.rightName || 'ไม่ระบุ'}</div>
+                            <span class="fw-bold mx-2">${treatment.rightName}</span>
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <button type="button" class="btn btn-outline-warning btn-sm" 
+                                <button type="button" class="btn btn-outline-warning btn-sm mx-1" 
                                         onclick="openEditTreatmentModal(${treatment.rightID}, '${treatment.rightName}')" title="แก้ไข">
                                     <i class="fas fa-edit"></i>
                                 </button>

@@ -35,8 +35,8 @@
                     <select class="form-select" id="formTypeFilter">
                         <option value="">ทุกประเภท</option>
                         <option value="1">แบบประเมินทั่วไป</option>
-                        <option value="2">แบบประเมินข้อยาว</option>
-                        <option value="3">แบบประเมินหัวข้อใหญ่</option>
+                        <option value="2">แบบประเมินแจงรายละเอียด</option>
+                        <option value="3">แบบประเมินชุดคำถาม</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
@@ -198,7 +198,6 @@
             loadForms();
             loadStats();
 
-            // Search and filter functionality
             $('#searchInput').on('input', function() {
                 loadForms();
             });
@@ -258,20 +257,20 @@
                 const rowNumber = index + 1;
                 const row = `
                     <tr>
-                        <th><span class="text-center mx-4">${rowNumber}</span></th>
+                        <td><span class="text-center mx-4">${rowNumber}</span></td>
                         <td>
-                            <div class="fw-bold">${form.formName || 'ไม่ระบุ'}</div>
+                            <div class="fw-bold mx-2">${form.formName}</div>
                         </td>
                         <td>${formTypeText}</td>
                         <td>
-                            <span class="badge bg-info">${form.questionCount} ข้อ</span>
+                            <span class="badge bg-info mx-4">${form.questionCount} ข้อ</span>
                         </td>
                         <td>
-                            <span class="badge bg-success">${form.evaluationCount} ครั้ง</span>
+                            <span class="badge bg-success mx-3">${form.evaluationCount} ครั้ง</span>
                         </td>
                         <td>
-                            <div class="action-buttons">
-                                <a href="/Pharma/EditForm?formId=${form.formID}" class="btn btn-outline-primary btn-sm" title="แก้ไข">
+                            <div class="action-buttons mx-2">
+                                <a href="/Pharma/EditForm?formId=${form.formID}" class="btn btn-outline-primary btn-sm mx-1" title="แก้ไข">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <button type="button" class="btn btn-outline-danger btn-sm" 
@@ -290,8 +289,8 @@
         function getFormTypeText(formType) {
             switch(formType) {
                 case 1: return '<span class="badge bg-primary">แบบประเมินทั่วไป</span>';
-                case 2: return '<span class="badge bg-danger">แบบประเมินข้อยาว</span>';
-                case 3: return '<span class="badge bg-success">แบบประเมินหัวข้อใหญ่</span>';
+                case 2: return '<span class="badge bg-danger">แบบประเมินแจงรายละเอียด</span>';
+                case 3: return '<span class="badge bg-success">แบบประเมินชุดคำถาม</span>';
                 default: return '<span class="badge bg-secondary">ไม่ระบุ</span>';
             }
         }
@@ -308,7 +307,6 @@
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Show loading
                     Swal.fire({
                         title: 'กำลังลบ...',
                         text: 'กรุณารอสักครู่',

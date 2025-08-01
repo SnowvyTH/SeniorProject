@@ -62,13 +62,13 @@
                         <tr>
                             <th width="5%">ลำดับ</th>
                             <th width="20%">ชื่อผู้ป่วย</th>
-                            <th width="17%">เลขบัตรประชาชน</th>
-                            <th width="5%">อายุ</th>
+                            <th width="15%">เลขบัตรประชาชน</th>
+                            <th width="7%">อายุ (ปี)</th>
                             <th width="12%">จังหวัด</th>
                             <th width="12%">อำเภอ</th>
-                            <th width="12%">ประเภทผู้ป่วย</th>
+                            <th width="10%">ประเภทผู้ป่วย</th>
                             <th width="10%">สิทธิ์การรักษา</th>
-                            <th width="7%">จัดการ</th>
+                            <th width="6%">จัดการ</th>
                         </tr>
                     </thead>
                     <tbody id="patientsTableBody">
@@ -110,10 +110,10 @@
                                         <span class="text-muted">-</span>
                                     }
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     @if (patient.BirthDate.HasValue)
                                     {
-                                        @((DateTime.Now.Year - patient.BirthDate.Value.Year)) @:ปี
+                                        @((DateTime.Now.Year - patient.BirthDate.Value.Year)) @:
                                     }
                                     else
                                     {
@@ -123,12 +123,12 @@
                                 <td>@(patient.District?.Amphur?.Province?.PROVINCE_NAME ?? "-")</td>
                                 <td>@(patient.District?.Amphur?.AMPHUR_NAME ?? "-")</td>
                                 <td>
-                                    <span class="badge @(patient.PatientType == "OPD" ? "bg-primary" : "bg-success")">
+                                    <span class="badge @(patient.PatientType == "OPD" ? "bg-primary" : "bg-success") mx-4">
                                         @patient.PatientType
                                     </span>
                                 </td>
-                                <td>@(patient.Treatment?.TreatmentName ?? "-")</td>
-                                <td>
+                                <td class="text-center">@(patient.Treatment?.TreatmentName ?? "-")</td>
+                                <td class="text-center">
                                     <button type="button" class="btn btn-sm btn-outline-warning" onclick="openEditPatientModal('@patient.HN')" title="แก้ไข">
                                         <i class="fas fa-edit"></i>
                                     </button>
@@ -200,7 +200,7 @@
                         </div>
                         
                         <div class="col-md-4">
-                            <label class="form-label fw-bold">อายุ</label>
+                            <label class="form-label fw-bold">อายุ (ปี)</label>
                             <input type="text" class="form-control" id="age" readonly style="background-color: #f8f9fa;" placeholder="อายุ (ปี)">
                         </div>
                         

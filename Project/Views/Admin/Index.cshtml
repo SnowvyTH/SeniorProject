@@ -151,7 +151,7 @@
                 }
             );
         });
-        async function renderLoginChartLast30Days() {
+        async function renderLoginChart() {
             try {
                 const response = await fetch('/Admin/LoginChart');
                 if (!response.ok) {
@@ -288,7 +288,7 @@
             }
         }
 
-        document.addEventListener('DOMContentLoaded', renderLoginChartLast30Days);
+        document.addEventListener('DOMContentLoaded', renderLoginChart);
     </script>
 }
 

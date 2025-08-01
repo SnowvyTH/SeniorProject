@@ -341,7 +341,6 @@ namespace Project.Controllers
                     return Json(new { success = false, message = "ไม่พบคำนำหน้า" });
                 }
 
-                // Check if title name is already taken by another title
                 var existingTitle = await _context.Title.FirstOrDefaultAsync(t => t.TitleName == form["TitleName"].ToString() && t.TitleID != titleId);
                 if (existingTitle != null)
                 {
@@ -372,7 +371,6 @@ namespace Project.Controllers
                     return Json(new { success = false, message = "ไม่พบคำนำหน้า" });
                 }
 
-                // Check if title is being used by any user
                 var usersWithTitle = await _context.User.CountAsync(u => u.TitleID == titleID);
                 if (usersWithTitle > 0)
                 {
