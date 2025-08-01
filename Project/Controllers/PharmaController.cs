@@ -99,7 +99,7 @@ namespace Project.Controllers
             [HttpGet]
             public async Task<IActionResult> SearchPatients(string term)
             {
-                if (string.IsNullOrWhiteSpace(term) || term.Length < 2)
+                if (string.IsNullOrWhiteSpace(term) || term.Length < 1)
                 {
                     return Json(new List<object>());
                 }
@@ -108,7 +108,8 @@ namespace Project.Controllers
                     .Include(p => p.Title)
                     .Where(p => p.HN.Contains(term) || 
                                (p.FirstName != null && p.FirstName.Contains(term)) ||
-                               (p.LastName != null && p.LastName.Contains(term)))
+                               (p.LastName != null && p.LastName.Contains(term)) ||
+                               (p.Title != null && p.Title.TitleName != null && p.Title.TitleName.Contains(term)))
                     .Select(p => new
                     {
                         id = p.HN,

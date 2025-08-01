@@ -14,45 +14,29 @@
         </div>
     </div>
 
-    <div class="row">
-        <!-- Patient Selection -->
-        <div class="col-md-6">
-            <div class="modern-card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-user-search me-2"></i>เลือกผู้ป่วย
-                    </h5>
-                </div>
-                <div class="card-body">
+    <!-- Search and Form Selection Card -->
+    <div class="modern-card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-user-search me-2"></i>เลือกผู้ป่วยและแบบประเมิน
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label fw-bold">ค้นหาผู้ป่วย</label>
                         <input type="text" class="form-control" id="patientSearch" 
-                               placeholder="กรอก HN หรือชื่อผู้ป่วย (อย่างน้อย 2 ตัวอักษร)">
+                               placeholder="กรอก HN หรือชื่อผู้ป่วย">
                         <div id="patientFeedback" class="invalid-feedback"></div>
                     </div>
-                    
-                    <input type="hidden" id="selectedPatientId" value="">
-                    <input type="hidden" id="originalPatientText" value="">
-                    
-                    <div id="patientInfo" class="patient-info-box">
-                        <div class="text-center text-muted">
-                            <i class="fas fa-user-plus fa-3x mb-3"></i>
-                            <p>ยังไม่ได้เลือกผู้ป่วย</p>
-                        </div>
+                    <div id="clearPatientSection" style="display: none;">
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearPatient()">
+                            <i class="fas fa-times"></i> ลบการเลือก
+                        </button>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Form Selection -->
-        <div class="col-md-6">
-            <div class="modern-card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-file-alt me-2"></i>เลือกแบบประเมิน
-                    </h5>
-                </div>
-                <div class="card-body">
+                <div class="col-md-6">
                     <div class="mb-3">
                         <label class="form-label fw-bold">แบบประเมิน</label>
                         <select class="form-select" id="formSelect">
@@ -63,21 +47,17 @@
                             }
                         </select>
                     </div>
-                    
-                    <div id="formInfo" class="form-info-box text-center text-muted">
-                        <i class="fas fa-clipboard fa-3x mb-3"></i>
-                        <p>ยังไม่ได้เลือกแบบประเมิน</p>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary btn-lg" id="startFormBtn" disabled>
+                            <i class="fas fa-play me-2"></i>เริ่มทำแบบประเมิน
+                        </button>
                     </div>
                 </div>
             </div>
+            
+            <input type="hidden" id="selectedPatientId" value="">
+            <input type="hidden" id="originalPatientText" value="">
         </div>
-    </div>
-
-    <!-- Start Button -->
-    <div class="text-center mt-4">
-        <button type="button" class="btn btn-secondary btn-lg" id="startFormBtn" disabled>
-            <i class="fas fa-play me-2"></i>เริ่มทำแบบประเมิน
-        </button>
     </div>
 </div>
 
@@ -106,16 +86,6 @@
 
         .modern-card .card-body {
             padding: 1.5rem;
-        }
-
-        .patient-info-box, .form-info-box {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 2rem;
-            min-height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .form-control, .form-select {
@@ -195,16 +165,15 @@
                     validatePatientInput(term, originalText);
                 }
                 
-                if (term.length >= 2 && !selectedPatientId) {
+                if (term.length >= 1 && !selectedPatientId) {
                     searchPatients(term);
-                } else if (term.length < 2 && !selectedPatientId) {
+                } else if (term.length < 1 && !selectedPatientId) {
                     $('#patient-dropdown').remove();
                 }
             });
             
             // Handle form selection
             $('#formSelect').on('change', function() {
-                updateFormInfo();
                 updateStartButton();
             });
 
@@ -229,7 +198,7 @@
                 // Clear selected patient
                 $('#selectedPatientId').val('');
                 $('#originalPatientText').val('');
-                updatePatientInfo(false);
+                $('#clearPatientSection').hide();
                 updateStartButton();
             } else {
                 patientInput.removeClass('is-invalid').addClass('is-valid');
@@ -308,60 +277,9 @@
             $('#patientSearch').removeClass('is-invalid').addClass('is-valid');
             $('#patientFeedback').hide();
             
-            // Show patient info
-            updatePatientInfo(true, text, patientType, birthDate);
+            // Show clear button
+            $('#clearPatientSection').show();
             updateStartButton();
-        }
-        
-        function updatePatientInfo(hasPatient, text = '', patientType = '', birthDate = '') {
-            let patientInfo;
-            
-            if (hasPatient) {
-                patientInfo = `
-                    <div class="text-center">
-                        <i class="fas fa-user-check fa-3x text-success mb-3"></i>
-                        <h6>${text}</h6>
-                        <p class="text-muted mb-2">
-                            <span class="badge ${patientType === 'OPD' ? 'bg-primary' : 'bg-success'}">${patientType}</span>
-                        </p>
-                        <p class="text-muted">
-                            <i class="fas fa-calendar"></i> ${birthDate}
-                        </p>
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearPatient()">
-                            <i class="fas fa-times"></i> ลบการเลือก
-                        </button>
-                    </div>`;
-            } else {
-                patientInfo = `
-                    <div class="text-center text-muted">
-                        <i class="fas fa-user-plus fa-3x mb-3"></i>
-                        <p>ยังไม่ได้เลือกผู้ป่วย</p>
-                    </div>`;
-            }
-            
-            $('#patientInfo').html(patientInfo);
-        }
-
-        function updateFormInfo() {
-            const formSelect = $('#formSelect');
-            const selectedText = formSelect.find('option:selected').text();
-            
-            if (formSelect.val()) {
-                $('#formInfo').html(`
-                    <div class="text-center">
-                        <i class="fas fa-clipboard-check fa-3x text-success mb-3"></i>
-                        <h6>${selectedText}</h6>
-                        <p class="text-muted">พร้อมสำหรับการประเมิน</p>
-                    </div>
-                `);
-            } else {
-                $('#formInfo').html(`
-                    <div class="text-center text-muted">
-                        <i class="fas fa-clipboard fa-3x mb-3"></i>
-                        <p>ยังไม่ได้เลือกแบบประเมิน</p>
-                    </div>
-                `);
-            }
         }
         
         function clearPatient() {
@@ -369,7 +287,7 @@
             $('#originalPatientText').val('');
             $('#patientSearch').val('').removeClass('is-invalid is-valid');
             $('#patientFeedback').hide();
-            updatePatientInfo(false);
+            $('#clearPatientSection').hide();
             updateStartButton();
             $('#patientSearch').focus();
         }
