@@ -45,17 +45,13 @@
                         </span>
                     </div>
                     <div class="info-item mb-3">
-                        <label class="fw-bold text-muted">ระดับความรุนแรง:</label>
-                        <span class="ms-2">@Model.Result</span>
+                        <label class="fw-bold text-muted">วันที่ทำการประเมิน:</label>
+                        <span class="ms-2">@Model.RecordDate.ToString("dd/MM/yyyy HH:mm")</span>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="info-item mb-3">
-                        <label class="fw-bold text-muted">วันที่ประเมิน:</label>
-                        <span class="ms-2">@Model.RecordDate.ToString("dd/MM/yyyy HH:mm")</span>
-                    </div>
-                    <div class="info-item mb-3">
-                        <label class="fw-bold text-muted">ผู้ทำการประเมิน:</label>
+                        <label class="fw-bold text-muted">ผู้ประเมิน:</label>
                         <span class="ms-2">@($"{Model.User?.Title?.TitleName}{Model.User?.FirstName} {Model.User?.LastName}")</span>
                     </div>
                     <div class="info-item mb-3">
@@ -63,8 +59,23 @@
                         <span class="ms-2">@Model.Form?.FormName</span>
                     </div>
                     <div class="info-item mb-3">
+                        <label class="fw-bold text-muted">ระดับความรุนแรง:</label>
+                        <span class="badge bg-danger ms-2">@(ViewBag.InterpreterName ?? Model.Result ?? "ไม่ระบุ")</span>
+                    </div>
+                    <div class="info-item mb-3">
                         <label class="fw-bold text-muted">แนวทางปฎิบัติ:</label>
-                        <span class="ms-2">@Model.Result</span>
+                        <div class="ms-2 mt-1">
+                            <div class="practice-guidelines p-2 bg-light rounded border-start border-warning border-4">
+                                @if (!string.IsNullOrEmpty(ViewBag.InterpreterText))
+                                {
+                                    @Html.Raw(((string)ViewBag.InterpreterText).Replace("\n", "<br>"))
+                                }
+                                else
+                                {
+                                    <small class="text-muted">ไม่มีข้อมูลแนวทางปฎิบัติ</small>
+                                }
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -228,6 +239,13 @@
                         <label class="fw-bold text-muted">จำนวนคำถาม:</label>
                         <span class="ms-2">@(Model.Form?.Questions?.Count ?? 0) ข้อ</span>
                     </div>
+                    @if (ViewBag.CalculatedScore != null)
+                    {
+                        <div class="info-item mb-2">
+                            <label class="fw-bold text-muted">คะแนนที่ได้:</label>
+                            <span class="badge bg-info ms-2">@ViewBag.CalculatedScore คะแนน</span>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -239,6 +257,10 @@
         :root {
             --mint-green: #51c3b7;
             --dark-green: #05685e;
+            --orange: #ff6b35;
+            --purple: #6f42c1;
+            --teal: #20c997;
+            --indigo: #6610f2;
         }
 
         .modern-card {
@@ -275,32 +297,32 @@
             margin-bottom: 0;
         }
 
-        .result-display {
-            padding: 2rem;
-        }
-
-        .result-badge .badge {
-            font-size: 1.2rem;
-            padding: 1rem 2rem;
-            border-radius: 15px;
+        .practice-guidelines {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%) !important;
+            font-size: 0.9rem;
+            line-height: 1.4;
         }
 
         .detail-item {
             background: #f8f9fa;
             transition: all 0.3s ease;
+            border: 1px solid #e9ecef !important;
         }
 
         .detail-item:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-color: var(--teal) !important;
         }
 
         .question-header h6 {
-            color: var(--dark-green);
+            color: var(--orange) !important;
+            font-weight: 700;
         }
 
         .selected-answer {
-            border-left: 4px solid var(--mint-green);
+            border-left: 4px solid var(--teal);
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         }
 
         .section-group {
@@ -308,22 +330,32 @@
         }
 
         .section-header {
-            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%) !important;
+            background: linear-gradient(135deg, var(--purple) 0%, var(--indigo) 100%) !important;
             border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(81, 195, 183, 0.3);
+            box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
         }
 
         .section-group .detail-item {
-            border-left: 4px solid var(--mint-green);
+            border-left: 4px solid var(--purple);
             background: #fff;
+            margin-left: 1rem;
         }
 
         .section-group .detail-item:hover {
-            border-left-color: var(--dark-green);
+            border-left-color: var(--indigo);
+            background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
+        }
+
+        .section-group .question-header h6 {
+            color: var(--purple) !important;
         }
 
         .badge {
             border-radius: 6px;
+        }
+
+        .badge.bg-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
         }
 
         .btn {

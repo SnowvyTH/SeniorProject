@@ -216,6 +216,34 @@ namespace Project.Controllers
                     return RedirectToAction("Index");
                 }
 
+                // คำนวณคะแนนตามเงื่อนไข max, min, sum
+                if (evaluation.EvaluationDetails?.Any() == true && evaluation.Form != null)
+                {
+                    var scores = evaluation.EvaluationDetails.Where(ed => ed.Score.HasValue).Select(ed => ed.Score!.Value).ToList();
+                    if (scores.Any())
+                    {
+                        decimal calculatedScore = evaluation.Form.Scoring?.ToLower() switch
+                        {
+                            "max" => scores.Max(),
+                            "min" => scores.Min(),
+                            "sum" => scores.Sum(),
+                            _ => scores.Sum()
+                        };
+
+                        // ค้นหา Interpreter ที่ตรงกับคะแนนที่คำนวณได้
+                        var interpreter = await _db.Interpreter
+                            .Where(i => i.FormID == evaluation.FormID 
+                                    && calculatedScore >= i.MinScore 
+                                    && calculatedScore <= i.MaxScore)
+                            .FirstOrDefaultAsync();
+
+                        // เก็บข้อมูล Interpreter ใน ViewBag เพื่อใช้ใน View
+                        ViewBag.InterpreterName = interpreter?.InterName;
+                        ViewBag.InterpreterText = interpreter?.InterText;
+                        ViewBag.CalculatedScore = calculatedScore;
+                    }
+                }
+
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
                 ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
 

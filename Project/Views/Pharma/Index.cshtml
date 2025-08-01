@@ -116,7 +116,7 @@
                                     @if (patient.Evaluations.Any())
                                     {
                                         var latestEvaluation = patient.Evaluations.OrderByDescending(r => r.RecordDate).First();
-                                        <div class="severity-display mx-1" id="severity-@patient.HN">
+                                        <div class="severity-display mx-1" id="severity-@patient.HN" data-selected-evaluation-id="@latestEvaluation.EvaID">
                                             <span class="badge bg-warning">@(latestEvaluation.Result ?? "ไม่ระบุ")</span>
                                         </div>
                                     }
@@ -507,6 +507,9 @@
                 const severityDisplay = $(`#severity-${patientHN}`);
                 severityDisplay.html(`<span class="badge bg-warning">${result || 'ไม่ระบุ'}</span>`);
                 
+                // Store the selected evaluation ID for this patient
+                severityDisplay.attr('data-selected-evaluation-id', recordId);
+                
                 // Update dropdown button HTML (preserve icon)
                 const dropdownButton = $(this).closest('.dropdown').find('.dropdown-toggle');
                 const itemHtml = $(this).html(); // Get the full HTML content including icons
@@ -540,10 +543,15 @@
         }
 
         function viewEvaluationDetail(patientHN) {
-            // Get currently selected evaluation or latest one
+            // Get selected evaluation ID from severity display data attribute
             const severityDisplay = $(`#severity-${patientHN}`);
-            const latestEvaluationItem = $(`.evaluation-item[data-patient-hn="${patientHN}"]`).first();
-            const recordId = latestEvaluationItem.data('record-id');
+            let recordId = severityDisplay.attr('data-selected-evaluation-id');
+            
+            // If no specific evaluation selected, use the latest one
+            if (!recordId) {
+                const latestEvaluationItem = $(`.evaluation-item[data-patient-hn="${patientHN}"]`).first();
+                recordId = latestEvaluationItem.data('record-id');
+            }
             
             if (recordId) {
                 // Navigate to evaluation detail page

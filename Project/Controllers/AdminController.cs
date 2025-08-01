@@ -663,8 +663,7 @@ namespace Project.Controllers
         public async Task<IActionResult> LoginChart()
         {
             var endDate = DateTime.Today; // วันที่ปัจจุบัน
-            //var startDate = endDate.AddDays(-29); // 30 วันย้อนหลัง
-            var startDate = endDate.AddDays(-6);
+            var startDate = endDate.AddDays(-11);
 
             var dailyLoginCounts = await _context.Log
                 .Where(l => l.LogDateTime.HasValue &&
