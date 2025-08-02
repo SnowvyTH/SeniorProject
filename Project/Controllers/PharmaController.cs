@@ -36,8 +36,24 @@ namespace Project.Controllers
                 _db = db;
             }
 
+            private async Task SetUserProfileData() {
+                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
+                ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var user = await _db.User.FindAsync(int.Parse(userId));
+                    if (user != null && !string.IsNullOrEmpty(user.Picture))
+                    {
+                        ViewBag.ProfileImageUrl = "/uploads/profile/" + user.Picture;
+                    }
+                }
+            }
+
             public async Task<IActionResult> Index()
             {
+                await SetUserProfileData();
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
                 ViewBag.Forms = await _db.Form.ToListAsync();
 
@@ -52,32 +68,36 @@ namespace Project.Controllers
 
                 return View(patients);
             }
-            public IActionResult Forms()
+            public async Task<IActionResult> Forms()
             {
+                await SetUserProfileData();
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
                 ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
 
                 return View();
             }
 
-            public IActionResult EditForm()
+            public async Task<IActionResult> EditForm()
             {
+                await SetUserProfileData();
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
                 ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
 
                 return View();
             }
 
-            public IActionResult Treatments()
+            public async Task<IActionResult> Treatments()
             {
+                await SetUserProfileData();
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
                 ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
 
                 return View();
             }
 
-            public IActionResult Profile()
+            public async Task<IActionResult> Profile()
             {
+                await SetUserProfileData();
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
                 ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
 
@@ -86,6 +106,7 @@ namespace Project.Controllers
 
             public async Task<IActionResult> Evaluation()
             {
+                await SetUserProfileData();
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
                 ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
 
@@ -252,6 +273,7 @@ namespace Project.Controllers
 
             public async Task<IActionResult> Patients()
             {
+                await SetUserProfileData();
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
                 ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
 
@@ -570,23 +592,6 @@ namespace Project.Controllers
                 {
                     return Json(new { success = false, message = "เกิดข้อผิดพลาด: " + ex.Message });
                 }
-            }
-
-            [HttpGet]
-            public async Task<IActionResult> GetFormStats()
-            {
-                var totalForms = await _db.Form.CountAsync();
-                var formsWithQuestions = await _db.Form.CountAsync(f => f.Questions.Any());
-                var totalQuestions = await _db.Question.CountAsync();
-                var totalEvaluations = await _db.Evaluation.CountAsync();
-
-                return Json(new
-                {
-                    totalForms = totalForms,
-                    formsWithQuestions = formsWithQuestions,
-                    totalQuestions = totalQuestions,
-                    totalEvaluations = totalEvaluations
-                });
             }
 
             public async Task<IActionResult> CreateForm(int? editId)
@@ -1135,7 +1140,7 @@ namespace Project.Controllers
                         profilePictureUrl = string.IsNullOrEmpty(user.Picture) 
                             ? null 
                             : $"/uploads/profile/{user.Picture}"
-                    });
+            });
                 }
                 catch (Exception ex)
                 {

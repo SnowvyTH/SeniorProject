@@ -230,3 +230,4 @@ D:\Project\Project\obj\Debug\net9.0\compressed\ydb8vxti1i-gt58evdanw.gz
 d:\Project\Project\obj\Debug\net9.0\compressed\rzrpezem2r-4glnwc6dk4.gz
 D:\Project\Project\bin\Debug\net9.0\Rotativa.AspNetCore.dll
 D:\Project\Project\obj\Debug\net9.0\Project.MvcApplicationPartsAssemblyInfo.cs
+D:\Project\Project\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt

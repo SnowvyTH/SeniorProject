@@ -9,7 +9,10 @@
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
+    @if (ViewBag.ProfileImageUrl != null)
+    {
+        <link rel="preload" as="image" href="@ViewBag.ProfileImageUrl" />
+    }
     @await RenderSectionAsync("Styles", required: false)
     
     <style>
@@ -436,7 +439,7 @@
                 <div class="nav-item">
                     <a href="@Url.Action("Index", "Admin")" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
                         <i class="fas fa-tachometer-alt"></i>
-                        หน้าหลัก
+                        แผงควบคุม
                     </a>
                 </div>
                 <div class="nav-item">
@@ -464,10 +467,10 @@
                     </a>
                 </div>
                 
-                <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 15px;">
+                <hr class="mt-4" style="border-color: rgba(255,255,255,0.3); margin: 20px 15px;">
                 
                 <div class="nav-item">
-                    <a href="@Url.Action("Logout", "Home")" class="nav-link">
+                    <a href="@Url.Action("Logout", "Home")" class="border border-success-subtle nav-link">
                         <i class="fas fa-sign-out-alt"></i>
                         ออกจากระบบ
                     </a>
@@ -478,10 +481,10 @@
         <!-- Main Content -->
         <main class="main-content">
             <div class="top-bar">
-                <h1 class="page-title">@ViewData["Title"]</h1>
+                <h1 class="page-title">ระบบแบบประเมินผู้ป่วย</h1>
                 <div class="user-info">
                     <div class="user-avatar" id="adminNavbarUserAvatar">
-                        @(ViewBag.UserName?.ToString()?.Substring(0, 1) ?? "A")
+                        <img style="width: 100%; height: 100%; object-fit: cover;" src="@ViewBag.ProfileImageUrl" />
                     </div>
                     <div>
                         <div style="font-weight: 600;">@ViewBag.UserName</div>
@@ -503,41 +506,8 @@
     <script>
         // Load admin profile picture for navbar
         $(document).ready(function() {
-            loadAdminNavbarProfilePicture();
+
         });
-
-        function loadAdminNavbarProfilePicture() {
-            // Get current user ID from Admin GetUser endpoint
-            $.get('/Admin/GetCurrentUserProfile')
-                .done(function(data) {
-                    if (data.success && data.profilePictureUrl) {
-                        updateAdminNavbarAvatar(data.profilePictureUrl);
-                    }
-                })
-                .fail(function() {
-                    // Keep default avatar if request fails
-                });
-        }
-
-        function updateAdminNavbarAvatar(imageUrl) {
-            const $avatar = $('#adminNavbarUserAvatar');
-            
-            // Add timestamp to prevent caching
-            const imageUrlWithTimestamp = imageUrl + '?t=' + new Date().getTime();
-            
-            // Create image element
-            const $img = $('<img>')
-                .attr('src', imageUrlWithTimestamp)
-                .attr('alt', 'Profile Picture')
-                .css({
-                    'width': '100%',
-                    'height': '100%',
-                    'object-fit': 'cover'
-                });
-            
-            // Replace avatar content with image
-            $avatar.empty().append($img);
-        }
     </script>
     
     @await RenderSectionAsync("Scripts", required: false)

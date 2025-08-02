@@ -9,23 +9,40 @@ namespace Project.Controllers
     [Authorize(Roles = "ผู้ดูแลระบบ")]
     public class AdminController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext _db;
 
-        public AdminController(ApplicationDbContext context)
+        public AdminController(ApplicationDbContext db)
         {
-            _context = context;
+            _db = db;
+        }
+
+        private async Task SetUserProfileData()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
+            ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                var user = await _db.User.FindAsync(int.Parse(userId));
+                if (user != null && !string.IsNullOrEmpty(user.Picture))
+                {
+                    ViewBag.ProfileImageUrl = "/uploads/profile/" + user.Picture;
+                }
+            }
         }
 
         public async Task<IActionResult> Index()
         {
+            await SetUserProfileData();
             ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
             ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
 
             // ดึงข้อมูลสถิติ
-            var patientCount = await _context.Patient.CountAsync();
-            var userCount = await _context.User.CountAsync();
-            var formCount = await _context.Form.CountAsync();
-            var todayLogins = await _context.Log
+            var patientCount = await _db.Patient.CountAsync();
+            var userCount = await _db.User.CountAsync();
+            var formCount = await _db.Form.CountAsync();
+            var todayLogins = await _db.Log
                 .Where(l => l.LogDateTime.HasValue && l.LogDateTime.Value.Date == DateTime.Today)
                 .CountAsync();
 
@@ -37,8 +54,9 @@ namespace Project.Controllers
             return View();
         }
 
-        public IActionResult Users()
+        public async Task<IActionResult> Users()
         {
+            await SetUserProfileData();
             var roleId = User.FindFirst("RoleID")?.Value;
 
             ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
@@ -53,7 +71,7 @@ namespace Project.Controllers
         {
             var roleId = User.FindFirst("RoleID")?.Value;
 
-            var query = _context.User.Include(u => u.Title).AsQueryable();
+            var query = _db.User.Include(u => u.Title).AsQueryable();
 
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
@@ -96,7 +114,7 @@ namespace Project.Controllers
         {
             var roleId = User.FindFirst("RoleID")?.Value;
 
-            var user = await _context.User.Include(u => u.Title)
+            var user = await _db.User.Include(u => u.Title)
                 .Where(u => u.UserID == id)
                 .Select(u => new
                 {
@@ -130,7 +148,7 @@ namespace Project.Controllers
                 }
 
                 // Check if username already exists
-                var existingUser = await _context.User.FirstOrDefaultAsync(u => u.Username == form["Username"].ToString());
+                var existingUser = await _db.User.FirstOrDefaultAsync(u => u.Username == form["Username"].ToString());
                 if (existingUser != null)
                 {
                     return Json(new { success = false, message = "ชื่อผู้ใช้นี้มีอยู่แล้ว" });
@@ -155,8 +173,8 @@ namespace Project.Controllers
                     IsActive = form.ContainsKey("IsActive") && form["IsActive"].ToString().Contains("true")
                 };
 
-                _context.User.Add(user);
-                await _context.SaveChangesAsync();
+                _db.User.Add(user);
+                await _db.SaveChangesAsync();
 
                 return Json(new { success = true });
             }
@@ -178,7 +196,7 @@ namespace Project.Controllers
                 }
 
                 var userId = int.Parse(form["UserID"].ToString()!);
-                var user = await _context.User.FindAsync(userId);
+                var user = await _db.User.FindAsync(userId);
                 
                 if (user == null)
                 {
@@ -194,7 +212,7 @@ namespace Project.Controllers
                 }
 
                 // Check if username is already taken by another user
-                var existingUser = await _context.User.FirstOrDefaultAsync(u => u.Username == form["Username"].ToString() && u.UserID != userId);
+                var existingUser = await _db.User.FirstOrDefaultAsync(u => u.Username == form["Username"].ToString() && u.UserID != userId);
                 if (existingUser != null)
                 {
                     return Json(new { success = false, message = "ชื่อผู้ใช้นี้มีอยู่แล้ว" });
@@ -216,7 +234,7 @@ namespace Project.Controllers
                     }
                 }
 
-                await _context.SaveChangesAsync();
+                await _db.SaveChangesAsync();
 
                 return Json(new { success = true });
             }
@@ -233,14 +251,14 @@ namespace Project.Controllers
 
             try
             {
-                var user = await _context.User.FindAsync(userID);
+                var user = await _db.User.FindAsync(userID);
                 if (user == null)
                 {
                     return Json(new { success = false, message = "ไม่พบผู้ใช้" });
                 }
 
                 user.IsActive = isActive;
-                await _context.SaveChangesAsync();
+                await _db.SaveChangesAsync();
 
                 return Json(new { success = true });
             }
@@ -250,8 +268,9 @@ namespace Project.Controllers
             }
         }
 
-        public IActionResult Titles()
+        public async Task<IActionResult> Titles()
         {
+            await SetUserProfileData();
             var roleId = User.FindFirst("RoleID")?.Value;
             if (roleId != "3")
             {
@@ -270,7 +289,7 @@ namespace Project.Controllers
         {
             var roleId = User.FindFirst("RoleID")?.Value;
 
-            var query = _context.Title.AsQueryable();
+            var query = _db.Title.AsQueryable();
 
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
@@ -300,7 +319,7 @@ namespace Project.Controllers
                 }
 
                 // Check if title already exists
-                var existingTitle = await _context.Title.FirstOrDefaultAsync(t => t.TitleName == form["TitleName"].ToString());
+                var existingTitle = await _db.Title.FirstOrDefaultAsync(t => t.TitleName == form["TitleName"].ToString());
                 if (existingTitle != null)
                 {
                     return Json(new { success = false, message = "คำนำหน้านี้มีอยู่แล้ว" });
@@ -311,8 +330,8 @@ namespace Project.Controllers
                     TitleName = form["TitleName"].ToString()!
                 };
 
-                _context.Title.Add(title);
-                await _context.SaveChangesAsync();
+                _db.Title.Add(title);
+                await _db.SaveChangesAsync();
 
                 return Json(new { success = true });
             }
@@ -335,21 +354,21 @@ namespace Project.Controllers
                 }
 
                 var titleId = int.Parse(form["TitleID"].ToString()!);
-                var title = await _context.Title.FindAsync(titleId);
+                var title = await _db.Title.FindAsync(titleId);
                 
                 if (title == null)
                 {
                     return Json(new { success = false, message = "ไม่พบคำนำหน้า" });
                 }
 
-                var existingTitle = await _context.Title.FirstOrDefaultAsync(t => t.TitleName == form["TitleName"].ToString() && t.TitleID != titleId);
+                var existingTitle = await _db.Title.FirstOrDefaultAsync(t => t.TitleName == form["TitleName"].ToString() && t.TitleID != titleId);
                 if (existingTitle != null)
                 {
                     return Json(new { success = false, message = "คำนำหน้านี้มีอยู่แล้ว" });
                 }
 
                 title.TitleName = form["TitleName"].ToString()!;
-                await _context.SaveChangesAsync();
+                await _db.SaveChangesAsync();
 
                 return Json(new { success = true });
             }
@@ -366,20 +385,20 @@ namespace Project.Controllers
 
             try
             {
-                var title = await _context.Title.FindAsync(titleID);
+                var title = await _db.Title.FindAsync(titleID);
                 if (title == null)
                 {
                     return Json(new { success = false, message = "ไม่พบคำนำหน้า" });
                 }
 
-                var usersWithTitle = await _context.User.CountAsync(u => u.TitleID == titleID);
+                var usersWithTitle = await _db.User.CountAsync(u => u.TitleID == titleID);
                 if (usersWithTitle > 0)
                 {
                     return Json(new { success = false, message = $"ไม่สามารถลบได้ เนื่องจากมีผู้ใช้ {usersWithTitle} คนที่ใช้คำนำหน้านี้อยู่" });
                 }
 
-                _context.Title.Remove(title);
-                await _context.SaveChangesAsync();
+                _db.Title.Remove(title);
+                await _db.SaveChangesAsync();
 
                 return Json(new { success = true });
             }
@@ -389,8 +408,9 @@ namespace Project.Controllers
             }
         }
 
-        public IActionResult Treatments()
+        public async Task<IActionResult> Treatments()
         {
+            await SetUserProfileData();
             var roleId = User.FindFirst("RoleID")?.Value;
 
             ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
@@ -405,7 +425,7 @@ namespace Project.Controllers
         {
             var roleId = User.FindFirst("RoleID")?.Value;
 
-            var query = _context.Treatment.AsQueryable();
+            var query = _db.Treatment.AsQueryable();
 
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
@@ -434,7 +454,7 @@ namespace Project.Controllers
                 }
 
                 // Check if treatment already exists
-                var existingTreatment = await _context.Treatment.FirstOrDefaultAsync(t => t.TreatmentName == form["TreatmentName"].ToString());
+                var existingTreatment = await _db.Treatment.FirstOrDefaultAsync(t => t.TreatmentName == form["TreatmentName"].ToString());
                 if (existingTreatment != null)
                 {
                     return Json(new { success = false, message = "สิทธิ์การรักษานี้มีอยู่แล้ว" });
@@ -445,8 +465,8 @@ namespace Project.Controllers
                     TreatmentName = form["TreatmentName"].ToString()!
                 };
 
-                _context.Treatment.Add(treatment);
-                await _context.SaveChangesAsync();
+                _db.Treatment.Add(treatment);
+                await _db.SaveChangesAsync();
 
                 return Json(new { success = true });
             }
@@ -469,7 +489,7 @@ namespace Project.Controllers
                 }
 
                 var treatmentId = int.Parse(form["TreatmentID"].ToString()!);
-                var treatment = await _context.Treatment.FindAsync(treatmentId);
+                var treatment = await _db.Treatment.FindAsync(treatmentId);
                 
                 if (treatment == null)
                 {
@@ -477,14 +497,14 @@ namespace Project.Controllers
                 }
 
                 // Check if treatment name is already taken by another treatment
-                var existingTreatment = await _context.Treatment.FirstOrDefaultAsync(t => t.TreatmentName == form["TreatmentName"].ToString() && t.TreatmentID != treatmentId);
+                var existingTreatment = await _db.Treatment.FirstOrDefaultAsync(t => t.TreatmentName == form["TreatmentName"].ToString() && t.TreatmentID != treatmentId);
                 if (existingTreatment != null)
                 {
                     return Json(new { success = false, message = "สิทธิ์การรักษานี้มีอยู่แล้ว" });
                 }
 
                 treatment.TreatmentName = form["TreatmentName"].ToString()!;
-                await _context.SaveChangesAsync();
+                await _db.SaveChangesAsync();
 
                 return Json(new { success = true });
             }
@@ -502,21 +522,21 @@ namespace Project.Controllers
 
             try
             {
-                var treatment = await _context.Treatment.FindAsync(treatmentID);
+                var treatment = await _db.Treatment.FindAsync(treatmentID);
                 if (treatment == null)
                 {
                     return Json(new { success = false, message = "ไม่พบสิทธิ์การรักษา" });
                 }
 
                 // Check if treatment is being used by any patient
-                var patientsWithTreatment = await _context.Patient.CountAsync(p => p.TreatmentID == treatmentID);
+                var patientsWithTreatment = await _db.Patient.CountAsync(p => p.TreatmentID == treatmentID);
                 if (patientsWithTreatment > 0)
                 {
                     return Json(new { success = false, message = $"ไม่สามารถลบได้ เนื่องจากมีผู้ป่วย {patientsWithTreatment} คนที่ใช้สิทธิ์การรักษานี้อยู่" });
                 }
 
-                _context.Treatment.Remove(treatment);
-                await _context.SaveChangesAsync();
+                _db.Treatment.Remove(treatment);
+                await _db.SaveChangesAsync();
 
                 return Json(new { success = true });
             }
@@ -526,8 +546,9 @@ namespace Project.Controllers
             }
         }
 
-        public IActionResult Logs()
+        public async Task<IActionResult> Logs()
         {
+            await SetUserProfileData();
             var roleId = User.FindFirst("RoleID")?.Value;
             if (roleId != "3")
             {
@@ -548,7 +569,7 @@ namespace Project.Controllers
             var roleId = User.FindFirst("RoleID")?.Value;
             if (roleId != "3") return Json(new { success = false, message = "Access denied" });
 
-            var query = _context.Log
+            var query = _db.Log
                 .Include(l => l.User!)
                     .ThenInclude(u => u.Title)
                 .AsQueryable();
@@ -616,19 +637,19 @@ namespace Project.Controllers
             var weekStart = today.AddDays(-(int)today.DayOfWeek);
             var monthStart = new DateTime(today.Year, today.Month, 1);
 
-            var todayCount = await _context.Log
+            var todayCount = await _db.Log
                 .Where(l => l.LogDateTime.HasValue && l.LogDateTime.Value.Date == today)
                 .CountAsync();
 
-            var weekCount = await _context.Log
+            var weekCount = await _db.Log
                 .Where(l => l.LogDateTime.HasValue && l.LogDateTime.Value.Date >= weekStart)
                 .CountAsync();
 
-            var monthCount = await _context.Log
+            var monthCount = await _db.Log
                 .Where(l => l.LogDateTime.HasValue && l.LogDateTime.Value.Date >= monthStart)
                 .CountAsync();
 
-            var totalCount = await _context.Log.CountAsync();
+            var totalCount = await _db.Log.CountAsync();
 
             return Json(new {
                 today = todayCount,
@@ -646,11 +667,11 @@ namespace Project.Controllers
             try
             {
                 var cutoffDate = DateTime.Now.AddDays(-30);
-                var oldLogs = _context.Log.Where(l => l.LogDateTime.HasValue && l.LogDateTime.Value < cutoffDate);
+                var oldLogs = _db.Log.Where(l => l.LogDateTime.HasValue && l.LogDateTime.Value < cutoffDate);
                 var deletedCount = await oldLogs.CountAsync();
                 
-                _context.Log.RemoveRange(oldLogs);
-                await _context.SaveChangesAsync();
+                _db.Log.RemoveRange(oldLogs);
+                await _db.SaveChangesAsync();
 
                 return Json(new { success = true, deletedCount = deletedCount });
             }
@@ -666,7 +687,7 @@ namespace Project.Controllers
             var endDate = DateTime.Today; // วันที่ปัจจุบัน
             var startDate = endDate.AddDays(-11);
 
-            var dailyLoginCounts = await _context.Log
+            var dailyLoginCounts = await _db.Log
                 .Where(l => l.LogDateTime.HasValue &&
                             l.LogDateTime.Value.Date >= startDate &&
                             l.LogDateTime.Value.Date <= endDate)
@@ -703,7 +724,7 @@ namespace Project.Controllers
         {
             try
             {
-                var user = await _context.User.FirstOrDefaultAsync(u => u.UserID == userId);
+                var user = await _db.User.FirstOrDefaultAsync(u => u.UserID == userId);
                 if (user == null)
                 {
                     return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
@@ -756,7 +777,7 @@ namespace Project.Controllers
 
                 // Update user profile picture in database
                 user.Picture = fileName;
-                await _context.SaveChangesAsync();
+                await _db.SaveChangesAsync();
 
                 var pictureUrl = $"/uploads/profile/{fileName}";
                 return Json(new { 
@@ -776,7 +797,7 @@ namespace Project.Controllers
         {
             try
             {
-                var user = await _context.User.FirstOrDefaultAsync(u => u.UserID == userId);
+                var user = await _db.User.FirstOrDefaultAsync(u => u.UserID == userId);
                 if (user == null)
                 {
                     return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
@@ -795,7 +816,7 @@ namespace Project.Controllers
 
                     // Update database
                     user.Picture = null;
-                    await _context.SaveChangesAsync();
+                    await _db.SaveChangesAsync();
                 }
 
                 return Json(new { 
@@ -821,7 +842,7 @@ namespace Project.Controllers
                     return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
                 }
 
-                var user = await _context.User.FirstOrDefaultAsync(u => u.UserID == int.Parse(userId));
+                var user = await _db.User.FirstOrDefaultAsync(u => u.UserID == int.Parse(userId));
                 if (user == null)
                 {
                     return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });

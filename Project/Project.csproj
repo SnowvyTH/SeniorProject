@@ -15,8 +15,4 @@
     <PackageReference Include="Rotativa.AspNetCore" Version="1.4.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\img\users\" />
-  </ItemGroup>
-
 </Project>
