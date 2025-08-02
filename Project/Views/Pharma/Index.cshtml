@@ -127,9 +127,9 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons mx-2">
-                                        <button type="button" class="btn btn-sm btn-outline-info mx-1" onclick="viewEvaluationDetail('@patient.HN')" title="ดูรายละเอียดการประเมิน">
+                                        <a type="button" class="btn btn-sm btn-outline-info mx-1" href="@Url.Action("ExportToPdf", "Pharma")" title="ดูรายละเอียดการประเมิน">
                                             <i class="fas fa-eye"></i>
-                                        </button>
+                                        </a>
                                         <button type="button" class="btn btn-sm btn-outline-success" onclick="printEvaluation('@patient.HN')" title="พิมพ์">
                                             <i class="fas fa-print"></i>
                                         </button>

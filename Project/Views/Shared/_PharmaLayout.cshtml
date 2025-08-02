@@ -74,6 +74,14 @@
             font-weight: bold;
             color: white;
             font-size: 0.9rem;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .main-content {
@@ -245,7 +253,8 @@
                 </ul>
                 
                 <div class="d-flex align-items-center user-profile ms-auto">
-                    <div class="user-avatar me-2">
+                    <div class="user-avatar me-2" id="navbarUserAvatar">
+                        <!-- Profile picture will be loaded here -->
                         @(ViewBag.UserName?.ToString().Substring(0, 1).ToUpper())
                     </div>
                     <div class="dropdown">
@@ -275,6 +284,57 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        // Load user profile picture for navbar
+        $(document).ready(function() {
+            loadNavbarProfilePicture();
+        });
+
+        function loadNavbarProfilePicture() {
+            $.get('/Pharma/GetUserProfile')
+                .done(function(data) {
+                    if (data.success && data.profilePictureUrl) {
+                        updateNavbarAvatar(data.profilePictureUrl);
+                    }
+                })
+                .fail(function() {
+                    // Keep default avatar if request fails
+                });
+        }
+
+        function updateNavbarAvatar(imageUrl) {
+            const $avatar = $('#navbarUserAvatar');
+            
+            // Add timestamp to prevent caching
+            const imageUrlWithTimestamp = imageUrl + '?t=' + new Date().getTime();
+            
+            // Create image element
+            const $img = $('<img>')
+                .attr('src', imageUrlWithTimestamp)
+                .attr('alt', 'Profile Picture')
+                .css({
+                    'width': '100%',
+                    'height': '100%',
+                    'object-fit': 'cover'
+                });
+            
+            // Replace avatar content with image
+            $avatar.empty().append($img);
+        }
+
+        // Global function to reset navbar avatar (used by profile page)
+        function resetNavbarAvatar() {
+            const $avatar = $('#navbarUserAvatar');
+            const initials = '@(ViewBag.UserName?.ToString().Substring(0, 1).ToUpper())';
+            $avatar.empty().text(initials);
+        }
+
+        // Global function to update navbar avatar (used by profile page)
+        window.updateNavbarAvatar = updateNavbarAvatar;
+        window.resetNavbarAvatar = resetNavbarAvatar;
+    </script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

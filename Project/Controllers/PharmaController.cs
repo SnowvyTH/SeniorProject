@@ -52,7 +52,6 @@ namespace Project.Controllers
 
                 return View(patients);
             }
-
             public IActionResult Forms()
             {
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
@@ -1132,12 +1131,138 @@ namespace Project.Controllers
                         username = user.Username,
                         titleID = user.TitleID,
                         firstName = user.FirstName,
-                        lastName = user.LastName
+                        lastName = user.LastName,
+                        profilePictureUrl = string.IsNullOrEmpty(user.Picture) 
+                            ? null 
+                            : $"/uploads/profile/{user.Picture}"
                     });
                 }
                 catch (Exception ex)
                 {
                     return Json(new { success = false, message = "เกิดข้อผิดพลาด: " + ex.Message });
+                }
+            }
+
+            [HttpPost]
+            public async Task<IActionResult> UploadProfilePicture(IFormFile profilePicture)
+            {
+                try
+                {
+                    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (string.IsNullOrEmpty(userId))
+                    {
+                        return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
+                    }
+
+                    var user = await _db.User.FirstOrDefaultAsync(u => u.UserID == int.Parse(userId));
+                    if (user == null)
+                    {
+                        return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
+                    }
+
+                    if (profilePicture == null || profilePicture.Length == 0)
+                    {
+                        return Json(new { success = false, message = "ไม่พบไฟล์รูปภาพ" });
+                    }
+
+                    // Validate file type
+                    var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
+                    if (!allowedTypes.Contains(profilePicture.ContentType.ToLower()))
+                    {
+                        return Json(new { success = false, message = "รูปแบบไฟล์ไม่ถูกต้อง (อนุญาตเฉพาะ JPG, PNG, GIF)" });
+                    }
+
+                    // Validate file size (5MB)
+                    if (profilePicture.Length > 5 * 1024 * 1024)
+                    {
+                        return Json(new { success = false, message = "ขนาดไฟล์ใหญ่เกินไป (สูงสุด 5MB)" });
+                    }
+
+                    // Create uploads directory if not exists
+                    var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile");
+                    if (!Directory.Exists(uploadsPath))
+                    {
+                        Directory.CreateDirectory(uploadsPath);
+                    }
+
+                    // Remove old profile picture if exists
+                    if (!string.IsNullOrEmpty(user.Picture))
+                    {
+                        var oldFilePath = Path.Combine(uploadsPath, user.Picture);
+                        if (System.IO.File.Exists(oldFilePath))
+                        {
+                            System.IO.File.Delete(oldFilePath);
+                        }
+                    }
+
+                    // Generate filename using UserID
+                    var fileName = $"{user.UserID}{Path.GetExtension(profilePicture.FileName)}";
+                    var filePath = Path.Combine(uploadsPath, fileName);
+
+                    // Save file
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await profilePicture.CopyToAsync(stream);
+                    }
+
+                    // Update user profile picture in database
+                    user.Picture = fileName;
+                    await _db.SaveChangesAsync();
+
+                    var pictureUrl = $"/uploads/profile/{fileName}";
+                    return Json(new { 
+                        success = true, 
+                        message = "บันทึกรูปภาพเรียบร้อยแล้ว",
+                        pictureUrl = pictureUrl
+                    });
+                }
+                catch (Exception)
+                {
+                    return Json(new { success = false, message = "เกิดข้อผิดพลาดในการบันทึกรูปภาพ" });
+                }
+            }
+
+            [HttpPost]
+            public async Task<IActionResult> RemoveProfilePicture()
+            {
+                try
+                {
+                    var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                    if (string.IsNullOrEmpty(userId))
+                    {
+                        return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
+                    }
+
+                    var user = await _db.User.FirstOrDefaultAsync(u => u.UserID == int.Parse(userId));
+                    if (user == null)
+                    {
+                        return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
+                    }
+
+                    // Remove file if exists
+                    if (!string.IsNullOrEmpty(user.Picture))
+                    {
+                        var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile");
+                        var filePath = Path.Combine(uploadsPath, user.Picture);
+                        
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            System.IO.File.Delete(filePath);
+                        }
+
+                        // Update database
+                        user.Picture = null;
+                        await _db.SaveChangesAsync();
+                    }
+
+                    return Json(new { 
+                        success = true, 
+                        message = "ลบรูปภาพเรียบร้อยแล้ว"
+                    });
+                }
+                catch (Exception)
+                {
+                    return Json(new { success = false, message = "เกิดข้อผิดพลาดในการลบรูปภาพ" });
                 }
             }
 

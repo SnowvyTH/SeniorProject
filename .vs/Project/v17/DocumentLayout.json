@@ -3,24 +3,20 @@
   "WorkspaceRootPath": "D:\\Project\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\pharma\\evaluation.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\pharma\\evaluation.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\controllers\\pharmacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\controllers\\pharmacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\controllers\\admincontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\admin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\admin\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\pharma\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\pharma\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\pharma\\forms.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\pharma\\forms.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\pharma\\assessment.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\pharma\\assessment.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
     }
   ],
   "DocumentGroupContainers": [
@@ -30,7 +26,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 1,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Bookmark",
@@ -38,64 +34,55 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Evaluation.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Pharma\\Evaluation.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Pharma\\Evaluation.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\Evaluation.cshtml",
-              "RelativeToolTip": "Project\\Views\\Pharma\\Evaluation.cshtml",
-              "ViewState": "AgIAADMAAAAAUOtX+v8bwDcAAAASAAAAAAAAAA==",
+              "DocumentIndex": 3,
+              "Title": "Assessment.cshtml",
+              "DocumentMoniker": "D:\\Project\\Project\\Views\\Pharma\\Assessment.cshtml",
+              "RelativeDocumentMoniker": "Project\\Views\\Pharma\\Assessment.cshtml",
+              "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\Assessment.cshtml",
+              "RelativeToolTip": "Project\\Views\\Pharma\\Assessment.cshtml",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAACUAAAAHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-01T07:40:25.507Z",
+              "WhenOpened": "2025-08-01T16:17:38.763Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "AdminController.cs",
-              "DocumentMoniker": "D:\\Project\\Project\\Controllers\\AdminController.cs",
-              "RelativeDocumentMoniker": "Project\\Controllers\\AdminController.cs",
-              "ToolTip": "D:\\Project\\Project\\Controllers\\AdminController.cs",
-              "RelativeToolTip": "Project\\Controllers\\AdminController.cs",
-              "ViewState": "AgIAAJMBAAAAAAAAAAAawKQBAAAkAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-01T07:37:12.156Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Admin\\Index.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Admin\\Index.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Admin\\Index.cshtml",
-              "RelativeToolTip": "Project\\Views\\Admin\\Index.cshtml",
-              "ViewState": "AgIAAJoAAAAAAAAAAAAEwLYAAAAqAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-01T07:24:10.574Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Forms.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Pharma\\Forms.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Pharma\\Forms.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\Forms.cshtml",
-              "RelativeToolTip": "Project\\Views\\Pharma\\Forms.cshtml",
-              "ViewState": "AgIAABYAAAAAAAAAAAAhwMcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-01T07:02:59.588Z"
-            },
-            {
-              "$type": "Document",
               "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\Project\\Project\\Program.cs",
+              "RelativeDocumentMoniker": "Project\\Program.cs",
+              "ToolTip": "D:\\Project\\Project\\Program.cs",
+              "RelativeToolTip": "Project\\Program.cs",
+              "ViewState": "AgIAACAAAAAAAAAAAAAmwCwAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-08-01T16:14:36.214Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
               "Title": "PharmaController.cs",
               "DocumentMoniker": "D:\\Project\\Project\\Controllers\\PharmaController.cs",
               "RelativeDocumentMoniker": "Project\\Controllers\\PharmaController.cs",
               "ToolTip": "D:\\Project\\Project\\Controllers\\PharmaController.cs",
               "RelativeToolTip": "Project\\Controllers\\PharmaController.cs",
-              "ViewState": "AgIAAMkAAAAAAAAAAAAqwMsAAAApAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-01T06:42:26.475Z"
+              "WhenOpened": "2025-08-01T15:32:09.99Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "D:\\Project\\Project\\Views\\Pharma\\Index.cshtml",
+              "RelativeDocumentMoniker": "Project\\Views\\Pharma\\Index.cshtml",
+              "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\Index.cshtml",
+              "RelativeToolTip": "Project\\Views\\Pharma\\Index.cshtml",
+              "ViewState": "AgIAAHYAAAAAAAAAAAAAAIEAAACAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-08-01T15:26:08.443Z",
+              "EditorCaption": ""
             }
           ]
         }

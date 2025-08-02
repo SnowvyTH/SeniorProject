@@ -41,6 +41,7 @@
         <table class="table table-hover" id="usersTable">
             <thead class="table-light">
                 <tr>
+                    <th>รูปโปรไฟล์</th>
                     <th>รหัสผู้ใช้</th>
                     <th>ชื่อ-นามสกุล</th>
                     <th>ชื่อผู้ใช้</th>
@@ -209,6 +210,109 @@
     </div>
 </div>
 
+<!-- Profile Picture Modal -->
+<div class="modal fade" id="profilePictureModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-image me-2"></i>จัดการรูปโปรไฟล์</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="profileUserId" value="">
+                <div class="text-center mb-4">
+                    <div class="profile-picture-container mx-auto">
+                        <div id="profilePlaceholder" class="profile-picture-placeholder">
+                            <i class="fas fa-user fa-3x"></i>
+                        </div>
+                        <img id="profileImage" class="profile-picture-img" style="display: none;">
+                    </div>
+                    <h6 id="profileUserName"></h6>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">อัปโหลดรูปภาพใหม่</label>
+                        <input type="file" class="form-control" id="profilePictureFile" accept="image/*">
+                        <div class="form-text">รองรับไฟล์ JPG, PNG, GIF ขนาดไม่เกิน 5MB</div>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger" id="removeProfileBtn" onclick="removeUserProfilePicture()" style="display: none;">
+                            <i class="fas fa-trash me-2"></i>ลบรูปภาพ
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                <button type="button" class="btn btn-primary" onclick="uploadUserProfilePicture()">
+                    <i class="fas fa-upload me-2"></i>บันทึกรูปภาพ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .profile-picture-container {
+            width: 120px;
+            height: 120px;
+            position: relative;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #51c3b7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-picture-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #05685e;
+        }
+
+        .profile-picture-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid #51c3b7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #05685e;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .user-avatar-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-avatar-small:hover {
+            border-color: #05685e;
+            transform: scale(1.05);
+            transition: all 0.2s ease;
+        }
+    </style>
+}
+
 @section Scripts {
     <script>
         $(document).ready(function() {
@@ -265,9 +369,19 @@
                         const roleClass = (roleName === 'ผู้ดูแลระบบ') ? 'bg-secondary' :
                                                 (roleName === 'เภสัช') ? 'bg-mint' :
                                                 'bg-success';
+
+                        // Profile picture display
+                        const profilePictureHtml = user.profilePictureUrl ? 
+                            `<img src="${user.profilePictureUrl}?t=${new Date().getTime()}" alt="Profile">` :
+                            `<i class="fas fa-user"></i>`;
                         
                         html += `
                             <tr>
+                                <td>
+                                    <div class="user-avatar-small" onclick="manageProfilePicture(${user.userID}, '${user.titleName} ${user.firstName} ${user.lastName}', '${user.profilePictureUrl || ''}')">
+                                        ${profilePictureHtml}
+                                    </div>
+                                </td>
                                 <td>${user.userID}</td>
                                 <td>${user.titleName} ${user.firstName} ${user.lastName}</td>
                                 <td>${user.username}</td>
@@ -462,6 +576,180 @@
                                 icon: 'error',
                                 title: 'เกิดข้อผิดพลาด',
                                 text: 'เกิดข้อผิดพลาดในการเปลี่ยนสถานะ',
+                                confirmButtonColor: '#51c3b7'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        // Profile Picture Management Functions
+        function manageProfilePicture(userId, userName, currentPictureUrl) {
+            $('#profileUserId').val(userId);
+            $('#profileUserName').text(userName);
+            
+            // Show current picture or placeholder
+            if (currentPictureUrl && currentPictureUrl !== 'null' && currentPictureUrl !== '') {
+                $('#profileImage').attr('src', currentPictureUrl + '?t=' + new Date().getTime()).show();
+                $('#profilePlaceholder').hide();
+                $('#removeProfileBtn').show();
+            } else {
+                $('#profileImage').hide();
+                $('#profilePlaceholder').show();
+                $('#removeProfileBtn').hide();
+            }
+            
+            // Clear file input
+            $('#profilePictureFile').val('');
+            
+            $('#profilePictureModal').modal('show');
+        }
+
+        function uploadUserProfilePicture() {
+            const userId = $('#profileUserId').val();
+            const fileInput = $('#profilePictureFile')[0];
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'กรุณาเลือกไฟล์',
+                    text: 'กรุณาเลือกไฟล์รูปภาพที่ต้องการอัปโหลด',
+                    confirmButtonColor: '#51c3b7'
+                });
+                return;
+            }
+
+            const file = fileInput.files[0];
+            
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'รูปแบบไฟล์ไม่ถูกต้อง',
+                    text: 'กรุณาเลือกไฟล์รูปภาพ (jpg, jpeg, png, gif)',
+                    confirmButtonColor: '#51c3b7'
+                });
+                return;
+            }
+
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ขนาดไฟล์ใหญ่เกินไป',
+                    text: 'ขนาดไฟล์ต้องไม่เกิน 5MB',
+                    confirmButtonColor: '#51c3b7'
+                });
+                return;
+            }
+
+            // Show loading
+            Swal.fire({
+                title: 'กำลังบันทึกรูปภาพ...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Create FormData
+            const formData = new FormData();
+            formData.append('userId', userId);
+            formData.append('profilePicture', file);
+
+            $.ajax({
+                url: '@Url.Action("UploadUserProfilePicture", "Admin")',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ',
+                            text: response.message,
+                            confirmButtonColor: '#51c3b7'
+                        }).then(() => {
+                            $('#profilePictureModal').modal('hide');
+                            loadUsers();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: response.message,
+                            confirmButtonColor: '#51c3b7'
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถบันทึกรูปภาพได้',
+                        confirmButtonColor: '#51c3b7'
+                    });
+                }
+            });
+        }
+
+        function removeUserProfilePicture() {
+            const userId = $('#profileUserId').val();
+            
+            Swal.fire({
+                title: 'ยืนยันการลบรูปภาพ',
+                text: 'คุณต้องการลบรูปภาพโปรไฟล์หรือไม่?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'กำลังลบรูปภาพ...',
+                        text: 'กรุณารอสักครู่',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    $.ajax({
+                        url: '@Url.Action("RemoveUserProfilePicture", "Admin")',
+                        type: 'POST',
+                        data: { userId: userId },
+                        success: function(response) {
+                            if (response.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'สำเร็จ',
+                                    text: response.message,
+                                    confirmButtonColor: '#51c3b7'
+                                }).then(() => {
+                                    $('#profilePictureModal').modal('hide');
+                                    loadUsers();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'เกิดข้อผิดพลาด',
+                                    text: response.message,
+                                    confirmButtonColor: '#51c3b7'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'ไม่สามารถลบรูปภาพได้',
                                 confirmButtonColor: '#51c3b7'
                             });
                         }

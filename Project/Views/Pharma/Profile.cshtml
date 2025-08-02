@@ -25,33 +25,59 @@
                 </div>
                 <div class="card-body">
                     <form id="profileForm">
-                        <div class="row g-3">
-                            <!-- Username (Read-only) -->
-                            <div class="col-md-12">
-                                <label class="form-label fw-bold">ชื่อผู้ใช้</label>
-                                <input type="text" class="form-control bg-light" id="username" readonly>
-                                <small class="form-text text-muted">ไม่สามารถแก้ไขชื่อผู้ใช้ได้</small>
+                        <div class="row">
+                            <!-- Profile Picture Section -->
+                            <div class="col-md-4 text-center">
+                                <div class="profile-picture-section">
+                                    <div class="profile-picture-container" id="profilePictureContainer">
+                                        <div class="profile-picture-placeholder" id="profilePicturePlaceholder">
+                                            <i class="fas fa-user fa-3x"></i>
+                                        </div>
+                                        <img id="profilePictureImg" class="profile-picture-img" style="display: none;" />
+                                    </div>
+                                    <div class="mt-3">
+                                        <input type="file" id="profilePictureInput" accept="image/*" style="display: none;">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="$('#profilePictureInput').click()">
+                                            <i class="fas fa-camera"></i> เปลี่ยนรูปภาพ
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm ms-2" id="removePictureBtn" style="display: none;" onclick="removeProfilePicture()">
+                                            <i class="fas fa-trash"></i> ลบรูป
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
+                            
+                            <!-- Profile Form -->
+                            <div class="col-md-8">
+                                <div class="row g-3">
+                                    <!-- Username (Read-only) -->
+                                    <div class="col-md-12">
+                                        <label class="form-label fw-bold">ชื่อผู้ใช้</label>
+                                        <input type="text" class="form-control bg-light" id="username" readonly>
+                                        <small class="form-text text-muted">ไม่สามารถแก้ไขชื่อผู้ใช้ได้</small>
+                                    </div>
 
-                            <!-- Title -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">คำนำหน้า</label>
-                                <select class="form-select" id="titleId" required>
-                                    <option value="">เลือกคำนำหน้า</option>
-                                    <!-- จะถูกเติมด้วย JavaScript -->
-                                </select>
-                            </div>
+                                    <!-- Title -->
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">คำนำหน้า</label>
+                                        <select class="form-select" id="titleId" required>
+                                            <option value="">เลือกคำนำหน้า</option>
+                                            <!-- จะถูกเติมด้วย JavaScript -->
+                                        </select>
+                                    </div>
 
-                            <!-- First Name -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">ชื่อจริง</label>
-                                <input type="text" class="form-control" id="firstName" placeholder="กรอกชื่อจริง" required>
-                            </div>
+                                    <!-- First Name -->
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">ชื่อจริง</label>
+                                        <input type="text" class="form-control" id="firstName" placeholder="กรอกชื่อจริง" required>
+                                    </div>
 
-                            <!-- Last Name -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-bold">นามสกุล</label>
-                                <input type="text" class="form-control" id="lastName" placeholder="กรอกนามสกุล" required>
+                                    <!-- Last Name -->
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold">นามสกุล</label>
+                                        <input type="text" class="form-control" id="lastName" placeholder="กรอกนามสกุล" required>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -118,6 +144,51 @@
                 </button>
                 <button type="button" class="btn btn-primary" onclick="saveProfile()">
                     <i class="fas fa-save me-2"></i>บันทึกการเปลี่ยนแปลง
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Crop Modal -->
+<div class="modal fade crop-modal" id="imageCropModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-crop me-2"></i>ปรับขนาดรูปภาพ
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="crop-container" id="cropContainer">
+                            <!-- Canvas will be inserted here -->
+                        </div>
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                คลิกและลากเพื่อเลื่อนพื้นที่ครอบ | ใช้ล้อเมาส์เพื่อปรับขนาด
+                            </small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h6>ตัวอย่าง</h6>
+                            <div class="crop-preview" id="cropPreview">
+                                <img id="previewImg" src="" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>ยกเลิก
+                </button>
+                <button type="button" class="btn btn-primary" onclick="confirmCrop()">
+                    <i class="fas fa-check me-2"></i>ยืนยัน
                 </button>
             </div>
         </div>
@@ -206,12 +277,77 @@
         .form-text {
             font-size: 0.875rem;
         }
+
+        .profile-picture-section {
+            margin-bottom: 2rem;
+        }
+
+        .profile-picture-container {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 1rem;
+            position: relative;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid var(--mint-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-picture-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark-green);
+        }
+
+        .profile-picture-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .crop-modal .modal-dialog {
+            max-width: 600px;
+        }
+
+        .crop-container {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            background: #f8f9fa;
+        }
+
+        .crop-preview {
+            width: 150px;
+            height: 150px;
+            border: 2px solid var(--mint-green);
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto;
+        }
+
+        .crop-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 }
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        let currentImageElement = null;
+        let imageCropper = null;
+
         $(document).ready(function() {
             // Load titles first, then load user profile
             loadTitles();
@@ -222,6 +358,16 @@
                     loadUserProfileData();
                 }
             }, 2000);
+
+            // Handle file input change
+            $('#profilePictureInput').on('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    handleImageUpload(file);
+                }
+                // Reset input to allow same file selection
+                this.value = '';
+            });
         });
 
         function loadUserProfile() {
@@ -270,6 +416,220 @@
                 });
         }
 
+        function handleImageUpload(file) {
+            // Validate file type
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!allowedTypes.includes(file.type)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'รูปแบบไฟล์ไม่ถูกต้อง',
+                    text: 'กรุณาเลือกไฟล์รูปภาพ (jpg, jpeg, png, gif)'
+                });
+                return;
+            }
+
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ขนาดไฟล์ใหญ่เกินไป',
+                    text: 'ขนาดไฟล์ต้องไม่เกิน 5MB'
+                });
+                return;
+            }
+
+            // Show simple confirmation for now (without cropping)
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                showImagePreview(e.target.result, file);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function showImagePreview(imageSrc, file) {
+            Swal.fire({
+                title: 'ยืนยันการเปลี่ยนรูปภาพ',
+                html: `
+                    <div class="text-center">
+                        <img src="${imageSrc}" style="max-width: 200px; max-height: 200px; border-radius: 50%; border: 3px solid var(--mint-green);">
+                        <p class="mt-3">คุณต้องการใช้รูปภาพนี้หรือไม่?</p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonColor: '#51c3b7',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'ใช้รูปนี้',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    uploadProfilePicture(file);
+                }
+            });
+        }
+
+        function uploadProfilePicture(file) {
+            // Show loading
+            Swal.fire({
+                title: 'กำลังบันทึกรูปภาพ...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Create FormData to send file
+            const formData = new FormData();
+            formData.append('profilePicture', file);
+
+            $.ajax({
+                url: '/Pharma/UploadProfilePicture',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.success) {
+                        // Update profile picture display
+                        updateProfilePictureDisplay(response.pictureUrl);
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'บันทึกสำเร็จ',
+                            text: response.message,
+                            timer: 2000
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'เกิดข้อผิดพลาด',
+                            text: response.message
+                        });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถบันทึกรูปภาพได้'
+                    });
+                }
+            });
+        }
+
+        function updateProfilePictureDisplay(pictureUrl) {
+            const timestamp = new Date().getTime();
+            const imageUrl = pictureUrl + '?t=' + timestamp;
+            
+            $('#profilePicturePlaceholder').hide();
+            $('#profilePictureImg').attr('src', imageUrl).show();
+            $('#removePictureBtn').show();
+            
+            // Update navbar avatar
+            updateNavbarAvatar(imageUrl);
+        }
+
+        function updateNavbarAvatar(imageUrl) {
+            // Find all navbar avatars and update them
+            const navbarAvatars = $('.user-avatar, .avatar-circle');
+            navbarAvatars.each(function() {
+                const $avatar = $(this);
+                
+                // Remove existing image if any
+                $avatar.find('img').remove();
+                
+                // Add new image
+                const $img = $('<img>')
+                    .attr('src', imageUrl)
+                    .attr('alt', 'Profile Picture')
+                    .addClass('avatar-img')
+                    .css({
+                        'width': '100%',
+                        'height': '100%',
+                        'object-fit': 'cover',
+                        'border-radius': '50%'
+                    });
+                
+                $avatar.empty().append($img);
+            });
+        }
+
+        function resetNavbarAvatar() {
+            // Find all navbar avatars and reset to initials
+            const navbarAvatars = $('.user-avatar, .avatar-circle');
+            navbarAvatars.each(function() {
+                const $avatar = $(this);
+                
+                // Remove existing image
+                $avatar.find('img').remove();
+                
+                // Reset to initials if data exists
+                const initials = $avatar.data('initials') || 'U';
+                $avatar.text(initials);
+            });
+        }
+
+        function removeProfilePicture() {
+            Swal.fire({
+                title: 'ยืนยันการลบรูปภาพ',
+                text: 'คุณต้องการลบรูปภาพโปรไฟล์หรือไม่?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'กำลังลบรูปภาพ...',
+                        text: 'กรุณารอสักครู่',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Call API to remove picture
+                    $.ajax({
+                        url: '/Pharma/RemoveProfilePicture',
+                        type: 'POST',
+                        success: function(response) {
+                            if (response.success) {
+                                $('#profilePictureImg').hide();
+                                $('#profilePicturePlaceholder').show();
+                                $('#removePictureBtn').hide();
+                                
+                                // Update navbar avatar to show initials
+                                resetNavbarAvatar();
+                                
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'ลบรูปภาพสำเร็จ',
+                                    text: response.message,
+                                    timer: 1500
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'เกิดข้อผิดพลาด',
+                                    text: response.message
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'ไม่สามารถลบรูปภาพได้'
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
         function loadUserProfileData() {
             $.get('/Pharma/GetUserProfile')
                 .done(function(data) {
@@ -283,6 +643,11 @@
                             $('#titleId').val(data.titleID);
                         } else {
                             $('#titleId').val(''); // Reset to default
+                        }
+
+                        // Load profile picture if exists
+                        if (data.profilePictureUrl) {
+                            updateProfilePictureDisplay(data.profilePictureUrl);
                         }
                     } else {
                         Swal.fire({
