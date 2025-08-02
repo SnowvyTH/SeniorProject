@@ -525,8 +525,17 @@
             $('#profilePictureImg').attr('src', imageUrl).show();
             $('#removePictureBtn').show();
             
-            // Update navbar avatar
-            updateNavbarAvatar(imageUrl);
+            // Update navbar avatar using global function
+            if (typeof window.updateNavbarAvatar === 'function') {
+                window.updateNavbarAvatar(imageUrl);
+            }
+            
+            // Also force refresh from server to ensure consistency
+            if (typeof window.forceRefreshNavbarAvatar === 'function') {
+                setTimeout(function() {
+                    window.forceRefreshNavbarAvatar();
+                }, 500); // Small delay to ensure file is saved
+            }
         }
 
         function updateNavbarAvatar(imageUrl) {
@@ -601,8 +610,10 @@
                                 $('#profilePicturePlaceholder').show();
                                 $('#removePictureBtn').hide();
                                 
-                                // Update navbar avatar to show initials
-                                resetNavbarAvatar();
+                                // Update navbar avatar to show initials using global function
+                                if (typeof window.resetNavbarAvatar === 'function') {
+                                    window.resetNavbarAvatar();
+                                }
                                 
                                 Swal.fire({
                                     icon: 'success',

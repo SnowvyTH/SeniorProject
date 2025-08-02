@@ -1,12 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Project.Models;
 using Project.Models.Entity;
 using Project.Data;
 using Project.Services;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
+using iText.Kernel.Geom;
+using iText.Kernel.Font;
+using iText.IO.Font.Constants;
 
 namespace Project.Controllers
 {
@@ -46,7 +52,8 @@ namespace Project.Controllers
                     var user = await _db.User.FindAsync(int.Parse(userId));
                     if (user != null && !string.IsNullOrEmpty(user.Picture))
                     {
-                        ViewBag.ProfileImageUrl = "/uploads/profile/" + user.Picture;
+                        // Add timestamp to prevent caching
+                        ViewBag.ProfileImageUrl = "/uploads/profile/" + user.Picture + "?t=" + DateTime.Now.Ticks;
                     }
                 }
             }
@@ -269,6 +276,296 @@ namespace Project.Controllers
                 ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
 
                 return View(evaluation);
+            }
+
+            [HttpGet]
+            public async Task<IActionResult> ExportEvaluationPDF(int evaId)
+            {
+                var evaluation = await _db.Evaluation
+                    .Include(e => e.Patient)
+                        .ThenInclude(p => p!.Title)
+                    .Include(e => e.Form)
+                        .ThenInclude(f => f!.Questions)
+                        .ThenInclude(q => q.Options)
+                    .Include(e => e.User)
+                        .ThenInclude(u => u!.Title)
+                    .Include(e => e.EvaluationDetails)
+                        .ThenInclude(ed => ed.Question)
+                        .ThenInclude(q => q!.Options)
+                    .FirstOrDefaultAsync(e => e.EvaID == evaId);
+
+                if (evaluation == null)
+                {
+                    return NotFound("ไม่พบข้อมูลการประเมิน");
+                }
+
+                // คำนวณคะแนนตามเงื่อนไข max, min, sum
+                decimal calculatedScore = 0;
+                string interpreterName = "";
+                string interpreterText = "";
+
+                if (evaluation.EvaluationDetails?.Any() == true && evaluation.Form != null)
+                {
+                    var scores = evaluation.EvaluationDetails.Where(ed => ed.Score.HasValue).Select(ed => ed.Score!.Value).ToList();
+                    if (scores.Any())
+                    {
+                        calculatedScore = evaluation.Form.Scoring?.ToLower() switch
+                        {
+                            "max" => scores.Max(),
+                            "min" => scores.Min(),
+                            "sum" => scores.Sum(),
+                            _ => scores.Sum()
+                        };
+
+                        // ค้นหา Interpreter ที่ตรงกับคะแนนที่คำนวณได้
+                        var interpreter = await _db.Interpreter
+                            .Where(i => i.FormID == evaluation.FormID 
+                                    && calculatedScore >= i.MinScore 
+                                    && calculatedScore <= i.MaxScore)
+                            .FirstOrDefaultAsync();
+
+                        interpreterName = interpreter?.InterName ?? "";
+                        interpreterText = interpreter?.InterText ?? "";
+                    }
+                }
+
+                // สร้าง PDF ขนาด A4
+                using var stream = new MemoryStream();
+                var writer = new PdfWriter(stream);
+                var pdf = new PdfDocument(writer);
+                var document = new Document(pdf, PageSize.A4);
+
+                try
+                {
+                    // ตั้งค่า margins สำหรับ A4
+                    document.SetMargins(50, 40, 50, 40); // top, right, bottom, left
+
+                    // ตั้งค่าฟอนต์ภาษาไทย
+                    PdfFont thaiFont;
+                    try
+                    {
+                        // ลองใช้ฟอนต์ TH Sarabun New จากระบบ Windows
+                        var possibleFonts = new[]
+                        {
+                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "THSarabunNew.ttf"),
+                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "thsarabunnew.ttf"),
+                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "ARIALUNI.TTF"),
+                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "tahoma.ttf"),
+                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "Tahoma.ttf"),
+                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "arial.ttf"),
+                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "Arial.ttf")
+                        };
+
+                        thaiFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA); // default
+                        
+                        foreach (var fontPath in possibleFonts)
+                        {
+                            if (System.IO.File.Exists(fontPath))
+                            {
+                                try
+                                {
+                                    thaiFont = PdfFontFactory.CreateFont(fontPath, "Identity-H");
+                                    break;
+                                }
+                                catch
+                                {
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // ถ้าเกิด error ใช้ฟอนต์พื้นฐาน
+                        thaiFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+                    }
+
+                    // ตั้งค่าฟอนต์เริ่มต้นให้กับ document
+                    document.SetFont(thaiFont).SetFontSize(16);
+
+                    // Header
+                    var headerText = new Paragraph("รายงานผลการประเมิน")
+                        .SetTextAlignment(TextAlignment.CENTER)
+                        .SetFontSize(20)
+                        .SetMarginBottom(10);
+                    document.Add(headerText);
+
+                    var subHeaderText = new Paragraph(evaluation.Form?.FormName ?? "")
+                        .SetTextAlignment(TextAlignment.CENTER)
+                        .SetFontSize(14)
+                        .SetMarginBottom(20);
+                    document.Add(subHeaderText);
+
+                    // Patient Information
+                    document.Add(new Paragraph("ข้อมูลผู้ป่วย")
+                        .SetFontSize(12)
+                        .SetMarginBottom(10));
+
+                    document.Add(new Paragraph($"HN: {evaluation.Patient?.HN ?? ""}")
+                        .SetMarginLeft(20));
+                    document.Add(new Paragraph($"ชื่อ-นามสกุล: {evaluation.Patient?.Title?.TitleName}{evaluation.Patient?.FirstName} {evaluation.Patient?.LastName}")
+                        .SetMarginLeft(20));
+                    document.Add(new Paragraph($"ประเภทผู้ป่วย: {evaluation.Patient?.PatientType ?? ""}")
+                        .SetMarginLeft(20));
+                    
+                    if (evaluation.Patient?.BirthDate.HasValue == true)
+                    {
+                        document.Add(new Paragraph($"วันเกิด: {evaluation.Patient.BirthDate.Value:dd/MM/yyyy}")
+                            .SetMarginLeft(20));
+                    }
+
+                    document.Add(new Paragraph("\n"));
+
+                    // Evaluation Information
+                    document.Add(new Paragraph("ข้อมูลการประเมิน")
+                        .SetFontSize(12)
+                        .SetMarginBottom(10));
+
+                    document.Add(new Paragraph($"แบบประเมิน: {evaluation.Form?.FormName ?? ""}")
+                        .SetMarginLeft(20));
+                    
+                    var formTypeText = evaluation.Form?.FormType switch
+                    {
+                        1 => "แบบประเมินทั่วไป",
+                        2 => "แบบประเมินแจงรายละเอียด",
+                        3 => "แบบประเมินชุดคำถาม",
+                        _ => "ไม่ระบุ"
+                    };
+                    document.Add(new Paragraph($"ประเภท: {formTypeText}")
+                        .SetMarginLeft(20));
+                    document.Add(new Paragraph($"วันที่ประเมิน: {evaluation.RecordDate:dd/MM/yyyy HH:mm}")
+                        .SetMarginLeft(20));
+                    document.Add(new Paragraph($"ผู้ประเมิน: {evaluation.User?.Title?.TitleName}{evaluation.User?.FirstName} {evaluation.User?.LastName}")
+                        .SetMarginLeft(20));
+                    
+                    if (calculatedScore > 0)
+                    {
+                        document.Add(new Paragraph($"คะแนนรวม: {calculatedScore} คะแนน")
+                            .SetMarginLeft(20));
+                    }
+
+                    document.Add(new Paragraph("\n"));
+
+                    // Questions and Answers
+                    document.Add(new Paragraph("รายละเอียดคำตอบ")
+                        .SetFontSize(14)
+                        .SetMarginBottom(10));
+
+                    if (evaluation.EvaluationDetails?.Any() == true)
+                    {
+                        if (evaluation.Form?.FormType == 3)
+                        {
+                            // แบบประเมินแบบกลุ่ม - แสดงตาม section
+                            var groupedQuestions = evaluation.EvaluationDetails
+                                .Where(d => d.Question != null)
+                                .GroupBy(d => d.Question!.Section ?? "ทั่วไป")
+                                .OrderBy(g => g.Key);
+
+                            int globalQuestionIndex = 0;
+                            
+                            foreach (var group in groupedQuestions)
+                            {
+                                document.Add(new Paragraph(group.Key)
+                                    .SetFontSize(12)
+                                    .SetMarginTop(15)
+                                    .SetMarginBottom(10));
+                                
+                                foreach (var detail in group.OrderBy(d => d.Question!.QuestionID))
+                                {
+                                    globalQuestionIndex++;
+                                    var question = detail.Question!;
+                                    var selectedOption = question.Options.FirstOrDefault(o => o.Value == detail.Score);
+                                    
+                                    document.Add(new Paragraph($"คำถามที่ {globalQuestionIndex}")
+                                        .SetMarginTop(10));
+                                        
+                                    document.Add(new Paragraph(question.QuestionText ?? "")
+                                        .SetMarginBottom(5)
+                                        .SetMarginLeft(20));
+                                    
+                                    if (selectedOption != null)
+                                    {
+                                        document.Add(new Paragraph($"ตอบ: {selectedOption.OptionText} ({detail.Score} คะแนน)")
+                                            .SetMarginLeft(40));
+                                    }
+                                    else
+                                    {
+                                        document.Add(new Paragraph($"คะแนน: {detail.Score}")
+                                            .SetMarginLeft(40));
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // แบบประเมินปกติ - แสดงทีละคำถาม
+                            int questionIndex = 0;
+                            foreach (var detail in evaluation.EvaluationDetails.Where(d => d.Question != null).OrderBy(d => d.Question!.QuestionID))
+                            {
+                                questionIndex++;
+                                var question = detail.Question!;
+                                var selectedOption = question.Options.FirstOrDefault(o => o.Value == detail.Score);
+                                
+                                document.Add(new Paragraph($"คำถามที่ {questionIndex}")
+                                    .SetMarginTop(10));
+                                    
+                                document.Add(new Paragraph(question.QuestionText ?? "")
+                                    .SetMarginBottom(5)
+                                    .SetMarginLeft(20));
+                                
+                                if (selectedOption != null)
+                                {
+                                    document.Add(new Paragraph($"ตอบ: {selectedOption.OptionText} ({detail.Score} คะแนน)")
+                                        .SetMarginLeft(40));
+                                }
+                                else
+                                {
+                                    document.Add(new Paragraph($"คะแนน: {detail.Score}")
+                                        .SetMarginLeft(40));
+                                }
+                            }
+                        }
+                    }
+
+                    // Results
+                    document.Add(new Paragraph("\n"));
+                    document.Add(new Paragraph("ผลการประเมิน")
+                        .SetFontSize(14)
+                        .SetMarginTop(20)
+                        .SetMarginBottom(10));
+
+                    document.Add(new Paragraph($"ระดับความรุนแรง: {interpreterName ?? evaluation.Result ?? "ไม่ระบุ"}")
+                        .SetMarginLeft(20));
+
+                    if (!string.IsNullOrEmpty(interpreterText))
+                    {
+                        document.Add(new Paragraph("แนวทางปฏิบัติ:")
+                            .SetMarginTop(10)
+                            .SetMarginLeft(20));
+                        document.Add(new Paragraph(interpreterText)
+                            .SetMarginLeft(40));
+                    }
+
+                    // Footer
+                    document.Add(new Paragraph($"\n\nสร้างรายงานเมื่อ {DateTime.Now:dd/MM/yyyy HH:mm:ss}")
+                        .SetTextAlignment(TextAlignment.CENTER)
+                        .SetFontSize(10)
+                        .SetMarginTop(30));
+                    document.Add(new Paragraph("ระบบจัดการโรงพยาบาล - แผนกเภสัชกรรม")
+                        .SetTextAlignment(TextAlignment.CENTER)
+                        .SetFontSize(10));
+
+                    document.Close();
+
+                    // Return PDF file
+                    var fileName = $"report_{evaluation.Patient?.HN}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                    return File(stream.ToArray(), "application/pdf", fileName);
+                }
+                catch (Exception ex)
+                {
+                    document.Close();
+                    return BadRequest($"เกิดข้อผิดพลาดในการสร้าง PDF: {ex.Message}");
+                }
             }
 
             public async Task<IActionResult> Patients()
@@ -1184,7 +1481,7 @@ namespace Project.Controllers
                     }
 
                     // Create uploads directory if not exists
-                    var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile");
+                    var uploadsPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile");
                     if (!Directory.Exists(uploadsPath))
                     {
                         Directory.CreateDirectory(uploadsPath);
@@ -1193,7 +1490,7 @@ namespace Project.Controllers
                     // Remove old profile picture if exists
                     if (!string.IsNullOrEmpty(user.Picture))
                     {
-                        var oldFilePath = Path.Combine(uploadsPath, user.Picture);
+                        var oldFilePath = System.IO.Path.Combine(uploadsPath, user.Picture);
                         if (System.IO.File.Exists(oldFilePath))
                         {
                             System.IO.File.Delete(oldFilePath);
@@ -1201,13 +1498,13 @@ namespace Project.Controllers
                     }
 
                     // Generate filename using UserID
-                    var fileName = $"{user.UserID}{Path.GetExtension(profilePicture.FileName)}";
-                    var filePath = Path.Combine(uploadsPath, fileName);
+                    var fileName = $"{user.UserID}{System.IO.Path.GetExtension(profilePicture.FileName)}";
+                    var filePath = System.IO.Path.Combine(uploadsPath, fileName);
 
                     // Save file
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
-                        await profilePicture.CopyToAsync(stream);
+                        await profilePicture.CopyToAsync(fileStream);
                     }
 
                     // Update user profile picture in database
@@ -1215,10 +1512,16 @@ namespace Project.Controllers
                     await _db.SaveChangesAsync();
 
                     var pictureUrl = $"/uploads/profile/{fileName}";
+                    
+                    // Set cache headers to prevent caching of profile pictures
+                    Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+                    Response.Headers["Pragma"] = "no-cache";
+                    Response.Headers["Expires"] = "0";
+                    
                     return Json(new { 
                         success = true, 
                         message = "บันทึกรูปภาพเรียบร้อยแล้ว",
-                        pictureUrl = pictureUrl
+                        pictureUrl = pictureUrl + "?t=" + DateTime.Now.Ticks
                     });
                 }
                 catch (Exception)
@@ -1247,8 +1550,8 @@ namespace Project.Controllers
                     // Remove file if exists
                     if (!string.IsNullOrEmpty(user.Picture))
                     {
-                        var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile");
-                        var filePath = Path.Combine(uploadsPath, user.Picture);
+                        var uploadsPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile");
+                        var filePath = System.IO.Path.Combine(uploadsPath, user.Picture);
                         
                         if (System.IO.File.Exists(filePath))
                         {

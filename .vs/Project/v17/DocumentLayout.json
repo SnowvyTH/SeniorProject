@@ -46,8 +46,7 @@
               "RelativeToolTip": "Project\\Controllers\\AdminController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-02T08:53:11.534Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-02T08:53:11.534Z"
             },
             {
               "$type": "Document",
@@ -57,10 +56,9 @@
               "RelativeDocumentMoniker": "Project\\Views\\Shared\\_AdminLayout.cshtml",
               "ToolTip": "D:\\Project\\Project\\Views\\Shared\\_AdminLayout.cshtml",
               "RelativeToolTip": "Project\\Views\\Shared\\_AdminLayout.cshtml",
-              "ViewState": "AgIAAIMAAAAAAAAAAAAAANgBAABoAAAAAAAAAA==",
+              "ViewState": "AgIAAH0AAAAAAAAAAIBZwNgBAAAYAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-02T08:53:06.51Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-02T08:53:06.51Z"
             },
             {
               "$type": "Document",
@@ -70,10 +68,9 @@
               "RelativeDocumentMoniker": "Project\\Views\\Shared\\_PharmaLayout.cshtml",
               "ToolTip": "D:\\Project\\Project\\Views\\Shared\\_PharmaLayout.cshtml",
               "RelativeToolTip": "Project\\Views\\Shared\\_PharmaLayout.cshtml",
-              "ViewState": "AgIAAGQAAAAAAAAAAAAAAEcAAAAWAAAAAAAAAA==",
+              "ViewState": "AgIAAF4AAAAAAAAAAIBZwEcAAAAWAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-02T06:14:01.012Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-02T06:14:01.012Z"
             },
             {
               "$type": "Document",
@@ -83,10 +80,9 @@
               "RelativeDocumentMoniker": "Project\\Controllers\\PharmaController.cs",
               "ToolTip": "D:\\Project\\Project\\Controllers\\PharmaController.cs",
               "RelativeToolTip": "Project\\Controllers\\PharmaController.cs",
-              "ViewState": "AgIAACoAAAAAAAAAAAAuwDcAAAAQAAAAAAAAAA==",
+              "ViewState": "AgIAACoAAAAAAAAAAAAuwDcAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-01T15:32:09.99Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-08-01T15:32:09.99Z"
             },
             {
               "$type": "Document",
@@ -96,7 +92,7 @@
               "RelativeDocumentMoniker": "Project\\Views\\Pharma\\Index.cshtml",
               "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\Index.cshtml",
               "RelativeToolTip": "Project\\Views\\Pharma\\Index.cshtml",
-              "ViewState": "AgIAALEAAAAAAAAAAAAAAIEAAACAAAAAAAAAAA==",
+              "ViewState": "AgIAABIAAAAAAAAAAAAAAIEAAACAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
               "WhenOpened": "2025-08-01T15:26:08.443Z",
               "EditorCaption": ""

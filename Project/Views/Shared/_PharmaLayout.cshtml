@@ -5,8 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - ระบบจัดการโรงพยาบาล</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site2.css" />
+    
+    <!-- Prevent caching of profile pictures -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
     @if (ViewBag.ProfileImageUrl != null)
@@ -219,7 +226,6 @@
         }
     </style>
     @await RenderSectionAsync("Styles", required: false)
-</head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container-fluid">
@@ -258,7 +264,14 @@
                 
                 <div class="d-flex align-items-center ms-auto">
                     <div class="user-avatar" id="navbarUserAvatar">
-                        <img style="width: 100%; height: 100%; object-fit: cover;" src="@ViewBag.ProfileImageUrl" />
+                        @if (!string.IsNullOrEmpty(ViewBag.ProfileImageUrl?.ToString()))
+                        {
+                            <img style="width: 100%; height: 100%; object-fit: cover;" src="@ViewBag.ProfileImageUrl" alt="Profile Picture" />
+                        }
+                        else
+                        {
+                            @(ViewBag.UserName?.ToString().Substring(0, 1).ToUpper())
+                        }
                     </div>
                     <div class="dropdown">
                         <a class="btn btn-link text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
@@ -291,39 +304,39 @@
     <script>
         // Load user profile picture for navbar
         $(document).ready(function() {
-            // const profileUrl = '@ViewBag.ProfileImageUrl';
-            // if (profileUrl) {
-            //     updateNavbarAvatar(profileUrl);
-            // } else {
-            //     loadNavbarProfilePicture(); fallback ไปใช้ API ถ้า ViewBag ไม่มี
-            // }
+            // Check if there's a profile image from ViewBag
+            const profileUrl = '@Html.Raw(ViewBag.ProfileImageUrl?.ToString() ?? "")';
+            if (profileUrl && profileUrl.trim() !== '') {
+                // Image is already loaded from server with timestamp
+                console.log('Profile image loaded from ViewBag:', profileUrl);
+            } else {
+                // Fallback: Show initials if no profile image
+                resetNavbarAvatar();
+            }
         });
-
-        // function loadNavbarProfilePicture() {
-        //     $.get('/Pharma/GetUserProfile')
-        //         .done(function(data) {
-        //             if (data.success && data.profilePictureUrl) {
-        //                 updateNavbarAvatar(data.profilePictureUrl);
-        //             }
-        //         })
-        //         .fail(function() {
-        //             Keep default avatar if request fails
-        //         });
-        // }
 
         function updateNavbarAvatar(imageUrl) {
             const $avatar = $('#navbarUserAvatar');
             
-            // Add timestamp to prevent caching
-            const imageUrlWithTimestamp = imageUrl + '?t=' + new Date().getTime();
+            // Add timestamp to prevent caching if not already present
+            let imageUrlWithTimestamp = imageUrl;
+            if (!imageUrl.includes('?t=')) {
+                imageUrlWithTimestamp = imageUrl + '?t=' + new Date().getTime();
+            }
             
             // Create image element
             const $img = $('<img>')
                 .attr('src', imageUrlWithTimestamp)
+                .attr('alt', 'Profile Picture')
                 .css({
                     'width': '100%',
                     'height': '100%',
                     'object-fit': 'cover'
+                })
+                .on('error', function() {
+                    // If image fails to load, show initials
+                    console.log('Profile image failed to load, showing initials');
+                    resetNavbarAvatar();
                 });
             
             // Replace avatar content with image
@@ -334,12 +347,38 @@
         function resetNavbarAvatar() {
             const $avatar = $('#navbarUserAvatar');
             const initials = '@(ViewBag.UserName?.ToString().Substring(0, 1).ToUpper())';
-            $avatar.empty().text(initials);
+            $avatar.empty().text(initials).css({
+                'background-color': 'var(--dark-green)',
+                'color': 'white',
+                'display': 'flex',
+                'align-items': 'center',
+                'justify-content': 'center',
+                'font-weight': 'bold'
+            });
+        }
+
+        // Force refresh navbar avatar (for use after profile picture changes)
+        function forceRefreshNavbarAvatar() {
+            $.get('/Pharma/GetUserProfile')
+                .done(function(data) {
+                    if (data.success && data.profilePictureUrl) {
+                        // Force cache busting with current timestamp
+                        const freshImageUrl = data.profilePictureUrl.split('?')[0] + '?t=' + new Date().getTime();
+                        updateNavbarAvatar(freshImageUrl);
+                    } else {
+                        resetNavbarAvatar();
+                    }
+                })
+                .fail(function() {
+                    console.log('Failed to refresh profile picture');
+                    resetNavbarAvatar();
+                });
         }
 
         // Global function to update navbar avatar (used by profile page)
         window.updateNavbarAvatar = updateNavbarAvatar;
         window.resetNavbarAvatar = resetNavbarAvatar;
+        window.forceRefreshNavbarAvatar = forceRefreshNavbarAvatar;
     </script>
     
     @await RenderSectionAsync("Scripts", required: false)

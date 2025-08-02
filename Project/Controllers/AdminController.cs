@@ -780,10 +780,16 @@ namespace Project.Controllers
                 await _db.SaveChangesAsync();
 
                 var pictureUrl = $"/uploads/profile/{fileName}";
+                
+                // Set cache headers to prevent caching of profile pictures
+                Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+                Response.Headers["Pragma"] = "no-cache";
+                Response.Headers["Expires"] = "0";
+                
                 return Json(new { 
                     success = true, 
                     message = "บันทึกรูปภาพเรียบร้อยแล้ว",
-                    pictureUrl = pictureUrl
+                    pictureUrl = pictureUrl + "?t=" + DateTime.Now.Ticks
                 });
             }
             catch (Exception)

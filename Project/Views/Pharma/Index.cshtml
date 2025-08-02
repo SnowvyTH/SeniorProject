@@ -127,9 +127,9 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons mx-2">
-                                        <a type="button" class="btn btn-sm btn-outline-info mx-1" href="@Url.Action("ExportToPdf", "Pharma")" title="ดูรายละเอียดการประเมิน">
+                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="viewEvaluationDetail('@patient.HN')" title="ดูรายละเอียดการประเมิน">
                                             <i class="fas fa-eye"></i>
-                                        </a>
+                                        </button>
                                         <button type="button" class="btn btn-sm btn-outline-success" onclick="printEvaluation('@patient.HN')" title="พิมพ์">
                                             <i class="fas fa-print"></i>
                                         </button>
@@ -561,9 +561,43 @@
             }
         }
 
-        function printEvaluation(patientId) {
-            // This would typically generate a PDF report
-            alert('ฟีเจอร์การพิมพ์รายงาน - ผู้ป่วย ID: ' + patientId);
+        function printEvaluation(patientHN) {
+            // Get selected evaluation ID from severity display data attribute
+            const severityDisplay = $(`#severity-${patientHN}`);
+            let recordId = severityDisplay.attr('data-selected-evaluation-id');
+            
+            // If no specific evaluation selected, use the latest one
+            if (!recordId) {
+                const latestEvaluationItem = $(`.evaluation-item[data-patient-hn="${patientHN}"]`).first();
+                recordId = latestEvaluationItem.data('record-id');
+            }
+            
+            if (recordId) {
+                // Show loading
+                Swal.fire({
+                    title: 'กำลังสร้าง PDF...',
+                    text: 'กรุณารอสักครู่',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Open PDF in new window
+                window.open(`/Pharma/ExportEvaluationPDF?evaId=${recordId}`, '_blank');
+                
+                // Close loading after short delay
+                setTimeout(() => {
+                    Swal.close();
+                }, 2000);
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ไม่พบข้อมูลการประเมิน',
+                    text: 'กรุณาเลือกประวัติการประเมินที่ต้องการพิมพ์',
+                    confirmButtonColor: '#51c3b7'
+                });
+            }
         }
     </script>
 }

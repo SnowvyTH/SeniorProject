@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Project.Data;
 using Project.Services;
-using Rotativa.AspNetCore;
+// using Rotativa.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -60,10 +60,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSFBcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Project/Project/Views/Pharma/Assessment.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGhhcm1hXEFzc2Vzc21lbnQuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
 [D:/Project/Project/Views/Pharma/CreateForm.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGhhcm1hXENyZWF0ZUZvcm0uY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -82,6 +78,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/Project/Project/Views/Pharma/EvaluationForm.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGhhcm1hXEV2YWx1YXRpb25Gb3JtLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Project/Project/Views/Pharma/EvaluationPDF.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGhhcm1hXEV2YWx1YXRpb25QREYuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Project/Project/Views/Pharma/Forms.cshtml]
