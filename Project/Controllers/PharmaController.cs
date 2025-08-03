@@ -226,6 +226,7 @@ namespace Project.Controllers
             [HttpGet]
             public async Task<IActionResult> EvaluationDetail(int evaId)
             {
+                await SetUserProfileData();
                 var evaluation = await _db.Evaluation
                     .Include(e => e.Patient)
                         .ThenInclude(p => p!.Title)
@@ -566,6 +567,163 @@ namespace Project.Controllers
                     document.Close();
                     return BadRequest($"เกิดข้อผิดพลาดในการสร้าง PDF: {ex.Message}");
                 }
+            }
+
+            [HttpGet]
+            public async Task<IActionResult> ExportEvaluationPDF2(int evaId)
+            {
+                var evaluation = await _db.Evaluation
+                    .Include(e => e.Patient)
+                        .ThenInclude(p => p!.Title)
+                    .Include(e => e.Form)
+                        .ThenInclude(f => f!.Questions)
+                        .ThenInclude(q => q.Options)
+                    .Include(e => e.EvaluationDetails)
+                        .ThenInclude(ed => ed.Question)
+                        .ThenInclude(q => q!.Options)
+                    .FirstOrDefaultAsync(e => e.EvaID == evaId && e.Form!.FormType == 1);
+
+                if (evaluation == null)
+                    return NotFound("ไม่พบข้อมูลการประเมิน หรือไม่ใช่แบบฟอร์มประเภทที่ 1");
+
+                using var stream = new MemoryStream();
+                var writer = new PdfWriter(stream);
+                var pdf = new PdfDocument(writer);
+                var document = new Document(pdf, PageSize.A4);
+                document.SetMargins(40, 30, 40, 30);
+
+                // โหลดฟอนต์ภาษาไทย
+                PdfFont thaiFont;
+                var fontPaths = new[]
+                {
+                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "THSarabunNew.ttf"),
+                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "thsarabunnew.ttf"),
+                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "Tahoma.ttf"),
+                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "tahoma.ttf")
+                };
+                
+                thaiFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+                foreach (var fontPath in fontPaths)
+                {
+                    if (System.IO.File.Exists(fontPath))
+                    {
+                        try
+                        {
+                            thaiFont = PdfFontFactory.CreateFont(fontPath, "Identity-H");
+                            break;
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                document.SetFont(thaiFont).SetFontSize(12);
+
+                // ===== Header
+                document.Add(new Paragraph("แบบประเมินอาการเคลื่อนไหวผิดปกติจากการรักษาโรคจิต")
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetFontSize(16)
+                    .SetMarginBottom(5));
+
+                document.Add(new Paragraph("Modified Simpson-Angus Rating Scale (Mod-SAS) สำหรับ Parkinsonism และ EPS อื่นๆ")
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetFontSize(12)
+                    .SetMarginBottom(15));
+
+                // Patient Info
+                var patientTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 3, 1, 3 }))
+                    .UseAllAvailableWidth();
+                patientTable.AddCell(new Cell().Add(new Paragraph("HN").SetFont(thaiFont)));
+                patientTable.AddCell(new Cell().Add(new Paragraph(evaluation.Patient?.HN ?? "")));
+                patientTable.AddCell(new Cell().Add(new Paragraph("ชื่อ-นามสกุล").SetFont(thaiFont)));
+                patientTable.AddCell(new Cell().Add(new Paragraph($"{evaluation.Patient?.Title?.TitleName}{evaluation.Patient?.FirstName} {evaluation.Patient?.LastName}")));
+                document.Add(patientTable);
+
+                // วันที่ + ประเภทผู้ป่วย
+                var infoTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 2 }))
+                    .UseAllAvailableWidth()
+                    .SetMarginTop(5);
+                infoTable.AddCell(new Cell().Add(new Paragraph("ประเภทผู้ป่วย").SetFont(thaiFont)));
+                infoTable.AddCell(new Cell().Add(new Paragraph(evaluation.Patient?.PatientType ?? "")));
+                infoTable.AddCell(new Cell().Add(new Paragraph("วันที่ประเมิน").SetFont(thaiFont)));
+                infoTable.AddCell(new Cell().Add(new Paragraph(evaluation.RecordDate.ToString("dd/MM/yyyy HH:mm"))));
+                document.Add(infoTable);
+
+                document.Add(new Paragraph("\n"));
+
+                // ===== Table คำถามและคะแนน
+                var questionTable = new Table(UnitValue.CreatePercentArray(new float[] { 3, 1, 1, 1, 1, 1 }))
+                    .UseAllAvailableWidth();
+
+                questionTable.AddHeaderCell(new Cell().Add(new Paragraph("การทดสอบ").SetFont(thaiFont)));
+                for (int i = 0; i <= 4; i++)
+                    questionTable.AddHeaderCell(new Cell().Add(new Paragraph(i.ToString()).SetTextAlignment(TextAlignment.CENTER)));
+
+                var sortedDetails = evaluation.EvaluationDetails?
+                    .Where(d => d.Question != null)
+                    .OrderBy(d => d.Question!.QuestionID)
+                    .ToList() ?? new List<EvaluationDetail>();
+
+                foreach (var detail in sortedDetails)
+                {
+                    var questionText = detail.Question?.QuestionText ?? "ไม่พบคำถาม";
+                    int score = (int)(detail.Score ?? 0);
+
+                    // คำถาม
+                    questionTable.AddCell(new Cell().Add(new Paragraph(questionText).SetFontSize(10)));
+
+                    // คะแนน 0-4: เติม ✓ เฉพาะช่องที่ตรงคะแนน
+                    for (int i = 0; i <= 4; i++)
+                    {
+                        string mark = (i == score) ? "o" : " ";
+                        questionTable.AddCell(new Cell().Add(new Paragraph(mark).SetTextAlignment(TextAlignment.CENTER)));
+                    }
+                }
+
+                document.Add(questionTable.SetMarginTop(10));
+
+                // คำนวณคะแนนรวม
+                decimal totalScore = 0;
+                if (evaluation.EvaluationDetails?.Any() == true)
+                {
+                    var scores = evaluation.EvaluationDetails.Where(ed => ed.Score.HasValue).Select(ed => ed.Score!.Value).ToList();
+                    if (scores.Any())
+                    {
+                        totalScore = evaluation.Form?.Scoring?.ToLower() switch
+                        {
+                            "max" => scores.Max(),
+                            "min" => scores.Min(),
+                            "sum" => scores.Sum(),
+                            _ => scores.Sum()
+                        };
+                    }
+                }
+
+                // ===== Footer: สรุปผล
+                document.Add(new Paragraph("\nผลการประเมิน")
+                    .SetFontSize(14)
+                    .SetMarginTop(20));
+
+                if (totalScore > 0)
+                {
+                    document.Add(new Paragraph($"คะแนนรวม: {totalScore} คะแนน"));
+                }
+
+                document.Add(new Paragraph($"ผลลัพธ์: {evaluation.Result ?? "ไม่ระบุ"}"));
+
+                document.Add(new Paragraph("\nลายเซ็นผู้ประเมิน ..........................................")
+                    .SetMarginTop(30));
+
+                document.Add(new Paragraph($"วันที่ {DateTime.Now:dd/MM/yyyy HH:mm}")
+                    .SetFontSize(10)
+                    .SetTextAlignment(TextAlignment.RIGHT));
+
+                document.Close();
+
+                var fileName = $"ModSAS_{evaluation.Patient?.HN}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                return File(stream.ToArray(), "application/pdf", fileName);
             }
 
             public async Task<IActionResult> Patients()
@@ -1457,10 +1615,6 @@ namespace Project.Controllers
                     }
 
                     var user = await _db.User.FirstOrDefaultAsync(u => u.UserID == int.Parse(userId));
-                    if (user == null)
-                    {
-                        return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
-                    }
 
                     if (profilePicture == null || profilePicture.Length == 0)
                     {
@@ -1480,7 +1634,6 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ขนาดไฟล์ใหญ่เกินไป (สูงสุด 5MB)" });
                     }
 
-                    // Create uploads directory if not exists
                     var uploadsPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile");
                     if (!Directory.Exists(uploadsPath))
                     {

@@ -123,7 +123,7 @@
                                 <td>@(patient.District?.Amphur?.Province?.PROVINCE_NAME ?? "-")</td>
                                 <td>@(patient.District?.Amphur?.AMPHUR_NAME ?? "-")</td>
                                 <td>
-                                    <span class="badge @(patient.PatientType == "OPD" ? "bg-primary" : "bg-success") mx-4">
+                                    <span class="badge @(patient.PatientType == "OPD" ? "bg-primary bg-gradient" : "bg-success bg-gradient") mx-4">
                                         @patient.PatientType
                                     </span>
                                 </td>

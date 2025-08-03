@@ -60,12 +60,11 @@
                     </div>
                     <div class="info-item mb-3">
                         <label class="fw-bold text-muted">ระดับความรุนแรง:</label>
-                        <span class="badge bg-danger ms-2">@(ViewBag.InterpreterName ?? Model.Result ?? "ไม่ระบุ")</span>
+                        <span class="ms-2">@(ViewBag.InterpreterName ?? Model.Result ?? "ไม่ระบุ")</span>
                     </div>
                     <div class="info-item mb-3">
                         <label class="fw-bold text-muted">แนวทางปฎิบัติ:</label>
-                        <div class="ms-2 mt-1">
-                            <div class="practice-guidelines p-2 bg-light rounded border-start border-warning border-4">
+                        <div class="ms-2">
                                 @if (!string.IsNullOrEmpty(ViewBag.InterpreterText))
                                 {
                                     @Html.Raw(((string)ViewBag.InterpreterText).Replace("\n", "<br>"))
@@ -74,7 +73,6 @@
                                 {
                                     <small class="text-muted">ไม่มีข้อมูลแนวทางปฎิบัติ</small>
                                 }
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -186,68 +184,6 @@
                     <p>ไม่พบรายละเอียดการตอบคำถาม</p>
                 </div>
             }
-        </div>
-    </div>
-
-    <!-- Form Information -->
-    <div class="modern-card">
-        <div class="card-header">
-            <h5 class="mb-0">
-                <i class="fas fa-info-circle me-2"></i>ข้อมูลแบบประเมิน
-            </h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="info-item mb-2">
-                        <label class="fw-bold text-muted">ชื่อแบบประเมิน:</label>
-                        <span class="ms-2">@Model.Form?.FormName</span>
-                    </div>
-                    <div class="info-item mb-2">
-                        <label class="fw-bold text-muted">ประเภท:</label>
-                        <span class="ms-2">
-                            @{
-                                string formTypeText = Model.Form?.FormType switch
-                                {
-                                    1 => "แบบประเมินทั่วไป",
-                                    2 => "แบบประเมินแจงรายละเอียด",
-                                    3 => "แบบประเมินชุดคำถาม",
-                                    _ => "ไม่ระบุ"
-                                };
-                            }
-                            @formTypeText
-                        </span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="info-item mb-2">
-                        <label class="fw-bold text-muted">วิธีการนับคะแนน:</label>
-                        <span class="ms-2">
-                            @{
-                                string scoringText = Model.Form?.Scoring switch
-                                {
-                                    "max" => "คะแนนสูงสุด",
-                                    "min" => "คะแนนต่ำสุด",
-                                    "sum" => "รวมคะแนน",
-                                    _ => "รวมคะแนน"
-                                };
-                            }
-                            @scoringText
-                        </span>
-                    </div>
-                    <div class="info-item mb-2">
-                        <label class="fw-bold text-muted">จำนวนคำถาม:</label>
-                        <span class="ms-2">@(Model.Form?.Questions?.Count ?? 0) ข้อ</span>
-                    </div>
-                    @if (ViewBag.CalculatedScore != null)
-                    {
-                        <div class="info-item mb-2">
-                            <label class="fw-bold text-muted">คะแนนที่ได้:</label>
-                            <span class="badge bg-info ms-2">@ViewBag.CalculatedScore คะแนน</span>
-                        </div>
-                    }
-                </div>
-            </div>
         </div>
     </div>
 </div>

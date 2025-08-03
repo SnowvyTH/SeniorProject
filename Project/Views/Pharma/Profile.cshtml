@@ -451,7 +451,7 @@
                 title: 'ยืนยันการเปลี่ยนรูปภาพ',
                 html: `
                     <div class="text-center">
-                        <img src="${imageSrc}" style="max-width: 200px; max-height: 200px; border-radius: 50%; border: 3px solid var(--mint-green);">
+                        <img src="${imageSrc}" style="max-width: 200px; max-height: 200px; border-radius: 50%; object-fit: cover; border: 3px solid var(--mint-green);">
                         <p class="mt-3">คุณต้องการใช้รูปภาพนี้หรือไม่?</p>
                     </div>
                 `,
@@ -550,7 +550,6 @@
                 // Add new image
                 const $img = $('<img>')
                     .attr('src', imageUrl)
-                    .attr('alt', 'Profile Picture')
                     .addClass('avatar-img')
                     .css({
                         'width': '100%',

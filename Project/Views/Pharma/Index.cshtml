@@ -84,7 +84,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge @(patient.PatientType == "OPD" ? "bg-primary" : "bg-success") mx-4">
+                                    <span class="badge @(patient.PatientType == "OPD" ? "mx-4 bg-primary bg-gradient" : "mx-4 bg-success bg-gradient")">
                                         @patient.PatientType
                                     </span>
                                 </td>
@@ -92,14 +92,14 @@
                                     @if (patient.Evaluations.Any())
                                     {
                                         <div class="dropdown">
-                                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            <button class="btn btn-sm btn-outline-success dropdown-toggle mt-1" type="button" data-bs-toggle="dropdown">
                                                 @(patient.Evaluations.OrderByDescending(r => r.RecordDate).First().Form?.FormName) - @(patient.Evaluations.OrderByDescending(r => r.RecordDate).First().RecordDate.ToString("dd/MM/yyyy"))
                                             </button>
                                             <ul class="dropdown-menu">
                                                 @foreach (var record in patient.Evaluations.OrderByDescending(r => r.RecordDate))
                                                 {
                                                     <li><a class="dropdown-item evaluation-item" href="#" data-record-id="@record.EvaID" data-result="@record.Result" data-patient-hn="@patient.HN">
-                                                            <i class="fas fa-file-alt me-2"></i>@(record.Form?.FormName) - @(record.RecordDate.ToString("dd/MM/yyyy"))
+                                                            @(record.Form?.FormName) - @(record.RecordDate.ToString("dd/MM/yyyy"))
                                                         </a></li>
                                                 }
                                             </ul>
@@ -117,7 +117,7 @@
                                     {
                                         var latestEvaluation = patient.Evaluations.OrderByDescending(r => r.RecordDate).First();
                                         <div class="severity-display mx-1" id="severity-@patient.HN" data-selected-evaluation-id="@latestEvaluation.EvaID">
-                                            <span class="badge bg-warning">@(latestEvaluation.Result ?? "ไม่ระบุ")</span>
+                                            <span class="">@(latestEvaluation.Result)</span>
                                         </div>
                                     }
                                     else
@@ -503,14 +503,11 @@
                 const result = $(this).data('result');
                 const patientHN = $(this).data('patient-hn');
                 
-                // Update severity display in real-time
                 const severityDisplay = $(`#severity-${patientHN}`);
-                severityDisplay.html(`<span class="badge bg-warning">${result || 'ไม่ระบุ'}</span>`);
+                severityDisplay.html(`<span class="">${result}</span>`);
                 
-                // Store the selected evaluation ID for this patient
                 severityDisplay.attr('data-selected-evaluation-id', recordId);
-                
-                // Update dropdown button HTML (preserve icon)
+
                 const dropdownButton = $(this).closest('.dropdown').find('.dropdown-toggle');
                 const itemHtml = $(this).html(); // Get the full HTML content including icons
                 dropdownButton.html(itemHtml);
@@ -520,11 +517,9 @@
                 $(this).closest('.dropdown').find('.dropdown-toggle').removeClass('show');
             });
             
-            // Initialize
             updateResultsCount($('.patient-row').length);
         });
 
-        // Clear filters function (global scope)
         function clearFilters() {
             $('#searchInput').val('');
             $('#patientTypeFilter').val('');

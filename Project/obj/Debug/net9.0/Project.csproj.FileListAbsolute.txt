@@ -244,3 +244,4 @@ d:\Project\Project\bin\Debug\net9.0\Microsoft.DotNet.PlatformAbstractions.dll
 d:\Project\Project\bin\Debug\net9.0\BouncyCastle.Cryptography.dll
 d:\Project\Project\bin\Debug\net9.0\itext.bouncy-castle-adapter.dll
 d:\Project\Project\bin\Debug\net9.0\itext.font_asian.dll
+D:\Project\Project\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
