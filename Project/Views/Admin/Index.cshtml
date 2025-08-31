@@ -4,7 +4,7 @@
 }
 
 <!-- Statistics Cards -->
-<div class="row mb-4">
+<div class="row mb-3">
     <div class="col-lg-3 col-md-6 mb-4">
         <div class="stats-card card-mint">
             <div class="card-body">
@@ -108,26 +108,11 @@
     <div class="col-lg-4 mb-4">
         <div class="modern-card">
             <div class="card-header">
-                <i class="fas fa-server me-2"></i>สถานะระบบ
+                <i class="fas fa-users me-2"></i>ประเภทผู้ใช้งานระบบ
             </div>
             <div class="card-body">
-                <div class="d-flex align-items-center mb-3">
-                    <span class="status-online"></span>
-                    <span style="color: var(--dark-green); font-weight: 600;">เซิร์ฟเวอร์ออนไลน์</span>
-                </div>
-                <div class="d-flex align-items-center mb-3">
-                    <span class="status-online"></span>
-                    <span style="color: var(--dark-green); font-weight: 600;">ฐานข้อมูลพร้อมใช้งาน</span>
-                </div>
-                <div class="d-flex align-items-center mb-3">
-                    <span class="status-online"></span>
-                    <span style="color: var(--dark-green); font-weight: 600;">ระบบพร้อมใช้งาน</span>
-                </div>
-                <hr style="border-color: #e9ecef;">
-                <div class="text-center">
-                    <a href="@Url.Action("Logs", "Admin")" class="btn btn-mint">
-                        <i class="fas fa-history me-2"></i>ดูประวัติการใช้งาน
-                    </a>
+                <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
+                    <canvas id="categoryChart"></canvas>
                 </div>
             </div>
         </div>
@@ -140,8 +125,6 @@
     <script>
         $(document).ready(function() {
            
-            
-            // Add any JavaScript functionality here
             $('.stats-card').hover(
                 function() {
                     $(this).find('.stats-icon').animate({ fontSize: '45px' }, 200);
@@ -150,6 +133,81 @@
                     $(this).find('.stats-icon').animate({ fontSize: '40px' }, 200);
                 }
             );
+
+            async function renderUserRoleChart() {
+                try {
+                    const response = await fetch('/Admin/UserRoleChart');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const chartData = await response.json();
+
+                    const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+                    new Chart(categoryCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: chartData.labels,
+                            datasets: [{
+                                data: chartData.data,
+                                backgroundColor: chartData.backgroundColor,
+                                borderWidth: 2,
+                                borderColor: '#fff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            animation: {
+                                animateRotate: true,
+                                duration: 2000
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        padding: 20,
+                                        usePointStyle: true,
+                                        color: '#333',
+                                        font: {
+                                            family: 'Kanit, sans-serif',
+                                            size: 12
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    titleColor: '#fff',
+                                    bodyColor: '#fff',
+                                    borderColor: 'rgba(81, 195, 183, 1)',
+                                    borderWidth: 1,
+                                    callbacks: {
+                                        label: function(context) {
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = Math.round((context.raw / total) * 100);
+                                            return `${context.label}: ${context.raw} คน (${percentage}%)`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error fetching user role chart data:', error);
+                    const chartContainer = document.getElementById('categoryChart').parentElement;
+                    if (chartContainer) {
+                        chartContainer.innerHTML = `
+                            <div class="text-center text-muted p-4">
+                                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                <p>ไม่สามารถโหลดข้อมูลกราฟได้</p>
+                                <small>กรุณาลองใหม่อีกครั้ง</small>
+                            </div>
+                        `;
+                    }
+                }
+            }
+
+            // เรียกใช้ function ทั้งสอง
+            renderUserRoleChart();
         });
         async function renderLoginChart() {
             try {

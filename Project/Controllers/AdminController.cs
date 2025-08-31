@@ -550,10 +550,6 @@ namespace Project.Controllers
         {
             await SetUserProfileData();
             var roleId = User.FindFirst("RoleID")?.Value;
-            if (roleId != "3")
-            {
-                return RedirectToAction("AccessDenied", "Home");
-            }
 
             ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
             ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
@@ -567,8 +563,7 @@ namespace Project.Controllers
             string roleFilter = "", int page = 1, int pageSize = 20)
         {
             var roleId = User.FindFirst("RoleID")?.Value;
-            if (roleId != "3") return Json(new { success = false, message = "Access denied" });
-
+        
             var query = _db.Log
                 .Include(l => l.User!)
                     .ThenInclude(u => u.Title)
@@ -610,12 +605,12 @@ namespace Project.Controllers
                 .Select(l => new
                 {
                     logID = l.LogID,
+                    username = l.User.Username,
                     logDateTime = l.LogDateTime,
                     titleName = l.User != null && l.User.Title != null ? l.User.Title.TitleName : "",
                     firstName = l.User != null ? l.User.FirstName : "",
                     lastName = l.User != null ? l.User.LastName : "",
-                    roleID = l.User != null ? l.User.RoleID : 0,
-                    details = "เข้าสู่ระบบ" // Log model ไม่มี Details field
+                    roleID = l.User != null ? l.User.RoleID : 0
                 })
                 .ToListAsync();
 
@@ -631,7 +626,6 @@ namespace Project.Controllers
         public async Task<IActionResult> GetLogStats()
         {
             var roleId = User.FindFirst("RoleID")?.Value;
-            if (roleId != "3") return Json(new { success = false, message = "Access denied" });
 
             var today = DateTime.Today;
             var weekStart = today.AddDays(-(int)today.DayOfWeek);
@@ -716,6 +710,67 @@ namespace Project.Controllers
                 data = dataPoints,
                 title = $"จำนวนการเข้าสู่ระบบย้อนหลัง 30 วัน"
             });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> UserRoleChart()
+        {
+            try
+            {
+                var roleStats = await _db.User
+                    .Where(u => u.RoleID.HasValue)
+                    .GroupBy(u => u.RoleID)
+                    .Select(g => new {
+                        RoleID = g.Key,
+                        Count = g.Count()
+                    })
+                    .ToListAsync();
+
+                var labels = new List<string>();
+                var dataPoints = new List<int>();
+                var backgroundColors = new List<string>();
+
+                foreach (var stat in roleStats.OrderBy(s => s.RoleID))
+                {
+                    string roleName = "";
+                    string color = "";
+                    
+                    switch (stat.RoleID)
+                    {
+                        case 1:
+                            roleName = "เภสัช";
+                            color = "rgba(81, 195, 183, 0.8)"; // Mint green
+                            break;
+                        case 2:
+                            roleName = "หัวหน้าแผนกเภสัช";
+                            color = "rgba(34, 197, 94, 0.8)"; // Green
+                            break;
+                        case 3:
+                            roleName = "ผู้ดูแลระบบ";
+                            color = "#06695f";
+                            break;
+                        default:
+                            roleName = "อื่นๆ";
+                            color = "rgba(239, 68, 68, 0.8)"; // Red
+                            break;
+                    }
+
+                    labels.Add(roleName);
+                    dataPoints.Add(stat.Count);
+                    backgroundColors.Add(color);
+                }
+
+                return Json(new
+                {
+                    labels = labels,
+                    data = dataPoints,
+                    backgroundColor = backgroundColors
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         // Profile Picture Management for Admin

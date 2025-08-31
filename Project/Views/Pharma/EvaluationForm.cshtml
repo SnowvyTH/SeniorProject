@@ -75,7 +75,7 @@
                                 @foreach (var question in group.OrderBy(q => q.QuestionID))
                                 {
                                     globalQuestionIndex++;
-                                    <div class="question-group mb-4">
+                                    <div class="question-group mb-1">
                                         <div class="question-header mb-3">
                                             <h6 class="question-number">
                                                 <i class="fas fa-question-circle me-2"></i>
@@ -162,7 +162,7 @@
                 }
                 
                 <!-- Submit Button -->
-                <div class="text-center mt-4">
+                <div class="text-center mt-4 mb-4">
                     <button type="button" class="btn btn-success btn-lg" id="submitBtn" onclick="submitEvaluation()">
                         <i class="fas fa-save me-2"></i>บันทึกผลการประเมิน
                     </button>
@@ -178,15 +178,7 @@
                         <i class="fas fa-chart-line me-2"></i>ความคืบหน้า
                     </h6>
                 </div>
-                <div class="card-body">
-                    <div class="text-center mb-3">
-                        <div class="progress-circle-container">
-                            <div class="progress-circle" id="progressCircle">
-                                <span id="progressText">0%</span>
-                            </div>
-                        </div>
-                    </div>
-                    
+                <div class="card-body">                    
                     <div class="progress mb-3">
                         <div class="progress-bar bg-danger" role="progressbar" style="width: 0%" 
                              id="progressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
@@ -261,12 +253,10 @@
             border-radius: 8px;
             padding: 0.75rem 1rem;
             margin-bottom: 0.5rem;
-            transition: all 0.3s ease;
         }
 
         .choice-item:hover {
             background: rgba(81, 195, 183, 0.1);
-            transform: translateX(5px);
         }
 
         .choice-item input[type="radio"]:checked + label {
@@ -371,8 +361,6 @@
         }
 
         .question-group {
-            border-left: 3px solid #dee2e6;
-            padding-left: 1rem;
             margin-left: 1rem;
         }
 

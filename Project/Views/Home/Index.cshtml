@@ -9,7 +9,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ระบบจัดการข้อมูลผู้ป่วย</title>
+    <title>@ViewData["Title"]</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -55,10 +55,10 @@
         }
 
         .logo-icon {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             background: linear-gradient(135deg, var(--mint-green), var(--dark-green));
-            border-radius: 20px;
+            border-radius: 50px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -295,7 +295,7 @@
                 <!-- Brand Logo -->
                 <div class="brand-logo">
                     <div class="logo-icon">
-                        <i class="fas fa-user-md"></i>
+                        <img src="/img/logo.png" width="95px" style="padding-left: 2px;" />
                     </div>
                     <div class="brand-title">ระบบประเมินผู้ป่วย</div>
                     <div class="brand-subtitle">Assessment Management System</div>
@@ -333,10 +333,6 @@
                 <button type="submit" class="btn btn-login" id="loginBtn">
                     <i class="fas fa-sign-in-alt me-2"></i>Log In
                 </button>
-                <div class="footer-text">
-                    <i class="fas fa-shield-alt me-1"></i>
-                    ระบบปลอดภัยด้วยเทคโนโลยีการเข้ารหัสขั้นสูง
-                </div>
             </form>
         </div>
     </div>
@@ -350,8 +346,7 @@
     <script>
         $(document).ready(function() {
             let isSubmitting = false;
-            
-            // แสดง validation summary เมื่อมี error
+
             if ($('.validation-summary-errors').length > 0 || $('.field-validation-error').length > 0) {
                 var errorMessages = [];
                 $('.validation-summary-errors li').each(function() {
@@ -374,10 +369,8 @@
                 }
             }
             
-            // Focus ที่ Username field
             $('#Username').focus();
 
-            // Handle form submission
             $('form').on('submit', function(e) {
                 e.preventDefault();
                 
@@ -390,7 +383,6 @@
                 var username = $('#Username').val().trim();
                 var password = $('#Password').val().trim();
                 
-                // ตรวจสอบข้อมูลที่กรอก
                 if (!username || !password) {
                     Swal.fire({
                         icon: 'warning',
@@ -402,21 +394,17 @@
                     return false;
                 }
                 
-                // เริ่มการส่งข้อมูล
                 isSubmitting = true;
                 $btn.html('<i class="fas fa-spinner fa-spin me-2"></i>กำลังเข้าสู่ระบบ...');
                 $btn.prop('disabled', true);
                 
-                // ส่งข้อมูลไปยัง server
                 $.ajax({
                     url: $form.attr('action'),
                     type: 'POST',
                     data: $form.serialize(),
-                    timeout: 10000, // 10 seconds timeout
+                    timeout: 10000, 
                     success: function(response) {
-                        // ถ้าสำเร็จ redirect ไปหน้าที่ควรไป
                         if (response.success === false) {
-                            // ถ้า server ส่งข้อผิดพลาดกลับมา
                             isSubmitting = false;
                             $btn.html('<i class="fas fa-sign-in-alt me-2"></i>Log In');
                             $btn.prop('disabled', false);
@@ -429,7 +417,6 @@
                                 confirmButtonText: 'ลองใหม่อีกครั้ง'
                             });
                         } else {
-                            // สำเร็จ - redirect
                             Swal.fire({
                                 icon: 'success',
                                 title: 'เข้าสู่ระบบสำเร็จ',
@@ -438,7 +425,6 @@
                                 showConfirmButton: false,
                                 allowOutsideClick: false
                             }).then(() => {
-                                // Redirect ไปยัง URL ที่ server ส่งมา หรือ submit form ปกติ
                                 if (response.redirectUrl) {
                                     window.location.href = response.redirectUrl;
                                 } else {
@@ -461,7 +447,6 @@
                                 confirmButtonText: 'ตกลง'
                             });
                         } else if (xhr.status === 400 || xhr.status === 401) {
-                            // ข้อมูลไม่ถูกต้อง
                             Swal.fire({
                                 icon: 'error',
                                 title: 'เข้าสู่ระบบไม่สำเร็จ',
@@ -470,7 +455,6 @@
                                 confirmButtonText: 'ลองใหม่อีกครั้ง'
                             });
                         } else {
-                            // ข้อผิดพลาดอื่นๆ
                             Swal.fire({
                                 icon: 'error',
                                 title: 'เกิดข้อผิดพลาด',
@@ -483,14 +467,12 @@
                 });
             });
 
-            // Add input focus effects
             $('.form-control').on('focus', function() {
                 $(this).parent().addClass('focused');
             }).on('blur', function() {
                 $(this).parent().removeClass('focused');
             });
             
-            // เคลียร์ error messages เมื่อผู้ใช้เริ่มพิมพ์
             $('.form-control').on('input', function() {
                 $(this).siblings('.text-danger').text('');
                 $('.alert-danger').hide();
@@ -506,12 +488,10 @@
     
     <script>
         $(document).ready(function() {
-            // แสดง validation summary เมื่อมี error
             if ($('.validation-summary-errors').length > 0) {
                 $('.alert-danger').show();
             }
             
-            // Focus ที่ Username field
             $('#Username').focus();
         });
     </script>

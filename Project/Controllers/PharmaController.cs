@@ -1,37 +1,23 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Project.Models.Entity;
-using Project.Data;
-using Project.Services;
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Authentication;
+﻿using iText.IO.Font.Constants;
+using iText.Kernel.Font;
+using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Properties;
-using iText.Kernel.Geom;
-using iText.Kernel.Font;
-using iText.IO.Font.Constants;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Project.Data;
+using Project.Models;
+using Project.Models.Entity;
+using Project.Services;
+using System.Text.Json.Serialization;
 
 namespace Project.Controllers
 {
     // Model for patient creation/update
-    public class PatientCreateModel
-    {
-        public string HN { get; set; } = string.Empty;
-        public string? CitizenID { get; set; }
-        public int? TitleID { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public DateTime? BirthDate { get; set; }
-        public decimal? Weight { get; set; }
-        public decimal? Height { get; set; }
-        public int? RightID { get; set; }
-        public string? Phone { get; set; }
-        public string? PatientType { get; set; }
-        public int? TambonID { get; set; }
-    }
         [Authorize(Roles = "เภสัช")]
         public class PharmaController : Controller
         {
@@ -153,6 +139,7 @@ namespace Project.Controllers
             [HttpGet]
             public async Task<IActionResult> StartEvaluation(string patientId, int formId)
             {
+                await SetUserProfileData();
                 var patient = await _db.Patient
                     .Include(p => p.Title)
                     .FirstOrDefaultAsync(p => p.HN == patientId);
@@ -187,7 +174,6 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
                     }
 
-                    // Create evaluation record
                     var evaluation = new Evaluation
                     {
                         HN = model.PatientId,
@@ -200,7 +186,6 @@ namespace Project.Controllers
                     _db.Evaluation.Add(evaluation);
                     await _db.SaveChangesAsync();
 
-                    // Create evaluation detail records
                     foreach (var answer in model.Answers)
                     {
                         var evaluationDetail = new EvaluationDetail
@@ -245,7 +230,6 @@ namespace Project.Controllers
                     return RedirectToAction("Index");
                 }
 
-                // คำนวณคะแนนตามเงื่อนไข max, min, sum
                 if (evaluation.EvaluationDetails?.Any() == true && evaluation.Form != null)
                 {
                     var scores = evaluation.EvaluationDetails.Where(ed => ed.Score.HasValue).Select(ed => ed.Score!.Value).ToList();
@@ -259,14 +243,12 @@ namespace Project.Controllers
                             _ => scores.Sum()
                         };
 
-                        // ค้นหา Interpreter ที่ตรงกับคะแนนที่คำนวณได้
                         var interpreter = await _db.Interpreter
                             .Where(i => i.FormID == evaluation.FormID 
                                     && calculatedScore >= i.MinScore 
                                     && calculatedScore <= i.MaxScore)
                             .FirstOrDefaultAsync();
 
-                        // เก็บข้อมูล Interpreter ใน ViewBag เพื่อใช้ใน View
                         ViewBag.InterpreterName = interpreter?.InterName;
                         ViewBag.InterpreterText = interpreter?.InterText;
                         ViewBag.CalculatedScore = calculatedScore;
@@ -300,7 +282,6 @@ namespace Project.Controllers
                     return NotFound("ไม่พบข้อมูลการประเมิน");
                 }
 
-                // คำนวณคะแนนตามเงื่อนไข max, min, sum
                 decimal calculatedScore = 0;
                 string interpreterName = "";
                 string interpreterText = "";
@@ -318,7 +299,6 @@ namespace Project.Controllers
                             _ => scores.Sum()
                         };
 
-                        // ค้นหา Interpreter ที่ตรงกับคะแนนที่คำนวณได้
                         var interpreter = await _db.Interpreter
                             .Where(i => i.FormID == evaluation.FormID 
                                     && calculatedScore >= i.MinScore 
@@ -330,7 +310,6 @@ namespace Project.Controllers
                     }
                 }
 
-                // สร้าง PDF ขนาด A4
                 using var stream = new MemoryStream();
                 var writer = new PdfWriter(stream);
                 var pdf = new PdfDocument(writer);
@@ -338,14 +317,11 @@ namespace Project.Controllers
 
                 try
                 {
-                    // ตั้งค่า margins สำหรับ A4
                     document.SetMargins(50, 40, 50, 40); // top, right, bottom, left
 
-                    // ตั้งค่าฟอนต์ภาษาไทย
                     PdfFont thaiFont;
                     try
                     {
-                        // ลองใช้ฟอนต์ TH Sarabun New จากระบบ Windows
                         var possibleFonts = new[]
                         {
                             System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "THSarabunNew.ttf"),
@@ -357,7 +333,7 @@ namespace Project.Controllers
                             System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "Arial.ttf")
                         };
 
-                        thaiFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA); // default
+                        thaiFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
                         
                         foreach (var fontPath in possibleFonts)
                         {
@@ -377,23 +353,20 @@ namespace Project.Controllers
                     }
                     catch
                     {
-                        // ถ้าเกิด error ใช้ฟอนต์พื้นฐาน
                         thaiFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
                     }
 
-                    // ตั้งค่าฟอนต์เริ่มต้นให้กับ document
                     document.SetFont(thaiFont).SetFontSize(16);
 
-                    // Header
                     var headerText = new Paragraph("รายงานผลการประเมิน")
                         .SetTextAlignment(TextAlignment.CENTER)
-                        .SetFontSize(20)
+                        .SetFontSize(14)
                         .SetMarginBottom(10);
                     document.Add(headerText);
 
                     var subHeaderText = new Paragraph(evaluation.Form?.FormName ?? "")
                         .SetTextAlignment(TextAlignment.CENTER)
-                        .SetFontSize(14)
+                        .SetFontSize(12)
                         .SetMarginBottom(20);
                     document.Add(subHeaderText);
 
@@ -403,26 +376,30 @@ namespace Project.Controllers
                         .SetMarginBottom(10));
 
                     document.Add(new Paragraph($"HN: {evaluation.Patient?.HN ?? ""}")
+                        .SetFontSize(12)
                         .SetMarginLeft(20));
                     document.Add(new Paragraph($"ชื่อ-นามสกุล: {evaluation.Patient?.Title?.TitleName}{evaluation.Patient?.FirstName} {evaluation.Patient?.LastName}")
+                        .SetFontSize(12)
                         .SetMarginLeft(20));
                     document.Add(new Paragraph($"ประเภทผู้ป่วย: {evaluation.Patient?.PatientType ?? ""}")
+                        .SetFontSize(12)
                         .SetMarginLeft(20));
                     
                     if (evaluation.Patient?.BirthDate.HasValue == true)
                     {
                         document.Add(new Paragraph($"วันเกิด: {evaluation.Patient.BirthDate.Value:dd/MM/yyyy}")
+                            .SetFontSize(12)
                             .SetMarginLeft(20));
                     }
 
                     document.Add(new Paragraph("\n"));
 
-                    // Evaluation Information
                     document.Add(new Paragraph("ข้อมูลการประเมิน")
                         .SetFontSize(12)
                         .SetMarginBottom(10));
 
                     document.Add(new Paragraph($"แบบประเมิน: {evaluation.Form?.FormName ?? ""}")
+                        .SetFontSize(12)
                         .SetMarginLeft(20));
                     
                     var formTypeText = evaluation.Form?.FormType switch
@@ -433,30 +410,24 @@ namespace Project.Controllers
                         _ => "ไม่ระบุ"
                     };
                     document.Add(new Paragraph($"ประเภท: {formTypeText}")
+                        .SetFontSize(12)
                         .SetMarginLeft(20));
                     document.Add(new Paragraph($"วันที่ประเมิน: {evaluation.RecordDate:dd/MM/yyyy HH:mm}")
+                        .SetFontSize(12)
                         .SetMarginLeft(20));
                     document.Add(new Paragraph($"ผู้ประเมิน: {evaluation.User?.Title?.TitleName}{evaluation.User?.FirstName} {evaluation.User?.LastName}")
+                        .SetFontSize(12)
                         .SetMarginLeft(20));
-                    
-                    if (calculatedScore > 0)
-                    {
-                        document.Add(new Paragraph($"คะแนนรวม: {calculatedScore} คะแนน")
-                            .SetMarginLeft(20));
-                    }
 
-                    document.Add(new Paragraph("\n"));
-
-                    // Questions and Answers
                     document.Add(new Paragraph("รายละเอียดคำตอบ")
-                        .SetFontSize(14)
+                        .SetFontSize(12)
                         .SetMarginBottom(10));
 
                     if (evaluation.EvaluationDetails?.Any() == true)
                     {
                         if (evaluation.Form?.FormType == 3)
                         {
-                            // แบบประเมินแบบกลุ่ม - แสดงตาม section
+                         
                             var groupedQuestions = evaluation.EvaluationDetails
                                 .Where(d => d.Question != null)
                                 .GroupBy(d => d.Question!.Section ?? "ทั่วไป")
@@ -487,11 +458,13 @@ namespace Project.Controllers
                                     if (selectedOption != null)
                                     {
                                         document.Add(new Paragraph($"ตอบ: {selectedOption.OptionText} ({detail.Score} คะแนน)")
+                                            .SetFontSize(12)
                                             .SetMarginLeft(40));
                                     }
                                     else
                                     {
                                         document.Add(new Paragraph($"คะแนน: {detail.Score}")
+                                            .SetFontSize(12)
                                             .SetMarginLeft(40));
                                     }
                                 }
@@ -499,7 +472,6 @@ namespace Project.Controllers
                         }
                         else
                         {
-                            // แบบประเมินปกติ - แสดงทีละคำถาม
                             int questionIndex = 0;
                             foreach (var detail in evaluation.EvaluationDetails.Where(d => d.Question != null).OrderBy(d => d.Question!.QuestionID))
                             {
@@ -508,20 +480,24 @@ namespace Project.Controllers
                                 var selectedOption = question.Options.FirstOrDefault(o => o.Value == detail.Score);
                                 
                                 document.Add(new Paragraph($"คำถามที่ {questionIndex}")
+                                    .SetFontSize(12)
                                     .SetMarginTop(10));
                                     
                                 document.Add(new Paragraph(question.QuestionText ?? "")
+                                    .SetFontSize(12)
                                     .SetMarginBottom(5)
                                     .SetMarginLeft(20));
                                 
                                 if (selectedOption != null)
                                 {
                                     document.Add(new Paragraph($"ตอบ: {selectedOption.OptionText} ({detail.Score} คะแนน)")
+                                        .SetFontSize(12)
                                         .SetMarginLeft(40));
                                 }
                                 else
                                 {
                                     document.Add(new Paragraph($"คะแนน: {detail.Score}")
+                                        .SetFontSize(12)
                                         .SetMarginLeft(40));
                                 }
                             }
@@ -531,34 +507,36 @@ namespace Project.Controllers
                     // Results
                     document.Add(new Paragraph("\n"));
                     document.Add(new Paragraph("ผลการประเมิน")
-                        .SetFontSize(14)
+                        .SetFontSize(12)
                         .SetMarginTop(20)
                         .SetMarginBottom(10));
 
                     document.Add(new Paragraph($"ระดับความรุนแรง: {interpreterName ?? evaluation.Result ?? "ไม่ระบุ"}")
+                        .SetFontSize(12)
                         .SetMarginLeft(20));
 
                     if (!string.IsNullOrEmpty(interpreterText))
                     {
                         document.Add(new Paragraph("แนวทางปฏิบัติ:")
+                            .SetFontSize(12)
                             .SetMarginTop(10)
                             .SetMarginLeft(20));
                         document.Add(new Paragraph(interpreterText)
+                            .SetFontSize(12)
                             .SetMarginLeft(40));
                     }
 
-                    // Footer
                     document.Add(new Paragraph($"\n\nสร้างรายงานเมื่อ {DateTime.Now:dd/MM/yyyy HH:mm:ss}")
                         .SetTextAlignment(TextAlignment.CENTER)
-                        .SetFontSize(10)
+                        .SetFontSize(12)
                         .SetMarginTop(30));
-                    document.Add(new Paragraph("ระบบจัดการโรงพยาบาล - แผนกเภสัชกรรม")
+                    document.Add(new Paragraph("ระบบประเมินผู้ป่วย")
                         .SetTextAlignment(TextAlignment.CENTER)
+                        .SetFontSize(12)
                         .SetFontSize(10));
 
                     document.Close();
 
-                    // Return PDF file
                     var fileName = $"report_{evaluation.Patient?.HN}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
                     return File(stream.ToArray(), "application/pdf", fileName);
                 }
@@ -592,7 +570,6 @@ namespace Project.Controllers
                 var document = new Document(pdf, PageSize.A4);
                 document.SetMargins(40, 30, 40, 30);
 
-                // โหลดฟอนต์ภาษาไทย
                 PdfFont thaiFont;
                 var fontPaths = new[]
                 {
@@ -621,7 +598,6 @@ namespace Project.Controllers
 
                 document.SetFont(thaiFont).SetFontSize(12);
 
-                // ===== Header
                 document.Add(new Paragraph("แบบประเมินอาการเคลื่อนไหวผิดปกติจากการรักษาโรคจิต")
                     .SetTextAlignment(TextAlignment.CENTER)
                     .SetFontSize(16)
@@ -632,7 +608,6 @@ namespace Project.Controllers
                     .SetFontSize(12)
                     .SetMarginBottom(15));
 
-                // Patient Info
                 var patientTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 3, 1, 3 }))
                     .UseAllAvailableWidth();
                 patientTable.AddCell(new Cell().Add(new Paragraph("HN").SetFont(thaiFont)));
@@ -641,7 +616,6 @@ namespace Project.Controllers
                 patientTable.AddCell(new Cell().Add(new Paragraph($"{evaluation.Patient?.Title?.TitleName}{evaluation.Patient?.FirstName} {evaluation.Patient?.LastName}")));
                 document.Add(patientTable);
 
-                // วันที่ + ประเภทผู้ป่วย
                 var infoTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 2 }))
                     .UseAllAvailableWidth()
                     .SetMarginTop(5);
@@ -653,7 +627,6 @@ namespace Project.Controllers
 
                 document.Add(new Paragraph("\n"));
 
-                // ===== Table คำถามและคะแนน
                 var questionTable = new Table(UnitValue.CreatePercentArray(new float[] { 3, 1, 1, 1, 1, 1 }))
                     .UseAllAvailableWidth();
 
@@ -671,10 +644,8 @@ namespace Project.Controllers
                     var questionText = detail.Question?.QuestionText ?? "ไม่พบคำถาม";
                     int score = (int)(detail.Score ?? 0);
 
-                    // คำถาม
                     questionTable.AddCell(new Cell().Add(new Paragraph(questionText).SetFontSize(10)));
 
-                    // คะแนน 0-4: เติม ✓ เฉพาะช่องที่ตรงคะแนน
                     for (int i = 0; i <= 4; i++)
                     {
                         string mark = (i == score) ? "o" : " ";
@@ -684,7 +655,6 @@ namespace Project.Controllers
 
                 document.Add(questionTable.SetMarginTop(10));
 
-                // คำนวณคะแนนรวม
                 decimal totalScore = 0;
                 if (evaluation.EvaluationDetails?.Any() == true)
                 {
@@ -875,7 +845,7 @@ namespace Project.Controllers
             }
 
             [HttpPost]
-            public async Task<IActionResult> CreatePatient([FromBody] PatientCreateModel model)
+            public async Task<IActionResult> CreatePatient([FromBody] PatientModel model)
             {
                 try
                 {
@@ -914,7 +884,7 @@ namespace Project.Controllers
             }
 
             [HttpPost]
-            public async Task<IActionResult> UpdatePatient([FromBody] PatientCreateModel model)
+            public async Task<IActionResult> UpdatePatient([FromBody] PatientModel model)
             {
                 try
                 {
@@ -1051,6 +1021,7 @@ namespace Project.Controllers
 
             public async Task<IActionResult> CreateForm(int? editId)
             {
+                await SetUserProfileData();
                 ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
                 ViewBag.Forms = await _db.Form.ToListAsync();
 
@@ -1237,7 +1208,21 @@ namespace Project.Controllers
                         form.FormType = formType;
                         form.Scoring = scoring;
 
-                        // Delete existing questions and options
+                        // Check if any questions are being used in evaluations
+                        var questionIds = form.Questions.Select(q => q.QuestionID).ToList();
+                        var hasEvaluationDetails = await _db.EvaluationDetail
+                            .AnyAsync(ed => ed.QuestionID.HasValue && questionIds.Contains(ed.QuestionID.Value));
+
+                        if (hasEvaluationDetails)
+                        {
+                            await transaction.RollbackAsync();
+                            return Json(new { 
+                                success = false, 
+                                message = "ไม่สามารถแก้ไขแบบประเมินนี้ได้ เนื่องจากมีผู้ป่วยทำการประเมินแล้ว หากต้องการแก้ไข กรุณาสร้างแบบประเมินใหม่" 
+                            });
+                        }
+
+                        // Safe to delete existing questions and options (no evaluation data exists)
                         foreach (var question in form.Questions.ToList())
                         {
                             _db.Option.RemoveRange(question.Options);

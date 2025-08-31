@@ -9,7 +9,7 @@ namespace Project.Models.Entity
         [Key]
         public int TreatmentID { get; set; }
 
-        [StringLength(30)]
+        [StringLength(100)]
         public string? TreatmentName { get; set; }
 
         public virtual ICollection<Patient> Patients { get; set; } = new List<Patient>();

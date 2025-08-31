@@ -12,7 +12,7 @@ namespace Project.Models.Entity
         [StringLength(75)]
         public string? InterName { get; set; }
 
-        [StringLength(150)]
+        [StringLength(500)]
         public string? InterText { get; set; }
 
         public int? MinScore { get; set; }

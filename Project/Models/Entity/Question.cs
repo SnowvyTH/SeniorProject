@@ -9,7 +9,7 @@ namespace Project.Models.Entity
         [Key]
         public int QuestionID { get; set; }
 
-        [StringLength(150)]
+        [StringLength(500)]
         public string? QuestionText { get; set; }
 
         [StringLength(75)]

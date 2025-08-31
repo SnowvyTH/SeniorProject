@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ระบบจัดการโรงพยาบาล</title>
+    <title>@ViewData["Title"] - ระบบประเมิน</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site2.css" />
     
@@ -11,15 +11,16 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-</head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="preload" href="/img/logo.png" as="image" />
     @if (ViewBag.ProfileImageUrl != null)
     {
         <link rel="preload" as="image" href="@ViewBag.ProfileImageUrl" />
     }
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+
     <style>
         :root {
             --mint-green: #51c3b7;
@@ -229,8 +230,8 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-hospital me-2"></i>ระบบประเมินผู้ป่วย
+            <a class="navbar-brand mx-2" href="#">
+                <img src="/img/logo.png" width="50px" /> ระบบประเมินผู้ป่วย
             </a>
             
             <div class="collapse navbar-collapse" id="navbarNav">
@@ -268,12 +269,8 @@
                         {
                             <img style="width: 100%; height: 100%; object-fit: cover;" src="@ViewBag.ProfileImageUrl" />
                         }
-                        else
-                        {
-                            @(ViewBag.UserName?.ToString().Substring(0, 1).ToUpper())
-                        }
                     </div>
-                    <div class="dropdown">
+                    <div class="dropdown me-1">
                         <a class="btn btn-link text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
                             @ViewBag.UserName
                         </a>

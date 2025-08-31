@@ -9,7 +9,7 @@ namespace Project.Models.Entity
         [Key]
         public int OptionID { get; set; }
 
-        [StringLength(75)]
+        [StringLength(500)]
         public string? OptionText { get; set; }
 
         public int? Value { get; set; }
