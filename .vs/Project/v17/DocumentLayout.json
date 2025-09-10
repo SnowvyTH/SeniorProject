@@ -1,48 +1,7 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "D:\\Project\\",
-  "Documents": [
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\controllers\\pharmacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\controllers\\pharmacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\pharma\\createform.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\pharma\\createform.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\pharma\\treatments.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\pharma\\treatments.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\pharma\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\pharma\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\pharma\\forms.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\pharma\\forms.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\shared\\_adminlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\shared\\_adminlayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\shared\\_pharmalayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\shared\\_pharmalayout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\pharma\\evaluationform.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\pharma\\evaluationform.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|d:\\project\\project\\views\\pharma\\editform.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{8136F7A0-0924-4C0D-9DDF-47E813ED202E}|Project\\Project.csproj|solutionrelative:project\\views\\pharma\\editform.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    }
-  ],
+  "Documents": [],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -50,132 +9,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": -1,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Treatments.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Pharma\\Treatments.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Pharma\\Treatments.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\Treatments.cshtml",
-              "RelativeToolTip": "Project\\Views\\Pharma\\Treatments.cshtml",
-              "ViewState": "AgIAAPwAAAAAAAAAAAAAAAoBAABDAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-04T15:29:02.639Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Forms.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Pharma\\Forms.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Pharma\\Forms.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\Forms.cshtml",
-              "RelativeToolTip": "Project\\Views\\Pharma\\Forms.cshtml",
-              "ViewState": "AgIAACkBAAAAAAAAAAAAAA0BAABAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-04T15:27:51.669Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "_Layout.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Shared\\_Layout.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Shared\\_Layout.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Shared\\_Layout.cshtml",
-              "RelativeToolTip": "Project\\Views\\Shared\\_Layout.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAGAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-04T08:16:10.291Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "PharmaController.cs",
-              "DocumentMoniker": "D:\\Project\\Project\\Controllers\\PharmaController.cs",
-              "RelativeDocumentMoniker": "Project\\Controllers\\PharmaController.cs",
-              "ToolTip": "D:\\Project\\Project\\Controllers\\PharmaController.cs",
-              "RelativeToolTip": "Project\\Controllers\\PharmaController.cs",
-              "ViewState": "AgIAAFsCAAAAAAAAAAAQwGgCAAArAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-08-04T07:45:31.574Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "_AdminLayout.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Shared\\_AdminLayout.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Shared\\_AdminLayout.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Shared\\_AdminLayout.cshtml",
-              "RelativeToolTip": "Project\\Views\\Shared\\_AdminLayout.cshtml",
-              "ViewState": "AgIAALkBAAAAAAAAAAAAALgBAAAvAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-04T07:33:27.849Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "_PharmaLayout.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Shared\\_PharmaLayout.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Shared\\_PharmaLayout.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Shared\\_PharmaLayout.cshtml",
-              "RelativeToolTip": "Project\\Views\\Shared\\_PharmaLayout.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAnAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-03T13:51:58.263Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Index.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Pharma\\Index.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Pharma\\Index.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\Index.cshtml",
-              "RelativeToolTip": "Project\\Views\\Pharma\\Index.cshtml",
-              "ViewState": "AgIAADYAAAAAAAAAAAAAAIUAAABgAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-03T14:32:14.632Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "EditForm.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Pharma\\EditForm.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Pharma\\EditForm.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\EditForm.cshtml",
-              "RelativeToolTip": "Project\\Views\\Pharma\\EditForm.cshtml",
-              "ViewState": "AgIAAIoAAAAAAAAAAADwvyQAAABMAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-03T14:37:59.731Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "CreateForm.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Pharma\\CreateForm.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Pharma\\CreateForm.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\CreateForm.cshtml",
-              "RelativeToolTip": "Project\\Views\\Pharma\\CreateForm.cshtml",
-              "ViewState": "AgIAAPMCAAAAAAAAAAAcwPgCAABbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-03T14:25:26.555Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "EvaluationForm.cshtml",
-              "DocumentMoniker": "D:\\Project\\Project\\Views\\Pharma\\EvaluationForm.cshtml",
-              "RelativeDocumentMoniker": "Project\\Views\\Pharma\\EvaluationForm.cshtml",
-              "ToolTip": "D:\\Project\\Project\\Views\\Pharma\\EvaluationForm.cshtml",
-              "RelativeToolTip": "Project\\Views\\Pharma\\EvaluationForm.cshtml",
-              "ViewState": "AgIAAF4BAAAAAAAAAADwv2oBAAAZAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2025-08-03T14:06:36.721Z"
             }
           ]
         }

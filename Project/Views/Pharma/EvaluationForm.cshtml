@@ -3,6 +3,8 @@
     Layout = "~/Views/Shared/_PharmaLayout.cshtml";
     var patient = ViewBag.Patient as Project.Models.Entity.Patient;
     var form = ViewBag.Form as Project.Models.Entity.Form;
+    var today = DateTime.Now.ToString("ddddที่ d MMMM yyyy", new System.Globalization.CultureInfo("th-TH"));
+
 }
 
 <div class="container">
@@ -13,6 +15,7 @@
                 <i class="fas fa-clipboard-list me-2 mt-4"></i>@form!.FormName
             </h2>
             <p class="text-muted mb-0">ผู้ป่วย: @($"{patient!.HN} - {patient.Title?.TitleName}{patient.FirstName} {patient.LastName}")</p>
+            <p class="text-muted mb-0">วันที่ทำการประเมิน: @today</p>
             <p class="text-muted mb-0">
                 <small>
                     <i class="fas fa-calculator me-1"></i>
@@ -357,7 +360,7 @@
         }
 
         .section-header {
-            background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+            background: linear-gradient(135deg, var(--mint-green) 0%, var(--dark-green) 100%);
         }
 
         .question-group {
@@ -488,11 +491,75 @@
                 scores.push(score);
             });
 
+            answers.sort((a, b) => a.QuestionId - b.QuestionId);
+            answers.forEach(ans => {
+                console.log(`ข้อ ${ans.QuestionId}: ${ans.Score}`);
+            });
+
             // Calculate final score based on scoring method
             const scoringMethod = '@form.Scoring'; // Get scoring method from form
             let finalScore = 0;
+            let result = '';
+            let resultText = '';
             
             switch(scoringMethod) {
+                case 'aims':
+                    // เฉพาะเจาะจงสำหรับ AIMS
+                    // สมมติว่าข้อ 1-7 คือ QuestionID 1-7 และข้อ 8 คือ QuestionID 8
+                    const faceMouthQuestions = answers.filter(a => a.QuestionId >= 50 && a.QuestionId <= 53); // ข้อ 1-4 ใบหน้าและปาก
+                    const movementQuestions = answers.filter(a => a.QuestionId >= 50 && a.QuestionId <= 56); // ข้อ 1-7
+                    const q8 = answers.find(a => a.QuestionId === 57); // ข้อ 8
+                    const totalQ1to7 = movementQuestions.reduce((sum, a) => sum + a.Score, 0);
+
+                    let conditions = [];
+
+                    //1.เมื่อคะแนนประเมินผลตั้งแต่ 1 คะแนนขึ้นไป โดยเฉพาะการเคลื่อนไหวผิดปกติที่ใบหน้าและปาก ควร consult แพทย์เพื่อปรับแผนการรักษา
+                    if (faceMouthQuestions.some(a => a.Score >= 1)) {
+                        conditions.push("ควร Consult แพทย์เพื่อปรับแผนการรักษา");
+                    }
+                    
+                    //2.หากมีข้อที่ได้ 2 คะแนนใน 2 ข้อขึ้นไปหรือมีข้อที่ได้คะแนน 3 หรือ 4 คะแนนเพียงหนึ่งข้อ บ่งชี้ว่า ผู้ป่วยมี Tardive dyskinesia
+                    const countScore = movementQuestions.filter(a => a.Score === 2).length;
+                    if (movementQuestions.some(a => a.Score >= 3) || countScore >= 2) {
+                        conditions.push("ผู้ป่วยมี Tardive dyskinesia");
+                    }
+                    
+                    //3.การติดตามประเมินผลการรักษาพิจารณาจาก ข้อ 8 ความรุนแรงของการเคลื่อนไหวผิกปกติทั้งหมด และ รวมคะแนนข้อ 1-7
+                    if (q8 && totalQ1to7 > 0) {
+                        // ดึง OptionText ของข้อ 8 จากตัวเลือกที่เลือก (ทำความสะอาดข้อความ)
+                        const q8ConditionLabel = $(`input[name="question_57"]:checked`).next('label').clone();
+                        q8ConditionLabel.find('.badge').remove(); // ลบ badge ออก
+                        const q8OptionText = q8ConditionLabel.text().trim();
+                        
+                    }
+
+                    // กำหนด result ตามคำตอบของข้อ 8 และ resultText ตามลำดับความสำคัญ
+                    if (q8) {
+                        // ใช้คำตอบของข้อ 8 เป็น result (ใช้ QuestionID 57)
+                        const q8Option = $(`input[name="question_57"]:checked`).next('label').clone();
+                        // ลบ badge ออกก่อนแล้วดึงข้อความ
+                        q8Option.find('.badge').remove();
+                        const q8OptionText = q8Option.text().trim();
+                        
+                        result = q8OptionText || `คะแนน ${q8.Score}`;
+                        finalScore = q8.Score; // ใช้คะแนนข้อ 8 เป็น finalScore
+                        
+                        console.log('AIMS Debug:');
+                        console.log('Q8 Score:', q8.Score);
+                        console.log('Q8 Option Text (cleaned):', q8OptionText);
+                        console.log('Q8 Condition Text:', $(`input[name="question_57"]:checked`).next('label').clone().children('.badge').remove().end().text().trim());
+                        console.log('Total Q1-7:', totalQ1to7);
+                        console.log('Conditions found:', conditions);
+                    }
+
+                    // รวม resultText ตามลำดับความสำคัญ 1>2>3
+                    if (conditions.length > 0) {
+                        resultText = conditions.join(' และ ');
+                    } else {
+                        resultText = 'ไม่พบความผิดปกติ';
+                    }
+                    
+                    break;
                 case 'max':
                     finalScore = Math.max(...scores);
                     break;
@@ -505,22 +572,23 @@
                     break;
             }
 
-            // Determine result based on final score using interpreter data
-            const interpreters = @Html.Raw(Json.Serialize(form.Interpreters.Select(i => new { 
-                minScore = i.MinScore, 
-                maxScore = i.MaxScore, 
-                interName = i.InterName, 
-                interText = i.InterText 
-            }).OrderBy(i => i.minScore)));
-            
-            let result = 'ไม่สามารถประเมินผลได้';
-            let resultText = '';
-            
-            for (let interpreter of interpreters) {
-                if (finalScore >= interpreter.minScore && finalScore <= interpreter.maxScore) {
-                    result = interpreter.interName || `ระดับ ${interpreter.minScore}-${interpreter.maxScore}`;
-                    resultText = interpreter.interText || '';
-                    break;
+            if (scoringMethod !== 'aims') {
+                const interpreters = @Html.Raw(Json.Serialize(form.Interpreters.Select(i => new { 
+                    minScore = i.MinScore, 
+                    maxScore = i.MaxScore, 
+                    interName = i.InterName, 
+                    interText = i.InterText 
+                }).OrderBy(i => i.minScore)));
+                
+                result = 'ไม่สามารถประเมินผลได้';
+                resultText = '';
+                
+                for (let interpreter of interpreters) {
+                    if (finalScore >= interpreter.minScore && finalScore <= interpreter.maxScore) {
+                        result = interpreter.interName || `ระดับ ${interpreter.minScore}-${interpreter.maxScore}`;
+                        resultText = interpreter.interText || '';
+                        break;
+                    }
                 }
             }
 
@@ -528,7 +596,10 @@
             const submissionData = {
                 PatientId: $('#patientId').val(),
                 FormId: parseInt($('#formId').val()),
-                Result: `${result}`,
+                Result: result,
+                ResultDetail: resultText, // เปลี่ยนจาก ResultText เป็น ResultDetail
+                FinalScore: finalScore,
+                ScoringMethod: scoringMethod,
                 Answers: answers
             };
 

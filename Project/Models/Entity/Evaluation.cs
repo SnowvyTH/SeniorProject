@@ -11,6 +11,10 @@ namespace Project.Models.Entity
 
         [StringLength(150)]
         public string? Result { get; set; }
+        
+        [StringLength(500)]
+        public string? ResultDetail { get; set; }
+
         public DateTime RecordDate { get; set; } = DateTime.Now;
 
         [ForeignKey("User")]

@@ -9,7 +9,7 @@ namespace Project.Models.Entity
         [Key]
         public int TitleID { get; set; }
 
-        [StringLength(40)]
+        [StringLength(20)]
         public string? TitleName { get; set; }
 
         public virtual ICollection<User> Users { get; set; } = new List<User>();

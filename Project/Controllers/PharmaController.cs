@@ -174,13 +174,15 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
                     }
 
+                    // สำหรับทุกแบบฟอร์ม ให้แยกเก็บ Result และ ResultDetail
                     var evaluation = new Evaluation
                     {
                         HN = model.PatientId,
                         FormID = model.FormId,
                         UserID = int.Parse(userId),
                         RecordDate = DateTime.Now,
-                        Result = model.Result
+                        Result = model.Result,
+                        ResultDetail = model.ResultDetail // เก็บคำแนะนำแยกต่างหาก
                     };
 
                     _db.Evaluation.Add(evaluation);
@@ -243,14 +245,9 @@ namespace Project.Controllers
                             _ => scores.Sum()
                         };
 
-                        var interpreter = await _db.Interpreter
-                            .Where(i => i.FormID == evaluation.FormID 
-                                    && calculatedScore >= i.MinScore 
-                                    && calculatedScore <= i.MaxScore)
-                            .FirstOrDefaultAsync();
-
-                        ViewBag.InterpreterName = interpreter?.InterName;
-                        ViewBag.InterpreterText = interpreter?.InterText;
+                        // ใช้ข้อมูลจาก evaluation.ResultDetail แทนการค้นหาจาก Interpreter table
+                        ViewBag.InterpreterName = evaluation.Result;
+                        ViewBag.InterpreterText = evaluation.ResultDetail; // ใช้ ResultDetail ที่เก็บไว้แล้ว
                         ViewBag.CalculatedScore = calculatedScore;
                     }
                 }
@@ -299,14 +296,9 @@ namespace Project.Controllers
                             _ => scores.Sum()
                         };
 
-                        var interpreter = await _db.Interpreter
-                            .Where(i => i.FormID == evaluation.FormID 
-                                    && calculatedScore >= i.MinScore 
-                                    && calculatedScore <= i.MaxScore)
-                            .FirstOrDefaultAsync();
-
-                        interpreterName = interpreter?.InterName ?? "";
-                        interpreterText = interpreter?.InterText ?? "";
+                        // ใช้ข้อมูลจาก evaluation ที่เก็บไว้แล้ว
+                        interpreterName = evaluation.Result ?? "";
+                        interpreterText = evaluation.ResultDetail ?? "";
                     }
                 }
 
@@ -1829,6 +1821,9 @@ namespace Project.Controllers
                 public string PatientId { get; set; } = string.Empty;
                 public int FormId { get; set; }
                 public string Result { get; set; } = string.Empty;
+                public string? ResultDetail { get; set; }
+                public decimal? FinalScore { get; set; }
+                public string? ScoringMethod { get; set; }
                 public List<EvaluationAnswerModel> Answers { get; set; } = new List<EvaluationAnswerModel>();
             }
 
