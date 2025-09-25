@@ -971,6 +971,7 @@ namespace Project.Controllers
                     firstName = patient.FirstName,
                     lastName = patient.LastName,
                     birthDate = patient.BirthDate?.ToString("yyyy-MM-dd"),
+                    recordDate = patient.RecordDate?.ToString("yyyy-MM-dd"),
                     weight = patient.Weight,
                     height = patient.Height,
                     rightID = patient.TreatmentID,
@@ -989,6 +990,25 @@ namespace Project.Controllers
             {
                 try
                 {
+                    // ตรวจสอบ model validation
+                    if (!ModelState.IsValid)
+                    {
+                        var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                        return Json(new { success = false, message = string.Join(", ", errors) });
+                    }
+                    
+                    // ตั้งค่า default RecordDate หากไม่ได้ระบุ
+                    if (!model.RecordDate.HasValue)
+                    {
+                        model.RecordDate = DateTime.Today;
+                    }
+                    
+                    // ตรวจสอบว่าวันที่บันทึกไม่เกินวันปัจจุบัน
+                    if (model.RecordDate.HasValue && model.RecordDate.Value.Date > DateTime.Today)
+                    {
+                        return Json(new { success = false, message = "วันที่บันทึกเวชระเบียนไม่สามารถเกินวันปัจจุบันได้" });
+                    }
+                    
                     var existingPatient = await _db.Patient.FindAsync(model.HN);
                     if (existingPatient != null)
                     {
@@ -1003,6 +1023,7 @@ namespace Project.Controllers
                         FirstName = model.FirstName,
                         LastName = model.LastName,
                         BirthDate = model.BirthDate,
+                        RecordDate = model.RecordDate,
                         Weight = model.Weight,
                         Height = model.Height,
                         TreatmentID = model.RightID,
@@ -1027,6 +1048,19 @@ namespace Project.Controllers
             {
                 try
                 {
+                    // ตรวจสอบ model validation
+                    if (!ModelState.IsValid)
+                    {
+                        var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                        return Json(new { success = false, message = string.Join(", ", errors) });
+                    }
+                    
+                    // ตรวจสอบว่าวันที่บันทึกไม่เกินวันปัจจุบัน
+                    if (model.RecordDate.HasValue && model.RecordDate.Value.Date > DateTime.Today)
+                    {
+                        return Json(new { success = false, message = "วันที่บันทึกเวชระเบียนไม่สามารถเกินวันปัจจุบันได้" });
+                    }
+                    
                     var patient = await _db.Patient.FindAsync(model.HN);
                     if (patient == null)
                     {
@@ -1038,6 +1072,7 @@ namespace Project.Controllers
                     patient.FirstName = model.FirstName;
                     patient.LastName = model.LastName;
                     patient.BirthDate = model.BirthDate;
+                    patient.RecordDate = model.RecordDate;
                     patient.Weight = model.Weight;
                     patient.Height = model.Height;
                     patient.TreatmentID = model.RightID;

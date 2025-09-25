@@ -33,6 +33,9 @@ namespace Project.Models.Entity
         [StringLength(4)]
         public string? PatientType { get; set; }
 
+        [Column(TypeName = "datetime2")]
+        public DateTime? RecordDate { get; set; }
+
         [ForeignKey("Title")]
         public int? TitleID { get; set; }
 
@@ -47,6 +50,7 @@ namespace Project.Models.Entity
 
         [ForeignKey("District")]
         public int? DISTRICT_ID { get; set; }
+        
 
         public virtual Title? Title { get; set; }
         public virtual Treatment? Treatment { get; set; }

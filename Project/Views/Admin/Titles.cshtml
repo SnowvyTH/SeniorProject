@@ -45,9 +45,9 @@
     </div>
 
     <!-- Pagination -->
-    <div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="d-flex justify-content-between align-items-center mt-4">
         <div id="paginationInfo" class="text-muted"></div>
-        <nav aria-label="Page navigation">
+        <nav>
             <ul class="pagination" id="titlesPagination"></ul>
         </nav>
     </div>
@@ -132,6 +132,11 @@
             });
         });
 
+        function changeTitlePage(page) {
+            currentPage = page;
+            displayTitles();
+        }
+
         function loadTitles() {
             $('#loadingIndicator').show();
             $('#titlesTable tbody').hide();
@@ -160,8 +165,14 @@
 
         function displayTitles() {
             const paginatedData = paginateData(allTitles, currentPage, pageSize);
-            let html = '';
             
+            if (paginatedData.items.length === 0 && allTitles.length > 0) {
+                currentPage = 1;
+                displayTitles();
+                return;
+            }
+
+            let html = '';
             paginatedData.items.forEach(function(title, index) {
                 const rowNumber = ((currentPage - 1) * pageSize) + index + 1;
                 html += `
@@ -183,15 +194,10 @@
             $('#titlesTableBody').html(html);
             $('#loadingIndicator').hide();
             $('#titlesTable tbody').show();
-            
-            // อัพเดท pagination
+
+            // Update pagination
             generatePagination(paginatedData.totalPages, currentPage, 'titlesPagination', 'changeTitlePage');
             updatePaginationInfo(currentPage, pageSize, paginatedData.totalItems, 'paginationInfo');
-        }
-
-        function changeTitlePage(page) {
-            currentPage = page;
-            displayTitles();
         }
 
         function addTitle() {
@@ -207,7 +213,6 @@
                     if(response.success) {
                         $('#addTitleModal').modal('hide');
                         $('#addTitleForm')[0].reset();
-                        currentPage = 1;
                         loadTitles();
                         Swal.fire({
                             icon: 'success',

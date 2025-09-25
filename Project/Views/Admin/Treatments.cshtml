@@ -45,9 +45,9 @@
     </div>
 
     <!-- Pagination -->
-    <div class="d-flex justify-content-between align-items-center mt-3">
+    <div class="d-flex justify-content-between align-items-center mt-4">
         <div id="paginationInfo" class="text-muted"></div>
-        <nav aria-label="Page navigation">
+        <nav>
             <ul class="pagination" id="treatmentsPagination"></ul>
         </nav>
     </div>
@@ -132,6 +132,11 @@
             });
         });
 
+        function changeTreatmentPage(page) {
+            currentPage = page;
+            displayTreatments();
+        }
+
         function loadTreatments() {
             $('#loadingIndicator').show();
             $('#treatmentsTable tbody').hide();
@@ -160,8 +165,14 @@
 
         function displayTreatments() {
             const paginatedData = paginateData(allTreatments, currentPage, pageSize);
-            let html = '';
             
+            if (paginatedData.items.length === 0 && allTreatments.length > 0) {
+                currentPage = 1;
+                displayTreatments();
+                return;
+            }
+
+            let html = '';
             paginatedData.items.forEach(function(treatment, index) {
                 const rowNumber = ((currentPage - 1) * pageSize) + index + 1;
                 html += `
@@ -183,15 +194,10 @@
             $('#treatmentsTableBody').html(html);
             $('#loadingIndicator').hide();
             $('#treatmentsTable tbody').show();
-            
-            // อัพเดท pagination
+
+            // Update pagination
             generatePagination(paginatedData.totalPages, currentPage, 'treatmentsPagination', 'changeTreatmentPage');
             updatePaginationInfo(currentPage, pageSize, paginatedData.totalItems, 'paginationInfo');
-        }
-
-        function changeTreatmentPage(page) {
-            currentPage = page;
-            displayTreatments();
         }
 
         function addTreatment() {
@@ -207,7 +213,6 @@
                     if(response.success) {
                         $('#addTreatmentModal').modal('hide');
                         $('#addTreatmentForm')[0].reset();
-                        currentPage = 1;
                         loadTreatments();
                         Swal.fire({
                             icon: 'success',

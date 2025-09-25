@@ -31,26 +31,21 @@ namespace Project.Controllers
             
             // ดึง UserID และรูปโปรไฟล์
             var userIdClaim = User.FindFirst("UserID")?.Value;
-            Console.WriteLine($"Debug HP Index: UserID claim = {userIdClaim}");
             if (int.TryParse(userIdClaim, out int userId))
             {
                 var user = await _context.User.FindAsync(userId);
-                Console.WriteLine($"Debug HP Index: User found = {user != null}, Picture = {user?.Picture}");
                 if (user != null && !string.IsNullOrEmpty(user.Picture))
                 {
                     ViewBag.ProfileImageUrl = $"/uploads/profile/{user.Picture}";
-                    Console.WriteLine($"Debug HP Index: ProfileImageUrl set to = {ViewBag.ProfileImageUrl}");
                 }
                 else
                 {
                     ViewBag.ProfileImageUrl = null;
-                    Console.WriteLine("Debug HP Index: ProfileImageUrl set to null - User not found or Picture empty");
                 }
             }
             else
             {
                 ViewBag.ProfileImageUrl = null;
-                Console.WriteLine("Debug HP Index: Failed to parse UserID");
             }
 
             // กำหนดค่า default: 7 วันที่ผ่านมา และ formID = 8

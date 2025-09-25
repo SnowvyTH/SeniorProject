@@ -1,50 +1,9 @@
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "หน้าหลักหัวหน้าเภสัช";
     Layout = "~/Views/Shared/_HPLayout.cshtml";
 }
 
 <div class="container-fluid">
-    <!-- Global Filters Section -->
-    <div class="row">
-        <div class="col-md-12">
-            <div class="filter-card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-filter me-2"></i>ตัวกรองข้อมูลss
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label">ช่วงวันที่</label>
-                            <div class="input-group">
-                                <input type="date" class="form-control" id="startDate" onchange="validateDateRange()" />
-                                <span class="input-group-text">ถึง</span>
-                                <input type="date" class="form-control" id="endDate" onchange="validateDateRange()" />
-                            </div>
-                            <div id="dateValidationMessage" class="text-danger mt-1" style="display: none; font-size: 0.85rem;"></div>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">แบบฟอร์มประเมิน</label>
-                            <select class="form-select" id="formFilter">
-                                <option value="">ทั้งหมด</option>
-                                <!-- ตัวเลือกจะโหลดจาก JavaScript -->
-                            </select>
-                        </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button class="btn btn-primary me-2" id="applyFilters">
-                                <i class="fas fa-search me-2"></i>ค้นหา
-                            </button>
-                            <button class="btn btn-secondary" id="resetFilters">
-                                <i class="fas fa-refresh me-2"></i>รีเซ็ต
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Executive Statistics Banner -->
     <div class="stats-banner">
         <div class="container-fluid">
@@ -88,7 +47,84 @@
             </div>
         </div>
     </div>
-
+    <!-- Global Filters Section -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="filter-card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>ตัวกรองข้อมูล
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-alt me-2 text-primary"></i>ช่วงวันที่
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-calendar-week"></i>
+                                </span>
+                                <input type="date" class="form-control" id="startDate" onchange="validateDateRange()" />
+                                <span class="input-group-text">ถึง</span>
+                                <input type="date" class="form-control" id="endDate" onchange="validateDateRange()" />
+                                <span class="input-group-text">
+                                    <i class="fas fa-calendar-check"></i>
+                                </span>
+                            </div>
+                            <div id="dateValidationMessage" class="text-danger mt-1" style="display: none; font-size: 0.85rem;"></div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">
+                                <i class="fas fa-file-medical me-2 text-primary"></i>แบบฟอร์มประเมิน
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-list"></i>
+                                </span>
+                                <select class="form-select" id="formFilter">
+                                    <option value="">ทั้งหมด</option>
+                                    <!-- ตัวเลือกจะโหลดจาก JavaScript -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button class="btn btn-primary me-2" id="applyFilters">
+                                <i class="fas fa-search me-2"></i>ค้นหา
+                            </button>
+                            <button class="btn btn-secondary" id="resetFilters">
+                                <i class="fas fa-refresh me-2"></i>รีเซ็ต
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Date Filters -->
+                    @* <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="quick-filters">
+                                <span class="me-3 text-muted">
+                                    <i class="fas fa-clock me-1"></i>ช่วงเวลาด่วน:
+                                </span>
+                                <button class="btn btn-outline-primary btn-sm me-2" onclick="setQuickDate('today')">
+                                    <i class="fas fa-calendar-day me-1"></i>วันนี้
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm me-2" onclick="setQuickDate('week')">
+                                    <i class="fas fa-calendar-week me-1"></i>7 วันย้อนหลัง
+                                </button>
+                                <button class="btn btn-outline-primary btn-sm me-2" onclick="setQuickDate('month')">
+                                    <i class="fas fa-calendar-alt me-1"></i>30 วันย้อนหลัง
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="setQuickDate('all')">
+                                    <i class="fas fa-infinity me-1"></i>ทั้งหมด
+                                </button>
+                            </div>
+                        </div>
+                    </div> *@
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Charts Row -->
     <div class="row">
         <!-- Trend Chart -->
@@ -96,7 +132,7 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h5 class="mb-0">
-                        <i class="fas fa-line-chart me-2"></i>แนวโน้มคะแนนการประเมิน
+                        <i class="fas fa-line-chart me-2"></i>คะแนนการประเมินแบบเฉลี่ย
                     </h5>
                 </div>
                 <div class="chart-body">
@@ -110,11 +146,11 @@
             <div class="chart-card">
                 <div class="chart-header">
                     <h5 class="mb-0">
-                        <i class="fas fa-chart-pie me-2"></i>ระดับความรุนแรง
+                        <i class="fas fa-chart-pie me-2"></i>เคสระดับความรุนแรง
                     </h5>
                 </div>
                 <div class="chart-body">
-                    <div id="distributionChartContainer" style="height: 320px; display: flex; align-items: center; justify-content: center;">
+                    <div id="distributionChartContainer" style="height: 300px; display: flex; align-items: center; justify-content: center;">
                         <canvas id="distributionChart" style="max-height: 280px;"></canvas>
                         <div id="noDataMessage" style="display: none; text-align: center; color: #6c757d;">
                             <i class="fas fa-chart-pie fa-3x mb-3 opacity-50"></i>
@@ -161,7 +197,7 @@
         /* Executive Statistics Banner */
         .stats-banner {
             background: #ffffff;
-            padding: 1.2rem 0;
+            padding: 0.7rem 0.7rem 0.7rem 0.7rem;
             border-radius: 14px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.08);
             margin-bottom: 1.2rem;
@@ -176,7 +212,7 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
+            height: 6px;
             background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
         }
 
@@ -391,7 +427,7 @@
         }
 
         .chart-body, .card-body {
-            padding: 1.5rem;
+            padding: 1.2rem;
         }
 
         /* Distribution Chart Container */
@@ -580,6 +616,61 @@
             background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(44, 90, 160, 0.3);
+        }
+
+        /* Quick Filters */
+        .quick-filters {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 1rem;
+            background: rgba(44, 90, 160, 0.05);
+            border-radius: 12px;
+            border: 1px dashed rgba(44, 90, 160, 0.2);
+        }
+
+        .quick-filters .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .quick-filters .btn-outline-primary:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(44, 90, 160, 0.2);
+        }
+
+        .quick-filters .btn-outline-secondary {
+            border-color: #6c757d;
+            color: #6c757d;
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .quick-filters .btn-outline-secondary:hover {
+            background: #6c757d;
+            border-color: #6c757d;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.2);
+        }
+
+        /* Input Group Icons */
+        .input-group-text {
+            background: #f8f9fa;
+            border-color: #e0e6ed;
+            color: var(--primary-color);
+        }
+
+        .input-group-text i {
+            width: 16px;
+            text-align: center;
         }
 
         /* Responsive Design */
@@ -782,7 +873,6 @@
                     });
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error loading forms:', error);
                     showToast('ไม่สามารถโหลดรายการแบบฟอร์มได้', 'danger');
                 }
             });
@@ -853,7 +943,6 @@
                     updateTrendChart(data.trendData);
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error loading dashboard data:', error);
                     showToast('ไม่สามารถโหลดข้อมูล dashboard ได้', 'danger');
                 }
             });
@@ -876,7 +965,6 @@
                     updateTrendChart(data.trendData);
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error loading trend data:', error);
                     showToast('ไม่สามารถโหลดข้อมูลกราฟได้', 'danger');
                 }
             });
@@ -1099,12 +1187,7 @@
                 const d = new Date(date);
                 return d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' });
             });
-            
-                dates: formattedDates,
-                forms: availableForms,
-                datasets: datasets.length
-            });
-            
+                     
             trendChart.data.labels = formattedDates;
             trendChart.data.datasets = datasets;
             trendChart.update();
@@ -1164,7 +1247,7 @@
                     formType: formType
                 },
                 success: function(data) {
-                   
+                    
                     if (data && data.length > 0) {
                         // มีข้อมูล - แสดงกราฟ
                         $('#distributionChart').show();
@@ -1186,7 +1269,6 @@
                     }
                 },
                 error: function(xhr, status, error) {
-                    console.error('Error loading score distribution:', error);
                     $('#distributionChart').hide();
                     $('#noDataMessage').show();
                     $('#distributionLegend').html('<p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>ไม่สามารถโหลดข้อมูลได้</p>');
@@ -1207,6 +1289,52 @@
         }
 
 
+
+        // Quick Date Filter Functions
+        function setQuickDate(period) {
+            const today = new Date();
+            let startDate, endDate;
+            
+            switch(period) {
+                case 'today':
+                    startDate = new Date(today);
+                    endDate = new Date(today);
+                    break;
+                case 'week':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+                    endDate = new Date(today);
+                    break;
+                case 'month':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30);
+                    endDate = new Date(today);
+                    break;
+                case 'all':
+                    startDate = new Date('2020-01-01');
+                    endDate = new Date(today);
+                    break;
+                default:
+                    return;
+            }
+            
+            $('#startDate').val(startDate.toISOString().split('T')[0]);
+            $('#endDate').val(endDate.toISOString().split('T')[0]);
+            
+            // Apply filters immediately
+            applyFilters();
+            
+            // Show toast notification
+            showToast(`ตั้งค่าช่วงเวลา: ${getDateRangeText(period)}`, 'success');
+        }
+        
+        function getDateRangeText(period) {
+            switch(period) {
+                case 'today': return 'วันนี้';
+                case 'week': return '7 วันย้อนหลัง';
+                case 'month': return '30 วันย้อนหลัง';
+                case 'all': return 'ทั้งหมด';
+                default: return '';
+            }
+        }
 
         function showToast(message, type = 'info') {
             const toastClass = 'toast-' + type;

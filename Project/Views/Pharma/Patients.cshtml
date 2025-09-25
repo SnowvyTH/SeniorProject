@@ -163,6 +163,12 @@
             <div class="modal-body">
                 <form id="patientForm">
                     <div class="row g-3">
+                        <!-- วันที่บันทึกเวชระเบียน -->
+                        <div class="col-md-12 form-label fw-bold">
+                            <i class="fas fa-calendar-plus me-2"></i>วันที่บันทึกเวชระเบียน
+                            <input type="date" class="form-control mt-1" id="recordDate" required>
+                        </div>
+                        
                         <!-- HN -->
                         <div class="col-md-6">
                             <label class="form-label fw-bold">HN</label>
@@ -526,6 +532,7 @@
             $('#patientModalTitle').html('<i class="fas fa-plus me-2"></i>เพิ่มผู้ป่วยใหม่');
             clearPatientForm();
             generateNextHN();
+            setCurrentDateAsDefault();
             $('#patientModal').modal('show');
         }
 
@@ -542,6 +549,38 @@
             $('#age').val('');
             $('#amphoeId').html('<option value="">เลือกอำเภอ</option>');
             $('#tambonId').html('<option value="">เลือกตำบล</option>');
+            setCurrentDateAsDefault();
+        }
+        
+        function setCurrentDateAsDefault() {
+            // ตั้งค่าวันที่ปัจจุบันเป็น default สำหรับวันที่บันทึกเวชระเบียน
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            $('#recordDate').val(formattedDate);
+            
+            // ตั้งค่า max date ให้เป็นวันนี้
+            $('#recordDate').attr('max', formattedDate);
+        }
+        
+        function validateRecordDate() {
+            const recordDate = new Date($('#recordDate').val());
+            const today = new Date();
+            today.setHours(23, 59, 59, 999); // ตั้งเวลาเป็นท้ายวัน
+            
+            if (recordDate > today) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'วันที่ไม่ถูกต้อง',
+                    text: 'วันที่บันทึกเวชระเบียนไม่สามารถเกินวันปัจจุบันได้',
+                    confirmButtonColor: '#51c3b7'
+                });
+                
+                // รีเซ็ตเป็นวันนี้
+                const todayFormatted = new Date().toISOString().split('T')[0];
+                $('#recordDate').val(todayFormatted);
+                return false;
+            }
+            return true;
         }
 
         function generateNextHN() {
@@ -790,6 +829,7 @@
                     $('#firstName').val(patient.firstName);
                     $('#lastName').val(patient.lastName);
                     $('#birthDate').val(patient.birthDate ? patient.birthDate.split('T')[0] : '');
+                    $('#recordDate').val(patient.recordDate ? patient.recordDate.split('T')[0] : '');
                     $('#weight').val(patient.weight);
                     $('#height').val(patient.height);
                     $('#rightId').val(patient.rightID);
@@ -829,6 +869,11 @@
         function savePatient() {
             if (!$('#patientForm')[0].checkValidity()) {
                 $('#patientForm')[0].reportValidity();
+                return;
+            }
+            
+            // ตรวจสอบวันที่บันทึกก่อน
+            if (!validateRecordDate()) {
                 return;
             }
 
@@ -884,6 +929,7 @@
                 FirstName: $('#firstName').val(),
                 LastName: $('#lastName').val(),
                 BirthDate: $('#birthDate').val(),
+                RecordDate: $('#recordDate').val(),
                 Weight: $('#weight').val() || null,
                 Height: $('#height').val() || null,
                 RightID: $('#rightId').val() || null,

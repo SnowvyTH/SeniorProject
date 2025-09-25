@@ -361,6 +361,7 @@
                 })
                 .on('error', function() {
                     // If image fails to load, show initials
+                    console.log('Profile image failed to load, showing initials');
                     resetNavbarAvatar();
                 });
             
@@ -395,7 +396,8 @@
                     }
                 })
                 .fail(function() {
-                   resetNavbarAvatar();
+                    console.log('Failed to refresh profile picture');
+                    resetNavbarAvatar();
                 });
         }
 
