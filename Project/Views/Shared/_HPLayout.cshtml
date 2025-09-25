@@ -1,0 +1,374 @@
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    
+    <!-- Prevent caching of profile pictures -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+    
+    <!-- Kanit Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/img/logo.ico">
+    
+    @if (ViewBag.ProfileImageUrl != null)
+    {
+        <link rel="preload" as="image" href="@ViewBag.ProfileImageUrl" />
+    }
+    @await RenderSectionAsync("Styles", required: false)
+    
+    <style>
+        :root {
+            --primary-color: #2c5aa0;
+            --secondary-color: #3498db;
+            --accent-color: #1abc9c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #17a2b8;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --light-bg: #f8f9fa;
+            --white: #ffffff;
+            --light-gray: #737373;
+            --dark-gray: #545454;
+        }
+
+        body {
+            font-family: 'Kanit', sans-serif !important;
+            background-color: var(--light-bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .hp-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles - เหมือน Admin แต่เปลี่ยนสี */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: var(--primary-color);
+        }
+
+        .logo {
+            color: var(--white);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 28px;
+        }
+
+        .logo-subtitle {
+            color: rgba(255,255,255,0.8);
+            font-size: 12px;
+            font-weight: 300;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .nav-item {
+            margin: 5px 15px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: var(--white);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--white);
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(255,255,255,0.2);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 0;
+            background-color: var(--light-bg);
+        }
+
+        .top-bar {
+            background: var(--white);
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .page-title {
+            color: var(--primary-color);
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            color: var(--dark-gray);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--white);
+            margin-right: 10px;
+            font-weight: 600;
+            overflow: hidden;
+            border: 2px solid rgba(44, 90, 160, 0.3);
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .content-wrapper {
+            padding: 30px;
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .top-bar {
+                padding: 15px 20px;
+            }
+            
+            .page-title {
+                font-size: 24px;
+            }
+            
+            .content-wrapper {
+                padding: 20px;
+            }
+        }
+
+        /* Mobile sidebar toggle */
+        .sidebar-toggle {
+            display: none;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-right: 15px;
+        }
+
+        @@media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .sidebar-toggle {
+                display: inline-block;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* Animation styles */
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .slide-in-up {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        @@keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="hp-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-user-md"></i>
+                    Dashboard
+                </div>
+                <div class="logo-subtitle">ระบบประเมินผู้ป่วย</div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="@Url.Action("Index", "HP")" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")">
+                        <i class="fas fa-chart-line"></i>
+                        แดชบอร์ด
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="@Url.Action("Patients", "HP")" class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Patients" ? "active" : "")">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        เวชระเบียนผู้ป่วย
+                    </a>
+                </div>
+                
+                <hr style="border-color: rgba(255,255,255,0.2); margin: 20px 15px;">
+                
+                <div class="nav-item">
+                    <a href="@Url.Action("Logout", "Home")" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i>
+                        ออกจากระบบ
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-bar">
+                <button class="sidebar-toggle d-md-none" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="page-title">ระบบหัวหน้าแผนกเภสัชกรรม</h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="hpNavbarUserAvatar">
+                        @if (!string.IsNullOrEmpty(ViewBag.ProfileImageUrl))
+                        {
+                            <img style="width: 100%; height: 100%; object-fit: cover;" src="@ViewBag.ProfileImageUrl" />
+                        }
+                        else
+                        {
+                            <i class="fas fa-user"></i>
+                        }
+                    </div>
+                    <div>
+                        <div style="font-weight: 600;">@ViewBag.UserName</div>
+                        <small style="color: var(--light-gray);">@ViewBag.RoleName</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-wrapper">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function toggleSidebar() {
+            $('.sidebar').toggleClass('show');
+        }
+
+        // Auto-hide sidebar on mobile when clicking outside
+        $(document).ready(function() {
+            $(document).click(function(e) {
+                if (window.innerWidth <= 768 && !$(e.target).closest('.sidebar, .sidebar-toggle').length) {
+                    $('.sidebar').removeClass('show');
+                }
+            });
+        });
+
+        // Update profile picture when changed
+        function updateProfilePicture(imageUrl) {
+            if (imageUrl) {
+                $('#hpNavbarUserAvatar').html('<img style="width: 100%; height: 100%; object-fit: cover;" src="' + imageUrl + '" />');
+            } else {
+                $('#hpNavbarUserAvatar').html('<i class="fas fa-user"></i>');
+            }
+        }
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -43,6 +43,14 @@
             <span class="visually-hidden">กำลังโหลด...</span>
         </div>
     </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <div id="paginationInfo" class="text-muted"></div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination" id="treatmentsPagination"></ul>
+        </nav>
+    </div>
 </div>
 
 <!-- Add Treatment Modal -->
@@ -96,12 +104,18 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/pagination.js"></script>
     <script>
+        let currentPage = 1;
+        const pageSize = 5;
+        let allTreatments = [];
+
         $(document).ready(function() {
             loadTreatments();
 
             // Search functionality
             $('#searchTreatment').on('keyup', function() {
+                currentPage = 1;
                 loadTreatments();
             });
 
@@ -129,26 +143,8 @@
                 method: 'GET',
                 data: { search: search },
                 success: function(data) {
-                    let html = '';
-                    data.forEach(function(treatment) {
-                        html += `
-                            <tr>
-                                <td>${treatment.treatmentID}</td>
-                                <td>${treatment.treatmentName}</td>
-                                <td>
-                                    <button class="btn btn-sm btn-warning me-1" onclick="editTreatment(${treatment.treatmentID}, '${treatment.treatmentName}')">
-                                        <i class="fas fa-edit"></i> แก้ไข
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteTreatment(${treatment.treatmentID}, '${treatment.treatmentName}')">
-                                        <i class="fas fa-trash"></i> ลบ
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-                    });
-                    $('#treatmentsTableBody').html(html);
-                    $('#loadingIndicator').hide();
-                    $('#treatmentsTable tbody').show();
+                    allTreatments = data;
+                    displayTreatments();
                 },
                 error: function() {
                     Swal.fire({
@@ -160,6 +156,42 @@
                     $('#loadingIndicator').hide();
                 }
             });
+        }
+
+        function displayTreatments() {
+            const paginatedData = paginateData(allTreatments, currentPage, pageSize);
+            let html = '';
+            
+            paginatedData.items.forEach(function(treatment, index) {
+                const rowNumber = ((currentPage - 1) * pageSize) + index + 1;
+                html += `
+                    <tr>
+                        <td>${rowNumber}</td>
+                        <td>${treatment.treatmentName}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning me-1" onclick="editTreatment(${treatment.treatmentID}, '${treatment.treatmentName}')">
+                                <i class="fas fa-edit"></i> แก้ไข
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteTreatment(${treatment.treatmentID}, '${treatment.treatmentName}')">
+                                <i class="fas fa-trash"></i> ลบ
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            $('#treatmentsTableBody').html(html);
+            $('#loadingIndicator').hide();
+            $('#treatmentsTable tbody').show();
+            
+            // อัพเดท pagination
+            generatePagination(paginatedData.totalPages, currentPage, 'treatmentsPagination', 'changeTreatmentPage');
+            updatePaginationInfo(currentPage, pageSize, paginatedData.totalItems, 'paginationInfo');
+        }
+
+        function changeTreatmentPage(page) {
+            currentPage = page;
+            displayTreatments();
         }
 
         function addTreatment() {
@@ -175,6 +207,7 @@
                     if(response.success) {
                         $('#addTreatmentModal').modal('hide');
                         $('#addTreatmentForm')[0].reset();
+                        currentPage = 1;
                         loadTreatments();
                         Swal.fire({
                             icon: 'success',

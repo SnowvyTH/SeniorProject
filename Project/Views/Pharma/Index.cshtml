@@ -1,6 +1,6 @@
 ﻿@model IEnumerable<Project.Models.Entity.Patient>
 @{
-    ViewData["Title"] = "ประวัติผู้ป่วย";
+    ViewData["Title"] = "ประวัติการประเมิน";
     Layout = "_PharmaLayout";
 }
 
@@ -19,7 +19,7 @@
     <div class="modern-card mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-7">
                     <label class="form-label fw-bold">ค้นหาผู้ป่วย</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-search"></i></span>
@@ -32,14 +32,6 @@
                         <option value="">ทั้งหมด</option>
                         <option value="OPD">ผู้ป่วยนอก (OPD)</option>
                         <option value="WARD">ผู้ป่วยใน (WARD)</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">สถานะการประเมิน</label>
-                    <select class="form-select" id="evaluationFilter">
-                        <option value="">ทั้งหมด</option>
-                        <option value="with">มีประวัติการประเมิน</option>
-                        <option value="without">ไม่มีประวัติการประเมิน</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
@@ -61,11 +53,11 @@
                     <thead class="table-light">
                         <tr>
                             <th width="5%">ลำดับ</th>
-                            <th width="25%">ชื่อผู้ป่วย</th>
-                            <th width="10%">ประเภทผู้ป่วย</th>
-                            <th width="20%">ประวัติการตรวจ</th>
-                            <th width="15%">ความรุนแรง</th>
-                            <th width="14%">การจัดการ</th>
+                            <th width="28%">ชื่อผู้ป่วย</th>
+                            <th width="8%">ประเภทผู้ป่วย</th>
+                            <th width="22%">ประวัติการประเมิน</th>
+                            <th width="14%">ความรุนแรง</th>
+                            <th width="13%">การจัดการ</th>
                         </tr>
                     </thead>
                     <tbody id="patientsTableBody">
@@ -88,31 +80,89 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge @(patient.PatientType == "OPD" ? "mx-4 bg-primary bg-gradient" : "mx-4 bg-success bg-gradient")">
+                                    <span class="badge mt-2 @(patient.PatientType == "OPD" ? "mx-4 bg-primary bg-gradient" : "mx-4 bg-success bg-gradient")">
                                         @patient.PatientType
                                     </span>
                                 </td>
                                 <td>
                                     @if (patient.Evaluations.Any())
                                     {
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-outline-success dropdown-toggle mt-1" type="button" data-bs-toggle="dropdown">
-                                                @(patient.Evaluations.OrderByDescending(r => r.RecordDate).First().Form?.FormName) - @(patient.Evaluations.OrderByDescending(r => r.RecordDate).First().RecordDate.ToString("dd/MM/yyyy"))
+                                        var latestRecord = patient.Evaluations.OrderByDescending(r => r.RecordDate).First();
+                                        <div class="dropdown position-static">
+                                            <button class="btn btn-light border dropdown-toggle text-start d-flex align-items-center justify-content-between" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 85%; min-width: 220px; height: 45px;">
+                                                <div class="d-flex align-items-center flex-grow-1">
+                                                    <i class="fas fa-file-medical text-primary me-2"></i>
+                                                    <span class="fw-bold text-dark me-2">@(latestRecord.Form?.FormName ?? "ไม่ระบุแบบประเมิน")</span>
+                                                    <span class="text-muted">@latestRecord.RecordDate.ToString("dd/MM/yyyy")</span>
+                                                </div>
                                             </button>
-                                            <ul class="dropdown-menu">
-                                                @foreach (var record in patient.Evaluations.OrderByDescending(r => r.RecordDate))
+                                            <ul class="dropdown-menu shadow-lg">
+                                                <li><h6 class="dropdown-header"><i class="fas fa-list me-2"></i>ประวัติการประเมิน</h6></li>
+                                                @{
+                                                    var evaluationsList = patient.Evaluations.OrderByDescending(r => r.RecordDate).Take(5).ToList();
+                                                }
+                                                @for(int i = 0; i < evaluationsList.Count; i++)
                                                 {
-                                                    <li><a class="dropdown-item evaluation-item" href="#" data-record-id="@record.EvaID" data-result="@record.Result" data-patient-hn="@patient.HN">
-                                                            @(record.Form?.FormName) - @(record.RecordDate.ToString("dd/MM/yyyy"))
-                                                        </a></li>
+                                                    var record = evaluationsList[i];
+                                                    var severityClass = "";
+                                                    var severityIcon = "";
+                                                    var resultText = record.Result ?? "ไม่ระบุ";
+                                                    
+                                                    // กำหนดสีและไอคอนตามความรุนแรง
+                                                    if(resultText.Contains("รุนแรง") || resultText.Contains("Severe"))
+                                                    {
+                                                        severityClass = "badge-critical";
+                                                        severityIcon = "fas fa-exclamation-triangle";
+                                                    }
+                                                    else if(resultText.Contains("Moderate") || resultText.Contains("ปานกลาง"))
+                                                    {
+                                                        severityClass = "badge-high-risk";
+                                                        severityIcon = "fas fa-exclamation-circle";
+                                                    }
+                                                    else if(resultText.Contains("Mild") || resultText.Contains("เล็กน้อย"))
+                                                    {
+                                                        severityClass = "badge-low-risk";
+                                                        severityIcon = "fas fa-info-circle";
+                                                    }
+                                                    else
+                                                    {
+                                                        severityClass = "badge-safe";
+                                                        severityIcon = "fas fa-check-circle";
+                                                    }
+                                                    
+                                                    <li>
+                                                        <div class="dropdown-item-text evaluation-item p-2" style="cursor: pointer;" onclick="selectEvaluation('@record.EvaID', '@record.Result', '@patient.HN')">
+                                                            <div class="d-flex justify-content-between align-items-center">
+                                                                <div class="flex-grow-1">
+                                                                    <div class="fw-bold text-primary small">
+                                                                        @record.Form?.FormName
+                                                                        @if(i == 0)
+                                                                        {
+                                                                            <span class="text-success small fw-normal">(ล่าสุด)</span>
+                                                                        }
+                                                                    </div>
+                                                                    <div class="small text-muted">@record.RecordDate.ToString("dd/MM/yyyy HH:mm")</div>
+                                                                </div>
+                                                                <div class="severity-display ms-2">
+                                                                    <span class="badge @severityClass small">
+                                                                        <i class="@severityIcon me-1"></i>@resultText
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                    @if(i < evaluationsList.Count - 1)
+                                                    {
+                                                        <li><hr class="dropdown-divider"></li>
+                                                    }
                                                 }
                                             </ul>
                                         </div>
                                     }
                                     else
                                     {
-                                        <span class="text-muted mx-3">
-                                            <i class="fas fa-minus-circle me-1"></i>ไม่มีข้อมูล
+                                        <span class="text-muted small">
+                                            <i class="fas fa-info-circle me-1"></i>ยังไม่มีการประเมิน
                                         </span>
                                     }
                                 </td>
@@ -120,8 +170,36 @@
                                     @if (patient.Evaluations.Any())
                                     {
                                         var latestEvaluation = patient.Evaluations.OrderByDescending(r => r.RecordDate).First();
-                                        <div class="severity-display mx-1" id="severity-@patient.HN" data-selected-evaluation-id="@latestEvaluation.EvaID">
-                                            <span class="">@(latestEvaluation.Result)</span>
+                                        var severityClass = "";
+                                        var severityIcon = "";
+                                        var resultText = latestEvaluation.Result ?? "ไม่ระบุ";
+                                        
+                                        // กำหนดสีและไอคอนตามความรุนแรง
+                                        if(resultText.Contains("รุนแรง") || resultText.Contains("Severe"))
+                                        {
+                                            severityClass = "badge-critical";
+                                            severityIcon = "fas fa-exclamation-triangle";
+                                        }
+                                        else if(resultText.Contains("Moderate") || resultText.Contains("ปานกลาง"))
+                                        {
+                                            severityClass = "badge-high-risk";
+                                            severityIcon = "fas fa-exclamation-circle";
+                                        }
+                                        else if(resultText.Contains("Mild") || resultText.Contains("เล็กน้อย"))
+                                        {
+                                            severityClass = "badge-low-risk";
+                                            severityIcon = "fas fa-info-circle";
+                                        }
+                                        else
+                                        {
+                                            severityClass = "badge-safe";
+                                            severityIcon = "fas fa-check-circle";
+                                        }
+                                        
+                                        <div class="severity-display mx-1 mt-2" id="severity-@patient.HN" data-selected-evaluation-id="@latestEvaluation.EvaID">
+                                            <span class="badge @severityClass">
+                                                <i class="@severityIcon me-1"></i>@resultText
+                                            </span>
                                         </div>
                                     }
                                     else
@@ -130,12 +208,12 @@
                                     }
                                 </td>
                                 <td>
-                                    <div class="action-buttons">
-                                        <button type="button" class="btn btn-sm btn-outline-info mx-1" onclick="viewEvaluationDetail('@patient.HN')" title="ดูรายละเอียดการประเมิน">
+                                    <div class="action-buttons mt-2">
+                                        <button type="button" class="btn btn-sm btn-info text-white mx-1" onclick="viewEvaluationDetail('@patient.HN')" title="ดูรายละเอียดการประเมิน">
                                             <i class="fas fa-eye"></i> รายละเอียด
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-success" onclick="printEvaluation('@patient.HN')" title="พิมพ์">
-                                            <i class="fas fa-print"></i> พิมพ์
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="printEvaluation('@patient.HN')" title="พิมพ์">
+                                            <i class="fas fa-file-pdf"></i> PDF
                                         </button>
                                     </div>
                                 </td>
@@ -144,6 +222,11 @@
                         }
                     </tbody>
                 </table>
+            </div>           
+            <div id="loadingSpinner" class="text-center p-4" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">กำลังโหลด...</span>
+                </div>
             </div>
             <div id="noDataMessage" class="text-center p-4" style="display: none;">
                 <i class="fas fa-search fa-3x text-muted mb-3"></i>
@@ -151,7 +234,18 @@
                 <p class="text-muted">ลองปรับเปลี่ยนเงื่อนไขการค้นหา</p>
             </div>
         </div>
-    </div>
+    </div> 
+    <!-- Pagination -->
+    <nav aria-label="Page navigation" class="mt-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <small class="text-muted" id="indexPaginationInfo"></small>
+            </div>
+            <ul class="pagination pagination-sm mb-0" id="indexPagination">
+                <!-- Pagination will be generated by JavaScript -->
+            </ul>
+        </div>
+    </nav>
 </div>
 
 @section Styles {
@@ -159,6 +253,16 @@
         :root {
             --mint-green: #51c3b7;
             --dark-green: #05685e;
+        }
+        
+        /* Dropdown Styling */
+        .table td {
+            overflow: visible !important;
+            position: relative;
+        }
+
+        .table-responsive {
+            overflow: visible !important;
         }
 
         .card-primary {
@@ -248,6 +352,42 @@
             color: #495057;
         }
 
+        .dropdown-menu {
+            border-radius: 8px;
+            min-width: 280px;
+            max-width: 320px;
+            z-index: 1050 !important;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(0,0,0,.125);
+            position: absolute !important;
+        }
+
+        .dropdown {
+            position: static !important;
+        }
+
+        .evaluation-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .evaluation-item {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border-radius: 6px;
+            margin: 2px 0;
+        }
+
+        .evaluation-item .small {
+            font-size: 0.75rem;
+            line-height: 1.2;
+        }
+
+        .evaluation-item .badge.small {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.5rem;
+        }
+
+
         .table td {
             overflow: visible !important;
             position: relative;
@@ -306,47 +446,31 @@
             border-radius: 4px;
         }
 
-        .dropdown-menu {
-            border-radius: 6px;
-            min-width: 280px;
-            max-width: 350px;
-            z-index: 1050 !important;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            border: 1px solid rgba(0,0,0,.125);
-            position: absolute !important;
-            transform: none !important;
-            inset: auto !important;
-            margin: 0 !important;
+        /* Custom Severity Badge Classes */
+        .badge-safe {
+            background-color: #28a745 !important;
+            color: white;
         }
-
-        .dropdown {
-            position: static !important;
+        
+        .badge-low-risk {
+            background-color: #20c997 !important;
+            color: white;
         }
-
-        .table-responsive .dropdown-menu {
-            position: absolute !important;
-            will-change: transform;
+        
+        .badge-medium-risk {
+            background-color: #ffc107 !important;
+            color: #212529;
         }
-
-        .dropdown-menu.show {
-            display: block;
-            position: absolute !important;
-            right: auto !important;
-            bottom: auto !important;
+        
+        .badge-high-risk {
+            background-color: #fd7e14 !important;
+            color: white;
         }
-
-        .severity-display .badge {
-            font-size: 0.85rem;
-            padding: 0.5rem 0.8rem;
-        }
-
-        .evaluation-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .evaluation-item {
-            cursor: pointer;
-            transition: background-color 0.2s ease;
+        
+        .badge-critical {
+            background-color: #dc3545 !important;
+            color: white;
+            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
         }
 
         /* Fix Bootstrap dropdown overflow issues */
@@ -355,13 +479,155 @@
             overflow: visible !important;
         }
 
+        /* ซ่อนตารางตั้งแต่แรกเพื่อป้องกันการกระพริบ */
+        #patientsTable tbody {
+            display: none;
+        }
+        
+        #patientsTable tbody.loaded {
+            display: table-row-group;
+        }
+        
+        /* Improve badge readability */
+        .badge {
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+        }
+
+        /* Custom dropdown button styling */
+        .dropdown-toggle.btn-light {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            transition: all 0.2s ease;
+            padding: 0.5rem 0.75rem;
+            white-space: nowrap;
+        }
+
+        .dropdown-toggle.btn-light:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .dropdown-toggle.btn-light:focus {
+            background-color: #e9ecef;
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .dropdown-toggle::after {
+            flex-shrink: 0;
+            margin-left: 0.5rem;
+        }
     </style>
 }
 
 @section Scripts {
+    <script src="~/js/pagination.js"></script>
     <script>
+        let currentIndexPage = 1;
+        const indexPageSize = 5;
+        let allIndexPatients = [];
+
         $(document).ready(function() {
-            // Fix dropdown positioning
+            loadIndexPatients();
+            setupIndexFilters();
+        });
+
+        function setupIndexFilters() {
+            $('#searchInput').on('input', function() {
+                currentIndexPage = 1;
+                loadIndexPatients();
+            });
+            $('#patientTypeFilter, #evaluationFilter').on('change', function() {
+                currentIndexPage = 1;
+                loadIndexPatients();
+            });
+        }
+
+        function loadIndexPatients() {
+            $('#loadingSpinner').show();
+            $('#noDataMessage').hide();
+            
+            const searchQuery = $('#searchInput').val().toLowerCase();
+            const patientTypeFilter = $('#patientTypeFilter').val();
+            const evaluationFilter = $('#evaluationFilter').val();
+
+            // เก็บข้อมูลเดิมไว้ในครั้งแรกที่โหลด
+            if (allIndexPatients.length === 0) {
+                $('.patient-row').each(function() {
+                    const row = $(this);
+                    allIndexPatients.push({
+                        element: row.clone(),
+                        hn: row.data('hn') ? row.data('hn').toString() : '',
+                        name: row.find('td:eq(1)').text().trim(),
+                        patientType: row.data('type') ? row.data('type').toString() : '',
+                        hasEvaluations: row.data('evaluated') === 'true' || row.data('evaluated') === true
+                    });
+                });
+            }
+
+            // กรองข้อมูลจาก allIndexPatients เดิม
+            const filteredPatients = allIndexPatients.filter(function(patient) {
+                const matchesSearch = searchQuery === '' || 
+                    patient.hn.toLowerCase().includes(searchQuery) || 
+                    patient.name.toLowerCase().includes(searchQuery);
+                const matchesType = !patientTypeFilter || patient.patientType === patientTypeFilter;
+                const matchesEvaluation = !evaluationFilter || 
+                    (evaluationFilter === 'with' && patient.hasEvaluations) ||
+                    (evaluationFilter === 'without' && !patient.hasEvaluations);
+                
+                return matchesSearch && matchesType && matchesEvaluation;
+            });
+
+            displayIndexPatients(filteredPatients);
+            $('#loadingSpinner').hide();
+        }
+
+        function displayIndexPatients(patients) {
+            const paginatedData = paginateData(patients, currentIndexPage, indexPageSize);
+            const tbody = $('#patientsTable tbody');
+            tbody.empty();
+
+            if (paginatedData.items.length === 0) {
+                document.getElementById('indexPagination').innerHTML = '';
+                $('#noDataMessage').show();
+                $('#indexPagination').parent().hide();
+                $('#indexPaginationInfo').text('');
+                $('#patientsTable tbody').hide();
+                return;
+            }
+            
+            $('#noDataMessage').hide();
+            $('#indexPagination').parent().show();
+            $('#patientsTable tbody').addClass('loaded').show();
+            
+            paginatedData.items.forEach(function(patient, index) {
+                const rowNumber = ((currentIndexPage - 1) * indexPageSize) + index + 1;
+                const newRow = patient.element.clone();
+                newRow.find('td:first').text(rowNumber);
+                tbody.append(newRow);
+            });
+            
+            // อัพเดต pagination
+            generatePagination(paginatedData.totalPages, currentIndexPage, 'indexPagination', 'changeIndexPage');
+            updatePaginationInfo(currentIndexPage, indexPageSize, paginatedData.totalItems, 'indexPaginationInfo');
+        }
+
+        function changeIndexPage(page) {
+            currentIndexPage = page;
+            displayIndexPatients(allIndexPatients);
+        }
+
+        function clearFilters() {
+            $('#searchInput').val('');
+            $('#patientTypeFilter').val('');
+            $('#evaluationFilter').val('');
+            loadIndexPatients();
+        }
             $('.dropdown').on('show.bs.dropdown', function () {
                 // Close all other open dropdowns first
                 $('.dropdown').not(this).each(function() {
@@ -423,123 +689,87 @@
                 }
             });
             
-            // Search and filter functionality
-            function filterPatients() {
-                const searchQuery = $('#searchInput').val().toLowerCase();
-                const patientTypeFilter = $('#patientTypeFilter').val();
-                const evaluationFilter = $('#evaluationFilter').val();
+            // Handle dropdown positioning
+            $('.dropdown').on('show.bs.dropdown', function () {
+                const dropdown = $(this);
+                const menu = dropdown.find('.dropdown-menu');
                 
-                let visibleCount = 0;
-                
-                $('.patient-row').each(function() {
-                    const $row = $(this);
-                    const hn = $row.data('hn').toString().toLowerCase();
-                    const name = $row.data('name').toString().toLowerCase();
-                    const patientType = $row.data('type').toString();
-                    const hasEvaluation = $row.data('evaluated') === true || $row.data('evaluated') === 'true';
-                    
-                    let showRow = true;
-                    
-                    // Search filter (ค้นหา HN หรือชื่อ)
-                    if (searchQuery && !hn.includes(searchQuery) && !name.includes(searchQuery)) {
-                        showRow = false;
-                    }
-                    
-                    // Patient type filter
-                    if (patientTypeFilter && patientType !== patientTypeFilter) {
-                        showRow = false;
-                    }
-                    
-                    // Evaluation status filter
-                    if (evaluationFilter) {
-                        if (evaluationFilter === 'with' && !hasEvaluation) {
-                            showRow = false;
-                        } else if (evaluationFilter === 'without' && hasEvaluation) {
-                            showRow = false;
-                        }
-                    }
-                    
-                    if (showRow) {
-                        $row.show();
-                        visibleCount++;
-                    } else {
-                        $row.hide();
-                    }
+                // Reset any previous positioning
+                menu.removeClass('dropdown-menu-end dropdown-menu-start');
+                menu.css({
+                    'position': 'absolute',
+                    'inset': 'auto',
+                    'margin': '0',
+                    'transform': 'none'
                 });
                 
-                updateResultsCount(visibleCount);
-                updateStatistics();
-            }
-            
-            function updateResultsCount(visibleCount) {
-                const totalRows = $('.patient-row').length;
-                
-                if (visibleCount !== totalRows) {
-                    $('#resultsCount').html(`<small class="text-muted"><i class="fas fa-search me-1"></i>แสดง ${visibleCount} จาก ${totalRows} รายการ</small>`).show();
-                    $('#noDataMessage').toggle(visibleCount === 0);
-                } else {
-                    $('#resultsCount').hide();
-                    $('#noDataMessage').hide();
-                }
-            }
-            
-            function updateStatistics() {
-                const visibleRows = $('.patient-row:visible');
-                const totalVisible = visibleRows.length;
-                const opdVisible = visibleRows.filter('[data-type="OPD"]').length;
-                const wardVisible = visibleRows.filter('[data-type="WARD"]').length;
-                const evaluatedVisible = visibleRows.filter('[data-evaluated="true"]').length;
-                
-                $('#totalPatients').text(totalVisible);
-                $('#opdPatients').text(opdVisible);
-                $('#wardPatients').text(wardVisible);
-                $('#evaluatedPatients').text(evaluatedVisible);
-                $('#patientsCount').text(totalVisible + ' รายการ');
-            }
-            
-            // Event listeners
-            $('#searchInput').on('input', filterPatients);
-            $('#patientTypeFilter, #evaluationFilter').on('change', filterPatients);
-            
-            // Handle evaluation dropdown selection
-            $(document).on('click', '.evaluation-item', function(e) {
-                e.preventDefault();
-                const recordId = $(this).data('record-id');
-                const result = $(this).data('result');
-                const patientHN = $(this).data('patient-hn');
-                
-                const severityDisplay = $(`#severity-${patientHN}`);
-                severityDisplay.html(`<span class="">${result}</span>`);
-                
-                severityDisplay.attr('data-selected-evaluation-id', recordId);
+                setTimeout(function() {
+                    const rect = dropdown[0].getBoundingClientRect();
+                    const menuRect = menu[0].getBoundingClientRect();
+                    const viewportWidth = window.innerWidth;
+                    
+                    if (rect.right + menuRect.width > viewportWidth) {
+                        menu.addClass('dropdown-menu-end');
+                    }
+                }, 10);
+            });
 
-                const dropdownButton = $(this).closest('.dropdown').find('.dropdown-toggle');
-                const itemHtml = $(this).html(); // Get the full HTML content including icons
-                dropdownButton.html(itemHtml);
-                
-                // Close dropdown
-                $(this).closest('.dropdown-menu').removeClass('show');
-                $(this).closest('.dropdown').find('.dropdown-toggle').removeClass('show');
+            $('.dropdown').on('hide.bs.dropdown', function () {
+                const menu = $(this).find('.dropdown-menu');
+                menu.css({
+                    'position': '',
+                    'inset': '',
+                    'margin': '',
+                    'transform': ''
+                });
             });
             
-            updateResultsCount($('.patient-row').length);
-        });
+        function selectEvaluation(recordId, result, patientHN) {
+            // Update severity display with badge style
+            let severityClass = '';
+            let severityIcon = '';
+            
+            if(result.includes('รุนแรง') || result.includes('Severe')) {
+                severityClass = 'badge-critical';
+                severityIcon = 'fas fa-exclamation-triangle';
+            }
+            else if(result.includes('Moderate') || result.includes('ปานกลาง')) {
+                severityClass = 'badge-high-risk';
+                severityIcon = 'fas fa-exclamation-circle';
+            }
+            else if(result.includes('Mild') || result.includes('เล็กน้อย')) {
+                severityClass = 'badge-low-risk';
+                severityIcon = 'fas fa-info-circle';
+            }
+            else {
+                severityClass = 'badge-safe';
+                severityIcon = 'fas fa-check-circle';
+            }
 
-        function clearFilters() {
-            $('#searchInput').val('');
-            $('#patientTypeFilter').val('');
-            $('#evaluationFilter').val('');
+            const severityDisplay = $(`#severity-${patientHN}`);
+            severityDisplay.html(`<span class="badge ${severityClass}"><i class="${severityIcon} me-1"></i>${result}</span>`);
+            severityDisplay.attr('data-selected-evaluation-id', recordId);
             
-            $('.patient-row').show();
-            $('#resultsCount').hide();
-            $('#noDataMessage').hide();
+            // Update dropdown button with selected evaluation
+            const clickedItem = $(`.evaluation-item[onclick*="${recordId}"]`);
+            let formName = clickedItem.find('.fw-bold').text();
+            // Remove "(ล่าสุด)" text from form name for button display
+            formName = formName.replace(' (ล่าสุด)', '').replace('(ล่าสุด)', '').trim();
+            const recordDate = clickedItem.find('.small.text-muted').text().split(' ')[0]; // Get only date part
             
-            // Reset statistics to original values
-            $('#totalPatients').text(@Model.Count());
-            $('#opdPatients').text(@Model.Where(p => p.PatientType == "OPD").Count());
-            $('#wardPatients').text(@Model.Where(p => p.PatientType == "WARD").Count());
-            $('#evaluatedPatients').text(@Model.Where(p => p.Evaluations.Any()).Count());
-            $('#patientsCount').text('@Model.Count() รายการ');
+            const dropdownButton = clickedItem.closest('.dropdown').find('.dropdown-toggle');
+            dropdownButton.html(`
+                <div class="d-flex align-items-center flex-grow-1">
+                    <i class="fas fa-file-medical text-primary me-2"></i>
+                    <span class="fw-bold text-dark me-2">${formName}</span>
+                    <span class="text-muted">${recordDate}</span>
+                </div>
+            `);
+            
+            // Close dropdown
+            $('.dropdown').each(function() {
+                $(this).find('.dropdown-toggle').dropdown('hide');
+            });
         }
 
         function viewEvaluationDetail(patientHN) {

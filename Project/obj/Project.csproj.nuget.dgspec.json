@@ -60,17 +60,21 @@
               "target": "Package",
               "version": "[9.0.7, )"
             },
-            "itext7": {
+            "Razor.Templating.Core": {
               "target": "Package",
-              "version": "[9.2.0, )"
+              "version": "[2.1.0, )"
             },
-            "itext7.bouncy-castle-adapter": {
+            "itext": {
               "target": "Package",
-              "version": "[9.2.0, )"
+              "version": "[9.3.0, )"
             },
-            "itext7.font-asian": {
+            "itext.bouncy-castle-adapter": {
               "target": "Package",
-              "version": "[9.2.0, )"
+              "version": "[9.3.0, )"
+            },
+            "itext.pdfhtml": {
+              "target": "Package",
+              "version": "[6.2.1, )"
             }
           },
           "imports": [

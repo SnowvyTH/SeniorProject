@@ -1,161 +1,1234 @@
-﻿@{
-    ViewData["Title"] = "ระบบหัวหน้าเภสัชกรรม";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_HPLayout.cshtml";
 }
 
 <div class="container-fluid">
+    <!-- Global Filters Section -->
     <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="text-success">
-                    <i class="fas fa-user-md me-2"></i>ระบบหัวหน้าเภสัชกรรม
-                </h2>
-                <div class="dropdown">
-                    <button class="btn btn-outline-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user me-1"></i>@ViewBag.UserName
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><span class="dropdown-item-text">บทบาท: @ViewBag.RoleName</span></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="@Url.Action("Logout", "Home")">
-                            <i class="fas fa-sign-out-alt me-1"></i>ออกจากระบบ
-                        </a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-3 mb-4">
-            <div class="card stats-card bg-success text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">เภสัชกรทั้งหมด</h4>
-                            <h2 class="mb-0">-</h2>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-users fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-dark">
-                    <small>จำนวนเภสัชกรในแผนก</small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-4">
-            <div class="card stats-card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">รายงานวันนี้</h4>
-                            <h2 class="mb-0">-</h2>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-file-alt fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-dark">
-                    <small>รายงานที่รอตรวจสอบ</small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-4">
-            <div class="card stats-card bg-warning text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">การอนุมัติ</h4>
-                            <h2 class="mb-0">-</h2>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-check-circle fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-dark">
-                    <small>รายการรอการอนุมัติ</small>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3 mb-4">
-            <div class="card stats-card bg-danger text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">ปัญหาเร่งด่วน</h4>
-                            <h2 class="mb-0">-</h2>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-exclamation-triangle fa-2x"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-dark">
-                    <small>ปัญหาที่ต้องแก้ไขด่วน</small>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-8 mb-4">
-            <div class="card dashboard-card">
-                <div class="card-header bg-success text-white">
+        <div class="col-md-12">
+            <div class="filter-card">
+                <div class="card-header">
                     <h5 class="mb-0">
-                        <i class="fas fa-chart-bar me-2"></i>ภาพรวมแผนกเภสัชกรรม
+                        <i class="fas fa-filter me-2"></i>ตัวกรองข้อมูลss
                     </h5>
                 </div>
                 <div class="card-body">
-                    <div class="text-center text-muted py-5">
-                        <i class="fas fa-chart-line fa-3x mb-3 text-success"></i>
-                        <p>กราฟแสดงสถิติการทำงานของแผนกเภสัชกรรม</p>
-                        <small>ข้อมูลจะแสดงเมื่อมีการทำงานของเภสัชกร</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-4">
-            <div class="card dashboard-card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="fas fa-tasks me-2"></i>งานที่ต้องดำเนินการ
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group list-group-flush">
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-user-check me-2 text-success"></i>อนุมัติการประเมิน</span>
-                            <span class="badge bg-success rounded-pill">0</span>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">ช่วงวันที่</label>
+                            <div class="input-group">
+                                <input type="date" class="form-control" id="startDate" onchange="validateDateRange()" />
+                                <span class="input-group-text">ถึง</span>
+                                <input type="date" class="form-control" id="endDate" onchange="validateDateRange()" />
+                            </div>
+                            <div id="dateValidationMessage" class="text-danger mt-1" style="display: none; font-size: 0.85rem;"></div>
                         </div>
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-file-signature me-2 text-warning"></i>ตรวจสอบรายงาน</span>
-                            <span class="badge bg-warning rounded-pill">0</span>
+                        <div class="col-md-3">
+                            <label class="form-label">แบบฟอร์มประเมิน</label>
+                            <select class="form-select" id="formFilter">
+                                <option value="">ทั้งหมด</option>
+                                <!-- ตัวเลือกจะโหลดจาก JavaScript -->
+                            </select>
                         </div>
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <span><i class="fas fa-cog me-2 text-info"></i>จัดการระบบ</span>
-                            <span class="badge bg-info rounded-pill">0</span>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button class="btn btn-primary me-2" id="applyFilters">
+                                <i class="fas fa-search me-2"></i>ค้นหา
+                            </button>
+                            <button class="btn btn-secondary" id="resetFilters">
+                                <i class="fas fa-refresh me-2"></i>รีเซ็ต
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Executive Statistics Banner -->
+    <div class="stats-banner">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="stat-item total-evaluations">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalEvaluations">0</div>
+                            <div class="stat-label">การประเมินทั้งหมด</div>
+                            <div class="stat-description">รวมการประเมินในช่วง</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-item active-patients">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="activePatients">0</div>
+                            <div class="stat-label">ผู้ป่วยที่ประเมิน</div>
+                            <div class="stat-description">จำนวนผู้ป่วยในช่วง</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-item high-risk-cases">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="highRiskCases">0</div>
+                            <div class="stat-label">เคสความเสี่ยงสูง</div>
+                            <div class="stat-description">ต้องติดตามเป็นพิเศษ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <!-- Trend Chart -->
+        <div class="col-md-8">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-line-chart me-2"></i>แนวโน้มคะแนนการประเมิน
+                    </h5>
+                </div>
+                <div class="chart-body">
+                    <canvas id="trendChart" height="400"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Score Distribution -->
+        <div class="col-md-4">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>ระดับความรุนแรง
+                    </h5>
+                </div>
+                <div class="chart-body">
+                    <div id="distributionChartContainer" style="height: 320px; display: flex; align-items: center; justify-content: center;">
+                        <canvas id="distributionChart" style="max-height: 280px;"></canvas>
+                        <div id="noDataMessage" style="display: none; text-align: center; color: #6c757d;">
+                            <i class="fas fa-chart-pie fa-3x mb-3 opacity-50"></i>
+                            <p>ไม่มีข้อมูลในช่วงที่เลือก</p>
+                        </div>
+                    </div>
+                    <div class="distribution-legend mt-3" id="distributionLegend">
+                        <!-- Legend will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </div>
 
-@section Scripts {
-    <script>
-        $(document).ready(function() {
-            console.log('HP Dashboard loaded');
+@section Styles {
+    <style>
+        /* Updated color scheme to match HP theme */
+        :root {
+            --primary-color: #2c5aa0;
+            --secondary-color: #3498db;
+            --accent-color: #1abc9c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --info-color: #17a2b8;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .page-title {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 2rem;
+        }
+
+        /* Executive Statistics Banner */
+        .stats-banner {
+            background: #ffffff;
+            padding: 1.2rem 0;
+            border-radius: 14px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin-bottom: 1.2rem;
+            border: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+        }
+
+        .stat-item {
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            position: relative;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            margin: 0 0.5rem;
+        }
+
+        .stat-item:hover {
+            background: rgba(44, 90, 160, 0.02);
+            transform: translateY(-2px);
+        }
+
+        .stat-item::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 20%;
+            height: 60%;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, #e5e7eb, transparent);
+        }
+
+        .stat-item:last-child::after {
+            display: none;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-icon i {
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        /* สีเฉพาะสำหรับแต่ละประเภท stat */
+        .stat-item.total-evaluations .stat-icon {
+            background: linear-gradient(135deg, var(--success-color), #2ecc71);
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .stat-item.total-evaluations .stat-number {
+            background: linear-gradient(135deg, var(--success-color), #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-item.active-patients .stat-icon {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 4px 15px rgba(44, 90, 160, 0.3);
+        }
+
+        .stat-item.active-patients .stat-number {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-item.high-risk-cases .stat-icon {
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .stat-item.high-risk-cases .stat-number {
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 2.8rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+            font-family: 'Kanit', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-description {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        /* Animation for running numbers */
+        .stat-number.counting {
+            animation: slideInScale 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @@keyframes slideInScale {
+            0% { 
+                opacity: 0; 
+                transform: translateY(20px) scale(0.8);
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Hover effects สำหรับแต่ละประเภท */
+        .stat-item.total-evaluations:hover .stat-icon {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(39, 174, 96, 0.4);
+            background: linear-gradient(135deg, #2ecc71, var(--accent-color));
+        }
+
+        .stat-item.total-evaluations:hover .stat-number {
+            background: linear-gradient(135deg, #2ecc71, var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-item.active-patients:hover .stat-icon {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(44, 90, 160, 0.4);
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+        }
+
+        .stat-item.active-patients:hover .stat-number {
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-item.high-risk-cases:hover .stat-icon {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(231, 76, 60, 0.4);
+            background: linear-gradient(135deg, #c0392b, var(--warning-color));
+        }
+
+        .stat-item.high-risk-cases:hover .stat-number {
+            background: linear-gradient(135deg, #c0392b, var(--warning-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+
+
+        /* Chart Cards - Minimal design */
+        .chart-card, .data-card, .filter-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            border: none;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-header, .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-bottom: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-header h5, .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .chart-controls {
+            margin-left: auto;
+        }
+
+        .chart-controls select {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 6px;
+        }
+
+        .chart-controls select:focus {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            box-shadow: none;
+        }
+
+        .chart-body, .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Distribution Chart Container */
+        #distributionChartContainer {
+            position: relative;
+            min-height: 250px;
+        }
+
+        #noDataMessage {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        #noDataMessage i {
+            opacity: 0.3;
+            margin-bottom: 1rem;
+        }
+
+        /* Distribution Legend */
+        .distribution-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .legend-text {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        /* Lists - Updated styling */
+        .patient-list, .pharmacist-list, .alert-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .patient-item, .pharmacist-item, .alert-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .patient-item:hover, .pharmacist-item:hover, .alert-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .patient-info, .pharmacist-info, .alert-content {
+            flex: 1;
+        }
+
+        .patient-score, .assessment-count {
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 8px;
+            min-width: 60px;
+            font-weight: 600;
+        }
+
+        .patient-score.critical {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .patient-score.high {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .patient-score.medium {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .patient-score.low {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .assessment-count {
+            background: var(--info-color);
+            color: white;
+        }
+
+        .score-value, .count-value {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .score-label, .count-label {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+
+        /* Alerts */
+        .alert-item {
+            border-left: 4px solid;
+        }
+
+        .alert-item.severe {
+            border-left-color: var(--danger-color);
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .alert-item.moderate {
+            border-left-color: var(--warning-color);
+            background: rgba(243, 156, 18, 0.1);
+        }
+
+        .alert-item.low {
+            border-left-color: var(--success-color);
+            background: rgba(39, 174, 96, 0.1);
+        }
+
+        .alert-icon {
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .alert-item.severe .alert-icon {
+            color: var(--danger-color);
+        }
+
+        .alert-item.moderate .alert-icon {
+            color: var(--warning-color);
+        }
+
+        .alert-item.low .alert-icon {
+            color: var(--success-color);
+        }
+
+        /* Form Elements */
+        .form-select, .form-control {
+            border-radius: 8px;
+            border: 1px solid #e0e6ed;
+            padding: 0.75rem;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .form-select:focus, .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(44, 90, 160, 0.3);
+        }
+
+        /* Responsive Design */
+        @@media (max-width: 768px) {
+            .stats-banner {
+                padding: 2rem 0;
+                margin-bottom: 2rem;
+            }
             
-            // เพิ่ม JavaScript สำหรับฟังก์ชันการทำงานของหัวหน้าเภสัช
+            .stat-item {
+                flex-direction: column;
+                text-align: center;
+                padding: 1rem;
+                margin: 0.5rem 0;
+            }
+            
+            .stat-item::after {
+                display: none;
+            }
+            
+            .stat-icon {
+                margin-right: 0;
+                margin-bottom: 1rem;
+                width: 50px;
+                height: 50px;
+            }
+            
+            .stat-icon i {
+                font-size: 1.2rem;
+            }
+            
+            .stat-number {
+                font-size: 2.2rem;
+            }
+            
+            .stat-label {
+                font-size: 0.9rem;
+            }
+            
+            .stat-description {
+                font-size: 0.8rem;
+            }
+            
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .chart-controls {
+                margin-left: 0;
+                margin-top: 0.5rem;
+            }
+        }
+
+        /* Custom scrollbar */
+        .patient-list::-webkit-scrollbar,
+        .pharmacist-list::-webkit-scrollbar,
+        .alert-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .patient-list::-webkit-scrollbar-track,
+        .pharmacist-list::-webkit-scrollbar-track,
+        .alert-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .patient-list::-webkit-scrollbar-thumb,
+        .pharmacist-list::-webkit-scrollbar-thumb,
+        .alert-list::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .patient-list::-webkit-scrollbar-thumb:hover,
+        .pharmacist-list::-webkit-scrollbar-thumb:hover,
+        .alert-list::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+
+        /* Loading and Toast styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-spinner {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            color: var(--primary-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            font-family: 'Kanit', sans-serif;
+        }
+        
+        .toast-notification.show {
+            transform: translateX(0);
+        }
+        
+        .toast-success {
+            border-left: 4px solid var(--success-color);
+            color: var(--success-color);
+        }
+        
+        .toast-info {
+            border-left: 4px solid var(--info-color);
+            color: var(--info-color);
+        }
+        
+        .toast-danger {
+            border-left: 4px solid var(--danger-color);
+            color: var(--danger-color);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/js/chart.js"></script>
+    <script>
+        // Global variables
+        let trendChart;
+        let distributionChart;
+        
+        $(document).ready(function() {
+            
+            // ตั้งค่า default dates
+            setDefaultDates();
+            
+            // โหลดรายการแบบฟอร์มที่มีในระบบ
+            loadAvailableForms();
+            
+            // โหลดข้อมูล dashboard เริ่มต้น
+            loadDashboardData();
+            
+            // โหลดข้อมูลกราฟ trend แยกต่างหาก
+            setTimeout(() => {
+                loadTrendChartData();
+            }, 200);
+            
+            // Initialize charts
+            initializeTrendChart();
+            initializeDistributionChart();
+            
+            // Filter event handlers
+            $('#applyFilters').on('click', function() {
+                if (validateDateRange()) {
+                    applyFilters();
+                }
+            });
+            
+            $('#resetFilters').on('click', function() {
+                resetFilters();
+            });
+            
+            $('#quickDateFilter').on('change', function() {
+                handleQuickDateFilter();
+            });
+            
+            @* $('#formFilter').on('change', function() {
+                updateDistributionChart();
+            }); *@
         });
+
+        function loadAvailableForms() {
+            $.ajax({
+                url: '/HP/GetAvailableForms',
+                method: 'GET',
+                success: function(forms) {
+                    
+                    const formSelect = $('#formFilter');
+                    // เคลียร์ options เดิม (ยกเว้น "ทั้งหมด")
+                    formSelect.find('option:not(:first)').remove();
+                    
+                    // เพิ่ม options ใหม่
+                    forms.forEach(function(form) {
+                        formSelect.append(new Option(form.formName, form.formName));
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading forms:', error);
+                    showToast('ไม่สามารถโหลดรายการแบบฟอร์มได้', 'danger');
+                }
+            });
+        }
+
+        function setDefaultDates() {
+            const today = new Date();
+            const lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+            
+            // ใช้ค่าจาก ViewBag ถ้ามี
+            const startDate = '@ViewBag.StartDate' || lastWeek.toISOString().split('T')[0];
+            const endDate = '@ViewBag.EndDate' || today.toISOString().split('T')[0];
+            const formType = ''; // เปลี่ยนเป็น "ทั้งหมด" เสมอ
+            
+            $('#startDate').val(startDate);
+            $('#endDate').val(endDate);
+            $('#formFilter').val(formType);
+            
+            // ตั้งค่า max date สำหรับ input
+            $('#startDate').attr('max', today.toISOString().split('T')[0]);
+            $('#endDate').attr('max', today.toISOString().split('T')[0]);
+        }
+        
+        function validateDateRange() {
+            const startDate = new Date($('#startDate').val());
+            const endDate = new Date($('#endDate').val());
+            const today = new Date();
+            today.setHours(23, 59, 59, 999); // ตั้งเวลาเป็นท้ายวัน
+            
+            const messageElement = $('#dateValidationMessage');
+            
+            // ตรวจสอบวันที่ไม่เกินวันนี้
+            if (startDate > today) {
+                messageElement.text('วันที่เริ่มต้นไม่สามารถเกินวันนี้ได้').show();
+                return false;
+            }
+            
+            if (endDate > today) {
+                messageElement.text('วันที่สิ้นสุดไม่สามารถเกินวันนี้ได้').show();
+                return false;
+            }
+            
+            // ตรวจสอบวันที่เริ่มต้นต้องไม่เกินวันที่สิ้นสุด
+            if (startDate > endDate) {
+                messageElement.text('วันที่เริ่มต้นต้องไม่เกินวันที่สิ้นสุด').show();
+                return false;
+            }
+            
+            messageElement.hide();
+            return true;
+        }
+        
+        function loadDashboardData() {
+            const startDate = $('#startDate').val();
+            const endDate = $('#endDate').val();
+            const formType = $('#formFilter').val();
+            
+            $.ajax({
+                url: '/HP/GetRealDashboardData',
+                method: 'GET',
+                data: {
+                    startDate: startDate,
+                    endDate: endDate,
+                    formType: formType
+                },
+                success: function(data) {
+                    updateStatsBanner(data);
+                    updateTrendChart(data.trendData);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading dashboard data:', error);
+                    showToast('ไม่สามารถโหลดข้อมูล dashboard ได้', 'danger');
+                }
+            });
+        }
+        
+        function loadTrendChartData() {
+            const startDate = $('#startDate').val();
+            const endDate = $('#endDate').val();
+            const formType = $('#formFilter').val();
+            
+            $.ajax({
+                url: '/HP/GetRealDashboardData',
+                method: 'GET',
+                data: {
+                    startDate: startDate,
+                    endDate: endDate,
+                    formType: formType
+                },
+                success: function(data) {
+                    updateTrendChart(data.trendData);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading trend data:', error);
+                    showToast('ไม่สามารถโหลดข้อมูลกราฟได้', 'danger');
+                }
+            });
+        }
+        
+        function updateStatsBanner(data) {
+            // รันตัวเลขแบบ animation
+            animateNumber('#totalEvaluations', data.totalEvaluations || 0);
+            animateNumber('#activePatients', data.patientsAssessed || 0);
+            animateNumber('#highRiskCases', data.severeCases || 0);
+        }
+        
+        // ฟังก์ชันสำหรับทำ animation ตัวเลขวิ่ง
+        function animateNumber(selector, targetValue) {
+            const element = $(selector);
+            const currentValue = parseInt(element.text()) || 0;
+            const duration = 1000; // 1 วินาที
+            const steps = 50;
+            const increment = (targetValue - currentValue) / steps;
+            let step = 0;
+            
+            element.addClass('counting');
+            
+            const timer = setInterval(function() {
+                step++;
+                const newValue = Math.round(currentValue + (increment * step));
+                element.text(newValue);
+                
+                if (step >= steps) {
+                    clearInterval(timer);
+                    element.text(targetValue);
+                    element.removeClass('counting');
+                }
+            }, duration / steps);
+        }
+
+        function handleQuickDateFilter() {
+            const selected = $('#quickDateFilter').val();
+            const today = new Date();
+            let startDate, endDate;
+            
+            switch(selected) {
+                case 'today':
+                    startDate = endDate = today;
+                    break;
+                case 'week':
+                    startDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    endDate = today;
+                    break;
+                case 'month':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    endDate = today;
+                    break;
+                case 'quarter':
+                    const quarter = Math.floor(today.getMonth() / 3);
+                    startDate = new Date(today.getFullYear(), quarter * 3, 1);
+                    endDate = today;
+                    break;
+                default:
+                    return; // กำหนดเอง - ไม่ต้องทำอะไร
+            }
+            
+            $('#startDate').val(startDate.toISOString().split('T')[0]);
+            $('#endDate').val(endDate.toISOString().split('T')[0]);
+            
+            applyFilters();
+        }
+
+        function applyFilters() {
+            if (!validateDateRange()) {
+                return;
+            }
+            
+            const startDate = $('#startDate').val();
+            const endDate = $('#endDate').val();
+            const formType = $('#formFilter').val();
+            
+            // โหลดข้อมูลใหม่
+            loadDashboardData();
+            updateDistributionChart();
+            
+            // บังคับให้กราฟ trend อัพเดท
+            setTimeout(() => {
+                loadTrendChartData();
+            }, 100);
+        }
+
+        function resetFilters() {
+            const today = new Date();
+            const lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
+            
+            $('#startDate').val(lastWeek.toISOString().split('T')[0]);
+            $('#endDate').val(today.toISOString().split('T')[0]);
+            $('#formFilter').val('');
+            $('#quickDateFilter').val('');
+            $('#dateValidationMessage').hide();
+            
+            // โหลดข้อมูลใหม่
+            loadDashboardData();
+            updateDistributionChart();
+            
+            // บังคับให้กราฟ trend อัพเดท
+            setTimeout(() => {
+                loadTrendChartData();
+            }, 100);
+        }
+
+        // Trend Chart
+        function initializeTrendChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [] // จะโหลดแบบ dynamic ตามแบบฟอร์มที่มีในระบบ
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y.toFixed(2) + ' คะแนน';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'วันที่'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'คะแนนเฉลี่ย'
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateTrendChart(trendData) {
+            if (!trendData || trendData.length === 0) {
+                // สร้างข้อมูล empty สำหรับช่วงวันที่ที่เลือก
+                const startDate = new Date($('#startDate').val());
+                const endDate = new Date($('#endDate').val());
+                const dates = [];
+                
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    const date = new Date(d);
+                    dates.push(date.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' }));
+                }
+                
+                trendChart.data.labels = dates;
+                trendChart.data.datasets = [];
+                trendChart.update();
+                return;
+            }
+            
+            // สร้างช่วงวันที่ที่ต้องแสดง
+            const startDate = new Date($('#startDate').val());
+            const endDate = new Date($('#endDate').val());
+            const dates = [];
+            
+            for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                dates.push(new Date(d).toISOString().split('T')[0]);
+            }
+            
+            // หาแบบฟอร์มที่มีข้อมูลใน trendData
+            const availableForms = [...new Set(trendData.map(item => item.formType))];
+            const colors = ['#2c5aa0', '#27ae60', '#f39c12', '#e74c3c', '#9b59b6', '#34495e', '#1abc9c', '#f1c40f'];
+            
+            // สร้าง datasets สำหรับแต่ละแบบฟอร์ม
+            const datasets = availableForms.map((formType, index) => {
+                const formData = dates.map(date => {
+                    const record = trendData.find(item => item.date === date && item.formType === formType);
+                    return record ? record.averageScore : null;
+                });
+                
+                const color = colors[index % colors.length];
+                
+                return {
+                    label: formType,
+                    data: formData,
+                    borderColor: color,
+                    backgroundColor: color + '20', // เพิ่ม transparency
+                    borderWidth: 3,
+                    fill: false,
+                    tension: 0.4,
+                    pointBackgroundColor: color,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6
+                };
+            });
+            
+            // ฟอร์แมตวันที่ให้อ่านง่าย
+            const formattedDates = dates.map(date => {
+                const d = new Date(date);
+                return d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' });
+            });
+            
+                dates: formattedDates,
+                forms: availableForms,
+                datasets: datasets.length
+            });
+            
+            trendChart.data.labels = formattedDates;
+            trendChart.data.datasets = datasets;
+            trendChart.update();
+        }
+
+        // Distribution Chart
+        function initializeDistributionChart() {
+            const ctx = document.getElementById('distributionChart').getContext('2d');
+            distributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        data: [],
+                        backgroundColor: [],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1,
+                    plugins: {
+                        legend: {
+                            display: false // ใช้ custom legend แทน
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return context.label + ': ' + context.parsed + ' เคส (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+            
+            // Load initial data
+            updateDistributionChart();
+        }
+
+        function updateDistributionChart() {
+            const startDate = $('#startDate').val();
+            const endDate = $('#endDate').val();
+            const formType = $('#formFilter').val();
+            
+            $.ajax({
+                url: '/HP/GetScoreDistribution',
+                method: 'GET',
+                data: {
+                    startDate: startDate,
+                    endDate: endDate,
+                    formType: formType
+                },
+                success: function(data) {
+                   
+                    if (data && data.length > 0) {
+                        // มีข้อมูล - แสดงกราฟ
+                        $('#distributionChart').show();
+                        $('#noDataMessage').hide();
+                        
+                        // Update chart data
+                        distributionChart.data.labels = data.map(item => item.label);
+                        distributionChart.data.datasets[0].data = data.map(item => item.count);
+                        distributionChart.data.datasets[0].backgroundColor = data.map(item => item.color);
+                        distributionChart.update();
+                        
+                        // Update legend
+                        updateDistributionLegend(data);
+                    } else {
+                        // ไม่มีข้อมูล - ซ่อนกราฟและแสดงข้อความ
+                        $('#distributionChart').hide();
+                        $('#noDataMessage').show();
+                        $('#distributionLegend').html('');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading score distribution:', error);
+                    $('#distributionChart').hide();
+                    $('#noDataMessage').show();
+                    $('#distributionLegend').html('<p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i>ไม่สามารถโหลดข้อมูลได้</p>');
+                    showToast('ไม่สามารถโหลดข้อมูลกราฟได้', 'danger');
+                }
+            });
+        }
+
+        function updateDistributionLegend(data) {
+            const legendHtml = data.map(item => `
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: ${item.color}"></div>
+                    <span class="legend-text">${item.label} (${item.count})</span>
+                </div>
+            `).join('');
+            
+            $('#distributionLegend').html(legendHtml);
+        }
+
+
+
+        function showToast(message, type = 'info') {
+            const toastClass = 'toast-' + type;
+            const iconClass = type === 'success' ? 'check' : type === 'danger' ? 'times' : 'info';
+            
+            const toast = $(`
+                <div class="toast-notification ${toastClass}">
+                    <i class="fas fa-${iconClass}-circle me-2"></i>
+                    ${message}
+                </div>
+            `);
+            
+            $('body').append(toast);
+            
+            setTimeout(() => {
+                toast.addClass('show');
+            }, 100);
+            
+            setTimeout(() => {
+                toast.removeClass('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
     </script>
 }

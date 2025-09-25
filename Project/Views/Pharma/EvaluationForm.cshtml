@@ -59,43 +59,42 @@
                 <input type="hidden" id="patientId" value="@patient.HN">
                 <input type="hidden" id="formId" value="@form.FormID">
                 
-                @if (form.FormType == 3)
-                {
-                    <!-- Type 3: Section/Group based questions -->
-                    var questionGroups = form.Questions.OrderBy(q => q.QuestionID).GroupBy(q => q.Section ?? "ทั่วไป");
-                    int globalQuestionIndex = 0;
-                    
-                    @foreach (var group in questionGroups)
+                <!-- Question Container -->
+                <div id="questionContainer">
+                    @if (form.FormType == 3)
                     {
-                        <div class="modern-card mb-4 section-card">
-                            <div class="card-header section-header">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-layer-group me-2"></i>
-                                    @group.Key
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                @foreach (var question in group.OrderBy(q => q.QuestionID))
-                                {
-                                    globalQuestionIndex++;
-                                    <div class="question-group mb-1">
-                                        <div class="question-header mb-3">
-                                            <h6 class="question-number">
-                                                <i class="fas fa-question-circle me-2"></i>
-                                                @globalQuestionIndex. @Html.Raw(question.QuestionText.Replace("\n", "<br>"))
-                                            </h6>
+                        <!-- Type 3: Section/Group based questions -->
+                        var questionGroups = form.Questions.OrderBy(q => q.QuestionID).GroupBy(q => q.Section ?? "ทั่วไป");
+                        int globalQuestionIndex = 0;
+                        
+                        @foreach (var group in questionGroups)
+                        {
+                            @foreach (var question in group.OrderBy(q => q.QuestionID))
+                            {
+                                globalQuestionIndex++;
+                                <div class="question-slide modern-card mb-4" data-question-index="@(globalQuestionIndex - 1)" style="display: none;">
+                                    <div class="card-header section-header">
+                                        <h5 class="mb-1">
+                                            <i class="fas fa-layer-group me-2"></i>
+                                            @group.Key
+                                        </h5>
+                                        <small class="text-white-50">คำถามที่ @globalQuestionIndex</small>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="question-text mb-4">
+                                            <h6 class="fw-bold">@Html.Raw(question.QuestionText.Replace("\n", "<br>"))</h6>
                                         </div>
                                         
-                                        <div class="choices-container-type3">
+                                        <div class="choices-container">
                                             @foreach (var choice in question.Options.OrderBy(c => c.OptionID))
                                             {
-                                                <div class="form-check choice-item-type3">
+                                                <div class="form-check choice-item" onclick="selectChoice('choice_@choice.OptionID')">
                                                     <input class="form-check-input" type="radio" 
                                                            name="question_@question.QuestionID" 
                                                            id="choice_@choice.OptionID"
                                                            value="@choice.Value"
                                                            data-question="@question.QuestionID"
-                                                           onchange="updateProgress()">
+                                                           onchange="updateProgress(); updateQuestionStatus(@(globalQuestionIndex - 1))">
                                                     <label class="form-check-label" for="choice_@choice.OptionID">
                                                         @Html.Raw(choice.OptionText.Replace("\n", "<br>"))
                                                         <span class="badge bg-secondary ms-2">@choice.Value</span>
@@ -104,70 +103,81 @@
                                             }
                                         </div>
                                     </div>
-                                }
-                            </div>
-                        </div>
+                                </div>
+                            }
+                        }
                     }
-                }
-                else
-                {
-                    <!-- Type 1 & 2: Individual questions -->
-                    int questionIndex = 0;
-                    @foreach (var question in form.Questions.OrderBy(q => q.QuestionID))
+                    else
                     {
-                        questionIndex++;
-                        <div class="modern-card mb-4">
-                            <div class="card-header">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-question-circle me-2"></i>
-                                    คำถามที่ @questionIndex
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                @if (form.FormType == 2)
-                                {
-                                    <!-- Type 2: Multi-line text support -->
-                                    <div class="question-text mb-3">@Html.Raw(question.QuestionText.Replace("\n", "<br>"))</div>
-                                }
-                                else
-                                {
-                                    <!-- Type 1: Single line text -->
-                                    <p class="question-text mb-3">@question.QuestionText</p>
-                                }
-                                
-                                <div class="choices-container">
-                                    @foreach (var choice in question.Options.OrderBy(c => c.OptionID))
+                        <!-- Type 1 & 2: Individual questions -->
+                        int questionIndex = 0;
+                        @foreach (var question in form.Questions.OrderBy(q => q.QuestionID))
+                        {
+                            <div class="question-slide modern-card mb-4" data-question-index="@questionIndex" style="display: none;">
+                                <div class="card-header">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-question-circle me-2"></i>
+                                        คำถามที่ @(questionIndex + 1)
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    @if (form.FormType == 2)
                                     {
-                                        <div class="form-check choice-item">
-                                            <input class="form-check-input" type="radio" 
-                                                   name="question_@question.QuestionID" 
-                                                   id="choice_@choice.OptionID"
-                                                   value="@choice.Value"
-                                                   data-question="@question.QuestionID"
-                                                   onchange="updateProgress()">
-                                            <label class="form-check-label" for="choice_@choice.OptionID">
-                                                @if (form.FormType == 2)
-                                                {
-                                                    @Html.Raw(choice.OptionText.Replace("\n", "<br>"))
-                                                }
-                                                else
-                                                {
-                                                    @choice.OptionText
-                                                }
-                                                <span class="badge bg-info ms-2">@choice.Value คะแนน</span>
-                                            </label>
+                                        <!-- Type 2: Multi-line text support -->
+                                        <div class="question-text mb-4">
+                                            <h6 class="fw-bold">@Html.Raw(question.QuestionText.Replace("\n", "<br>"))</h6>
                                         </div>
                                     }
+                                    else
+                                    {
+                                        <!-- Type 1: Single line text -->
+                                        <div class="question-text mb-4">
+                                            <h6 class="fw-bold">@question.QuestionText</h6>
+                                        </div>
+                                    }
+                                    
+                                    <div class="choices-container">
+                                        @foreach (var choice in question.Options.OrderBy(c => c.OptionID))
+                                        {
+                                            <div class="form-check choice-item" onclick="selectChoice('choice_@choice.OptionID')">
+                                                <input class="form-check-input" type="radio" 
+                                                       name="question_@question.QuestionID" 
+                                                       id="choice_@choice.OptionID"
+                                                       value="@choice.Value"
+                                                       data-question="@question.QuestionID"
+                                                       onchange="updateProgress(); updateQuestionStatus(@questionIndex)">
+                                                <label class="form-check-label" for="choice_@choice.OptionID">
+                                                    @if (form.FormType == 2)
+                                                    {
+                                                        @Html.Raw(choice.OptionText.Replace("\n", "<br>"))
+                                                    }
+                                                    else
+                                                    {
+                                                        @choice.OptionText
+                                                    }
+                                                    <span class="badge bg-info ms-2">@choice.Value คะแนน</span>
+                                                </label>
+                                            </div>
+                                        }
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                            questionIndex++;
+                        }
                     }
-                }
+                </div>
                 
-                <!-- Submit Button -->
-                <div class="text-center mt-4 mb-4">
-                    <button type="button" class="btn btn-success btn-lg" id="submitBtn" onclick="submitEvaluation()">
-                        <i class="fas fa-save me-2"></i>บันทึกผลการประเมิน
+                <!-- Navigation Buttons -->
+                <div class="d-flex justify-content-between mt-4 mb-4">
+                    <button type="button" class="btn btn-outline-secondary" id="prevBtn" onclick="previousQuestion()" style="display: none;">
+                        <i class="fas fa-chevron-left me-2"></i>หน้าก่อนนี้
+                    </button>
+                    <div></div>
+                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                        หน้าถัดไป<i class="fas fa-chevron-right ms-2"></i>
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg" id="submitBtn" onclick="submitEvaluation()" style="display: none;">
+                        <i class="fas fa-save me-2"></i>สิ้นสุดการทำแบบประเมิน
                     </button>
                 </div>
             </form>
@@ -175,7 +185,24 @@
         
         <!-- Progress Bar Sidebar -->
         <div class="col-md-4">
-            <div class="modern-card sticky-top" style="top: 20px;">
+            <!-- Page Navigation -->
+            <div class="modern-card sticky-top mb-3" style="top: 20px;">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-map me-2"></i>นำทางหน้า
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="page-grid" id="pageNavigation">
+                        <!-- Page buttons will be generated by JavaScript -->
+                    </div>
+                    <div class="mt-2 text-center">
+                        <small class="text-muted">คลิกเพื่อไปยังหน้าที่ต้องการ</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modern-card sticky-top" style="top: 140px;">
                 <div class="card-header">
                     <h6 class="mb-0">
                         <i class="fas fa-chart-line me-2"></i>ความคืบหน้า
@@ -210,6 +237,12 @@
                             <small class="text-muted">
                                 <i class="fas fa-clipboard-list me-1"></i>
                                 ประเภท: @typeText
+                            </small>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <i class="fas fa-eye me-1"></i>
+                                หน้าปัจจุบัน: <span id="currentPageDisplay">1</span> / @form.Questions.Count
                             </small>
                         </div>
                     </div>
@@ -256,15 +289,41 @@
             border-radius: 8px;
             padding: 0.75rem 1rem;
             margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
         }
 
         .choice-item:hover {
             background: rgba(81, 195, 183, 0.1);
+            border-color: var(--mint-green);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(81, 195, 183, 0.2);
         }
 
         .choice-item input[type="radio"]:checked + label {
             color: var(--dark-green);
             font-weight: 600;
+        }
+
+        .choice-item input[type="radio"]:checked {
+            background-color: var(--mint-green);
+            border-color: var(--mint-green);
+        }
+
+        /* Selected choice item styling */
+        .choice-item input[type="radio"]:checked ~ *,
+        .choice-item:has(input[type="radio"]:checked) {
+            background: rgba(81, 195, 183, 0.15) !important;
+            border-color: var(--mint-green) !important;
+            box-shadow: 0 2px 8px rgba(81, 195, 183, 0.3) !important;
+        }
+
+        /* Alternative fallback for browsers that don't support :has() */
+        .choice-item.selected {
+            background: rgba(81, 195, 183, 0.15) !important;
+            border-color: var(--mint-green) !important;
+            box-shadow: 0 2px 8px rgba(81, 195, 183, 0.3) !important;
         }
 
         .form-check-input:checked {
@@ -399,15 +458,288 @@
         .badge.bg-secondary {
             background-color: #6c757d !important;
         }
+
+        /* Question Navigation Styles */
+        .question-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .question-nav-item:hover {
+            background: rgba(81, 195, 183, 0.1);
+            border-color: var(--mint-green);
+        }
+
+        .question-nav-item.active {
+            background: var(--mint-green);
+            color: white;
+        }
+
+        .question-nav-item.answered {
+            background: rgba(40, 167, 69, 0.1);
+            border-color: #28a745;
+        }
+
+        .question-nav-item.answered .question-status i {
+            color: #28a745;
+        }
+
+        .question-number {
+            font-weight: 600;
+            min-width: 20px;
+        }
+
+        .section-title {
+            color: var(--dark-green);
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .section-nav {
+            border-left: 3px solid var(--mint-green);
+            padding-left: 0.5rem;
+        }
+
+        /* Question Slide Styles */
+        .question-slide {
+            min-height: 400px;
+        }
+
+        .question-text h6 {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Page Navigation Grid */
+        .page-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.5rem;
+        }
+
+        .page-btn {
+            aspect-ratio: 1;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .page-btn:hover {
+            background: rgba(81, 195, 183, 0.1);
+            border-color: var(--mint-green);
+        }
+
+        .page-btn.current {
+            background: var(--mint-green);
+            color: white;
+            border-color: var(--mint-green);
+        }
+
+        .page-btn.answered {
+            background: rgba(40, 167, 69, 0.1);
+            border-color: #28a745;
+            color: #28a745;
+        }
+
+        .page-btn.answered.current {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        /* Navigation Button Styles */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
     </style>
 }
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        let currentQuestionIndex = 0;
+        const totalQuestions = @form.Questions.Count;
+
         $(document).ready(function() {
+            initializeQuestionNavigation();
+            showQuestion(0);
             updateProgress();
+            generatePageNavigation();
+            
+            // Add click event for choice items
+            $(document).on('click', '.choice-item', function(e) {
+                // Prevent double triggering if user clicks on radio button or label
+                if (e.target.type !== 'radio' && !$(e.target).is('label')) {
+                    const radioButton = $(this).find('input[type="radio"]');
+                    if (radioButton.length) {
+                        radioButton.prop('checked', true);
+                        radioButton.trigger('change');
+                    }
+                }
+            });
+            
+            // Handle radio button change events to update styling
+            $(document).on('change', 'input[type="radio"]', function() {
+                // Remove selected class from all choice items in the same question
+                const questionName = $(this).attr('name');
+                $(`input[name="${questionName}"]`).closest('.choice-item').removeClass('selected');
+                
+                // Add selected class to the current choice item
+                $(this).closest('.choice-item').addClass('selected');
+            });
         });
+
+        function selectChoice(choiceId) {
+            const radioButton = $('#' + choiceId);
+            if (radioButton.length) {
+                radioButton.prop('checked', true);
+                radioButton.trigger('change');
+            }
+        }
+
+        function initializeQuestionNavigation() {
+            // Hide all questions initially
+            $('.question-slide').hide();
+            
+            // Reset current question index to 0
+            currentQuestionIndex = 0;
+            
+            // Show first question
+            showQuestion(0);
+        }
+
+        function showQuestion(index) {
+            // Hide all questions
+            $('.question-slide').hide();
+            
+            // Show current question
+            $(`.question-slide[data-question-index="${index}"]`).show();
+            
+            // Update current question index
+            currentQuestionIndex = index;
+            
+            // Update navigation
+            updateNavigation();
+            updateCurrentPageDisplay();
+            
+            // Update active state in question navigation
+            $('.question-nav-item').removeClass('active');
+            $(`.question-nav-item[data-question-index="${index}"]`).addClass('active');
+            
+            // Update page navigation
+            updatePageNavigation();
+        }
+
+        function updateNavigation() {
+            const prevBtn = $('#prevBtn');
+            const nextBtn = $('#nextBtn');
+            const submitBtn = $('#submitBtn');
+            
+            // Show/hide previous button
+            if (currentQuestionIndex === 0) {
+                prevBtn.hide();
+            } else {
+                prevBtn.show();
+            }
+            
+            // Show/hide next/submit button
+            if (currentQuestionIndex === totalQuestions - 1) {
+                nextBtn.hide();
+                submitBtn.show();
+            } else {
+                nextBtn.show();
+                submitBtn.hide();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                showQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < totalQuestions - 1) {
+                showQuestion(currentQuestionIndex + 1);
+            }
+        }
+
+        function goToQuestion(index) {
+            if (index >= 0 && index < totalQuestions) {
+                showQuestion(index);
+            }
+        }
+
+        function updateQuestionStatus(questionIndex) {
+            // Mark question as answered in navigation
+            const navItem = $(`.question-nav-item[data-question-index="${questionIndex}"]`);
+            navItem.addClass('answered');
+            navItem.find('.question-status i').removeClass('text-muted').addClass('text-success');
+            
+            // Update page navigation
+            updatePageNavigation();
+        }
+
+        function generatePageNavigation() {
+            const pageNavigation = $('#pageNavigation');
+            pageNavigation.empty();
+            
+            for (let i = 0; i < totalQuestions; i++) {
+                const pageBtn = $(`
+                    <div class="page-btn" data-page="${i}" onclick="goToQuestion(${i})">
+                        ${i + 1}
+                    </div>
+                `);
+                pageNavigation.append(pageBtn);
+            }
+            
+            // Set first question as active by default
+            updatePageNavigation();
+        }
+
+        function updatePageNavigation() {
+            $('.page-btn').removeClass('current answered');
+            
+            // Mark current page
+            $(`.page-btn[data-page="${currentQuestionIndex}"]`).addClass('current');
+            
+            // Mark answered pages
+            $('input[type="radio"]:checked').each(function() {
+                const questionElement = $(this).closest('.question-slide');
+                const questionIndex = questionElement.data('question-index');
+                $(`.page-btn[data-page="${questionIndex}"]`).addClass('answered');
+            });
+            
+            // Maintain current page styling even if answered
+            $(`.page-btn[data-page="${currentQuestionIndex}"]`).addClass('current');
+        }
+
+        function updateCurrentPageDisplay() {
+            $('#currentPageDisplay').text(currentQuestionIndex + 1);
+        }
 
         function getScoringMethodText(method) {
             switch(method) {
@@ -461,6 +793,20 @@
             }
         }
 
+        // Keyboard navigation
+        $(document).keydown(function(e) {
+            if (e.key === 'ArrowLeft' && currentQuestionIndex > 0) {
+                e.preventDefault();
+                previousQuestion();
+            } else if (e.key === 'ArrowRight' && currentQuestionIndex < totalQuestions - 1) {
+                e.preventDefault();
+                nextQuestion();
+            } else if (e.key === 'Enter' && currentQuestionIndex === totalQuestions - 1) {
+                e.preventDefault();
+                submitEvaluation();
+            }
+        });
+
         function submitEvaluation() {
             const totalQuestions = @form.Questions.Count;
             const answeredQuestions = $('input[type="radio"]:checked').length;
@@ -493,11 +839,9 @@
 
             answers.sort((a, b) => a.QuestionId - b.QuestionId);
             answers.forEach(ans => {
-                console.log(`ข้อ ${ans.QuestionId}: ${ans.Score}`);
             });
 
-            // Calculate final score based on scoring method
-            const scoringMethod = '@form.Scoring'; // Get scoring method from form
+            const scoringMethod = '@form.Scoring'; 
             let finalScore = 0;
             let result = '';
             let resultText = '';
@@ -543,13 +887,7 @@
                         
                         result = q8OptionText || `คะแนน ${q8.Score}`;
                         finalScore = q8.Score; // ใช้คะแนนข้อ 8 เป็น finalScore
-                        
-                        console.log('AIMS Debug:');
-                        console.log('Q8 Score:', q8.Score);
-                        console.log('Q8 Option Text (cleaned):', q8OptionText);
-                        console.log('Q8 Condition Text:', $(`input[name="question_57"]:checked`).next('label').clone().children('.badge').remove().end().text().trim());
-                        console.log('Total Q1-7:', totalQ1to7);
-                        console.log('Conditions found:', conditions);
+
                     }
 
                     // รวม resultText ตามลำดับความสำคัญ 1>2>3

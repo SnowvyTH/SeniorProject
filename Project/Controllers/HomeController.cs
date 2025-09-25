@@ -84,6 +84,7 @@ public class HomeController : Controller
         {
             new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
+            new Claim("UserID", user.UserID.ToString()),
             new Claim("FirstName", user.FirstName ?? ""),
             new Claim("LastName", user.LastName ?? ""),
             new Claim("RoleID", user.RoleID?.ToString() ?? ""),

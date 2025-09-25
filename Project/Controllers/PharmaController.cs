@@ -1,10 +1,14 @@
-﻿using iText.IO.Font.Constants;
-using iText.Kernel.Font;
-using iText.Kernel.Geom;
+﻿using iText.Kernel.Font;
 using iText.Kernel.Pdf;
 using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Properties;
+using iText.Layout.Borders;
+using iText.Kernel.Colors;
+using iText.Kernel.Geom;
+using iText.Kernel.Pdf.Canvas;
+using iText.Kernel.Pdf.Xobject;
+using iText.IO.Font;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +21,6 @@ using System.Text.Json.Serialization;
 
 namespace Project.Controllers
 {
-    // Model for patient creation/update
         [Authorize(Roles = "เภสัช")]
         public class PharmaController : Controller
         {
@@ -38,7 +41,6 @@ namespace Project.Controllers
                     var user = await _db.User.FindAsync(int.Parse(userId));
                     if (user != null && !string.IsNullOrEmpty(user.Picture))
                     {
-                        // Add timestamp to prevent caching
                         ViewBag.ProfileImageUrl = "/uploads/profile/" + user.Picture + "?t=" + DateTime.Now.Ticks;
                     }
                 }
@@ -174,7 +176,6 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
                     }
 
-                    // สำหรับทุกแบบฟอร์ม ให้แยกเก็บ Result และ ResultDetail
                     var evaluation = new Evaluation
                     {
                         HN = model.PatientId,
@@ -182,7 +183,7 @@ namespace Project.Controllers
                         UserID = int.Parse(userId),
                         RecordDate = DateTime.Now,
                         Result = model.Result,
-                        ResultDetail = model.ResultDetail // เก็บคำแนะนำแยกต่างหาก
+                        ResultDetail = model.ResultDetail
                     };
 
                     _db.Evaluation.Add(evaluation);
@@ -227,12 +228,7 @@ namespace Project.Controllers
                         .ThenInclude(q => q!.Options)
                     .FirstOrDefaultAsync(e => e.EvaID == evaId);
 
-                if (evaluation == null)
-                {
-                    return RedirectToAction("Index");
-                }
-
-                if (evaluation.EvaluationDetails?.Any() == true && evaluation.Form != null)
+                if (evaluation!.EvaluationDetails?.Any() == true && evaluation.Form != null)
                 {
                     var scores = evaluation.EvaluationDetails.Where(ed => ed.Score.HasValue).Select(ed => ed.Score!.Value).ToList();
                     if (scores.Any())
@@ -245,9 +241,8 @@ namespace Project.Controllers
                             _ => scores.Sum()
                         };
 
-                        // ใช้ข้อมูลจาก evaluation.ResultDetail แทนการค้นหาจาก Interpreter table
                         ViewBag.InterpreterName = evaluation.Result;
-                        ViewBag.InterpreterText = evaluation.ResultDetail; // ใช้ ResultDetail ที่เก็บไว้แล้ว
+                        ViewBag.InterpreterText = evaluation.ResultDetail; 
                         ViewBag.CalculatedScore = calculatedScore;
                     }
                 }
@@ -258,455 +253,609 @@ namespace Project.Controllers
                 return View(evaluation);
             }
 
-            [HttpGet]
-            public async Task<IActionResult> ExportEvaluationPDF(int evaId)
-            {
-                var evaluation = await _db.Evaluation
-                    .Include(e => e.Patient)
-                        .ThenInclude(p => p!.Title)
-                    .Include(e => e.Form)
-                        .ThenInclude(f => f!.Questions)
-                        .ThenInclude(q => q.Options)
-                    .Include(e => e.User)
-                        .ThenInclude(u => u!.Title)
-                    .Include(e => e.EvaluationDetails)
-                        .ThenInclude(ed => ed.Question)
-                        .ThenInclude(q => q!.Options)
-                    .FirstOrDefaultAsync(e => e.EvaID == evaId);
+        [HttpGet]
+        public async Task<IActionResult> ExportEvaluationPDF(int evaId)
+        {
+            var evaluation = await _db.Evaluation
+                .Include(e => e.Patient)
+                    .ThenInclude(p => p!.Title)
+                .Include(e => e.Form)
+                    .ThenInclude(f => f!.Questions)
+                    .ThenInclude(q => q.Options)
+                .Include(e => e.User)
+                    .ThenInclude(u => u!.Title)
+                .Include(e => e.EvaluationDetails)
+                    .ThenInclude(ed => ed.Question)
+                    .ThenInclude(q => q!.Options)
+                .FirstOrDefaultAsync(e => e.EvaID == evaId);
 
-                if (evaluation == null)
+            string thaifontPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "font", "THSarabunNew.ttf");
+            var thaifontProgram = FontProgramFactory.CreateFont(thaifontPath);
+            var thaiFont = PdfFontFactory.CreateFont(thaifontProgram, PdfEncodings.IDENTITY_H);
+
+            string thaiboldfontPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "font", "THSarabunNewBold.ttf");
+            var thaiboldfontProgram = FontProgramFactory.CreateFont(thaiboldfontPath);
+            var thaiBoldFont = PdfFontFactory.CreateFont(thaiboldfontProgram, PdfEncodings.IDENTITY_H);
+
+            string emojifontPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "font", "NotoEmoji.ttf");
+            var emojifontProgram = FontProgramFactory.CreateFont(emojifontPath);
+            var emojiFont = PdfFontFactory.CreateFont(emojifontProgram, PdfEncodings.IDENTITY_H);
+
+            if (evaluation!.Form!.FormType == 1) {
+
+                string modsasBackgroundPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdf", "modsas.pdf");
+
+                MemoryStream stream = new MemoryStream();
+                PdfWriter writer = new PdfWriter(stream);
+                PdfDocument pdf = new PdfDocument(writer);
+
+                PdfReader reader = new PdfReader(modsasBackgroundPath);
+                PdfDocument backgroundPdf = new PdfDocument(reader);
+
+                PdfFormXObject backgroundPage = backgroundPdf.GetPage(1).CopyAsFormXObject(pdf);
+
+                PageSize pageSize = new PageSize(backgroundPdf.GetPage(1).GetPageSize());
+                PdfPage page = pdf.AddNewPage(pageSize);
+
+                PdfCanvas canvas = new PdfCanvas(page);
+
+                canvas.AddXObject(backgroundPage);
+
+                Document document = new Document(pdf);
+
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph($"{(evaluation.Patient!.HN).Substring(2)}").SetFontSize(14).SetFont(thaiFont).SetFontColor(ColorConstants.BLUE), 101, 759, TextAlignment.LEFT);
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph($"{evaluation.Patient.Title?.TitleName}{evaluation.Patient.FirstName} {evaluation.Patient.LastName}").SetFontSize(14).SetFont(thaiFont).SetFontColor(ColorConstants.BLUE), 245, 759, TextAlignment.LEFT);
+
+                if (evaluation.Patient.PatientType == "OPD")
                 {
-                    return NotFound("ไม่พบข้อมูลการประเมิน");
+                    new Canvas(canvas, pageSize)
+                        .ShowTextAligned(new Paragraph("✖︎").SetFontSize(8).SetFont(emojiFont), 382, 763, TextAlignment.LEFT);
+                }
+                else
+                {
+                    new Canvas(canvas, pageSize)
+                        .ShowTextAligned(new Paragraph("✖︎").SetFontSize(8).SetFont(emojiFont), 416, 763, TextAlignment.LEFT);
                 }
 
-                decimal calculatedScore = 0;
-                string interpreterName = "";
-                string interpreterText = "";
+                var scores = evaluation.Form.Questions
+                            .OrderBy(q => q.QuestionID)
+                            .Select(q => evaluation.EvaluationDetails
+                                .FirstOrDefault(ed => ed.QuestionID == q.QuestionID)?.Score ?? 0)
+                            .ToList();
 
-                if (evaluation.EvaluationDetails?.Any() == true && evaluation.Form != null)
+                var x = 219;
+                var y = 714;
+
+                var xoffset = 71;
+                var yoffset = -57;
+                var question = 0;
+                var addOffset = 0;
+
+                foreach (var score in scores)
                 {
-                    var scores = evaluation.EvaluationDetails.Where(ed => ed.Score.HasValue).Select(ed => ed.Score!.Value).ToList();
-                    if (scores.Any())
+                    if (question > 1)
                     {
-                        calculatedScore = evaluation.Form.Scoring?.ToLower() switch
-                        {
-                            "max" => scores.Max(),
-                            "min" => scores.Min(),
-                            "sum" => scores.Sum(),
-                            _ => scores.Sum()
-                        };
-
-                        // ใช้ข้อมูลจาก evaluation ที่เก็บไว้แล้ว
-                        interpreterName = evaluation.Result ?? "";
-                        interpreterText = evaluation.ResultDetail ?? "";
+                        addOffset = -24;
                     }
+                    new Canvas(canvas, pageSize)
+                        .ShowTextAligned(new Paragraph("✖︎").SetFontSize(8).SetFont(emojiFont), x + (xoffset * score), (y + (yoffset * question)) + addOffset, TextAlignment.LEFT);
+                    question++;
                 }
 
-                using var stream = new MemoryStream();
-                var writer = new PdfWriter(stream);
-                var pdf = new PdfDocument(writer);
-                var document = new Document(pdf, PageSize.A4);
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph($"{evaluation.User?.FirstName} {evaluation.User?.LastName}    {evaluation.RecordDate:dd   MM  yyyy}").SetFontSize(14).SetFont(thaiFont).SetFontColor(ColorConstants.BLUE), 378, 316, TextAlignment.LEFT);
 
-                try
+
+                document.Close();
+                backgroundPdf.Close();
+                reader.Close();
+
+                var fileName = $"Evaluation_{evaluation.Patient.HN}_{evaluation.RecordDate:yyyyMMdd_HHmm}.pdf";
+                return File(stream.ToArray(), "application/pdf", fileName);
+            } else if (evaluation.Form.FormType == 2) {
+                string modbarBackgroundPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdf", "modbar.pdf");
+                MemoryStream stream = new MemoryStream();
+                PdfWriter writer = new PdfWriter(stream);
+                PdfDocument pdf = new PdfDocument(writer);
+
+                PdfReader reader = new PdfReader(modbarBackgroundPath);
+                PdfDocument backgroundPdf = new PdfDocument(reader);
+
+                PdfFormXObject backgroundPage = backgroundPdf.GetPage(1).CopyAsFormXObject(pdf);
+
+                PageSize pageSize = new PageSize(backgroundPdf.GetPage(1).GetPageSize());
+                PdfPage page = pdf.AddNewPage(pageSize);
+
+                PdfCanvas canvas = new PdfCanvas(page);
+
+                canvas.AddXObject(backgroundPage);
+
+                Document document = new Document(pdf);
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph("HN ................").SetFontSize(14).SetFont(thaiBoldFont), 72, 754, TextAlignment.LEFT);
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph("ชื่อผู้ป่วย-นามสกุล ...................................... ").SetFontSize(14).SetFont(thaiBoldFont), 128, 754, TextAlignment.LEFT);
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph("🔲  🔲").SetFontSize(10).SetFont(emojiFont), 294, 759, TextAlignment.LEFT);
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph("OPD      WARD ").SetFontSize(14).SetFont(thaiBoldFont), 308, 754, TextAlignment.LEFT);
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph("ผู้ประเมิน/วันที่ประเมิน .....................................").SetFontSize(14).SetFont(thaiBoldFont), 376, 754, TextAlignment.LEFT);
+
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph($"{(evaluation.Patient!.HN).Substring(2)}").SetFontSize(14).SetFont(thaiFont).SetFontColor(ColorConstants.BLUE), 89, 757, TextAlignment.LEFT);
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph($"{evaluation.Patient.Title?.TitleName}{evaluation.Patient.FirstName} {evaluation.Patient.LastName}").SetFontSize(14).SetFont(thaiFont).SetFontColor(ColorConstants.BLUE), 203, 757, TextAlignment.LEFT);
+
+                if (evaluation.Patient.PatientType == "OPD")
                 {
-                    document.SetMargins(50, 40, 50, 40); // top, right, bottom, left
+                    new Canvas(canvas, pageSize)
+                        .ShowTextAligned(new Paragraph("✖︎").SetFontSize(8).SetFont(emojiFont), 295, 760, TextAlignment.LEFT);
+                }
+                else
+                {
+                    new Canvas(canvas, pageSize)
+                        .ShowTextAligned(new Paragraph("✖︎").SetFontSize(8).SetFont(emojiFont), 333, 760, TextAlignment.LEFT);
+                }
 
-                    PdfFont thaiFont;
-                    try
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph($"{evaluation.User?.FirstName}  ({evaluation.RecordDate:dd/MM/yyyy})").SetFontSize(14).SetFont(thaiFont).SetFontColor(ColorConstants.BLUE), 471, 757, TextAlignment.LEFT);
+
+                var scores = evaluation.Form.Questions
+                        .OrderBy(q => q.QuestionID)
+                        .Select(q => evaluation.EvaluationDetails
+                            .FirstOrDefault(ed => ed.QuestionID == q.QuestionID)?.Score ?? 0)
+                        .ToList();
+                var positions = new Dictionary<(int question, double score), (float x, float y)>
                     {
-                        var possibleFonts = new[]
-                        {
-                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "THSarabunNew.ttf"),
-                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "thsarabunnew.ttf"),
-                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "ARIALUNI.TTF"),
-                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "tahoma.ttf"),
-                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "Tahoma.ttf"),
-                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "arial.ttf"),
-                            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "Arial.ttf")
-                        };
+                        {(1, 0), (49, 727)},
+                        {(1, 1), (49, 712)},
+                        {(1, 2), (49, 682)},
+                        {(1, 3), (49, 668)},
 
-                        thaiFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
-                        
-                        foreach (var fontPath in possibleFonts)
-                        {
-                            if (System.IO.File.Exists(fontPath))
-                            {
-                                try
-                                {
-                                    thaiFont = PdfFontFactory.CreateFont(fontPath, "Identity-H");
-                                    break;
-                                }
-                                catch
-                                {
-                                    continue;
-                                }
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        thaiFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
-                    }
+                        {(2, 0), (49, 625)},
+                        {(2, 1), (49, 610)},
+                        {(2, 2), (49, 595)},
+                        {(2, 3), (49, 565)},
 
-                    document.SetFont(thaiFont).SetFontSize(16);
+                        {(3, 0), (49, 522)},
+                        {(3, 1), (49, 507)},
+                        {(3, 2), (311, 522)},
+                        {(3, 3), (311, 507)},
 
-                    var headerText = new Paragraph("รายงานผลการประเมิน")
-                        .SetTextAlignment(TextAlignment.CENTER)
-                        .SetFontSize(14)
-                        .SetMarginBottom(10);
-                    document.Add(headerText);
-
-                    var subHeaderText = new Paragraph(evaluation.Form?.FormName ?? "")
-                        .SetTextAlignment(TextAlignment.CENTER)
-                        .SetFontSize(12)
-                        .SetMarginBottom(20);
-                    document.Add(subHeaderText);
-
-                    // Patient Information
-                    document.Add(new Paragraph("ข้อมูลผู้ป่วย")
-                        .SetFontSize(12)
-                        .SetMarginBottom(10));
-
-                    document.Add(new Paragraph($"HN: {evaluation.Patient?.HN ?? ""}")
-                        .SetFontSize(12)
-                        .SetMarginLeft(20));
-                    document.Add(new Paragraph($"ชื่อ-นามสกุล: {evaluation.Patient?.Title?.TitleName}{evaluation.Patient?.FirstName} {evaluation.Patient?.LastName}")
-                        .SetFontSize(12)
-                        .SetMarginLeft(20));
-                    document.Add(new Paragraph($"ประเภทผู้ป่วย: {evaluation.Patient?.PatientType ?? ""}")
-                        .SetFontSize(12)
-                        .SetMarginLeft(20));
-                    
-                    if (evaluation.Patient?.BirthDate.HasValue == true)
-                    {
-                        document.Add(new Paragraph($"วันเกิด: {evaluation.Patient.BirthDate.Value:dd/MM/yyyy}")
-                            .SetFontSize(12)
-                            .SetMarginLeft(20));
-                    }
-
-                    document.Add(new Paragraph("\n"));
-
-                    document.Add(new Paragraph("ข้อมูลการประเมิน")
-                        .SetFontSize(12)
-                        .SetMarginBottom(10));
-
-                    document.Add(new Paragraph($"แบบประเมิน: {evaluation.Form?.FormName ?? ""}")
-                        .SetFontSize(12)
-                        .SetMarginLeft(20));
-                    
-                    var formTypeText = evaluation.Form?.FormType switch
-                    {
-                        1 => "แบบประเมินทั่วไป",
-                        2 => "แบบประเมินแจงรายละเอียด",
-                        3 => "แบบประเมินชุดคำถาม",
-                        _ => "ไม่ระบุ"
+                        {(4, 0), (49, 479)},
+                        {(4, 1), (49, 449)},
+                        {(4, 2), (49, 434)},
+                        {(4, 3), (49, 390)},
+                        {(4, 4), (49, 361)},
+                        {(4, 5), (49, 332)},
                     };
-                    document.Add(new Paragraph($"ประเภท: {formTypeText}")
-                        .SetFontSize(12)
-                        .SetMarginLeft(20));
-                    document.Add(new Paragraph($"วันที่ประเมิน: {evaluation.RecordDate:dd/MM/yyyy HH:mm}")
-                        .SetFontSize(12)
-                        .SetMarginLeft(20));
-                    document.Add(new Paragraph($"ผู้ประเมิน: {evaluation.User?.Title?.TitleName}{evaluation.User?.FirstName} {evaluation.User?.LastName}")
-                        .SetFontSize(12)
-                        .SetMarginLeft(20));
 
-                    document.Add(new Paragraph("รายละเอียดคำตอบ")
-                        .SetFontSize(12)
-                        .SetMarginBottom(10));
+                int question = 1;
+                int total = 0;
 
-                    if (evaluation.EvaluationDetails?.Any() == true)
+                foreach (var score in scores)
+                {
+                    if (positions.TryGetValue((question, score), out var pos))
                     {
-                        if (evaluation.Form?.FormType == 3)
-                        {
-                         
-                            var groupedQuestions = evaluation.EvaluationDetails
-                                .Where(d => d.Question != null)
-                                .GroupBy(d => d.Question!.Section ?? "ทั่วไป")
-                                .OrderBy(g => g.Key);
+                        new Canvas(canvas, pageSize)
+                            .ShowTextAligned(
+                                new Paragraph("🌕").SetFontSize(12).SetFont(emojiFont).SetFontColor(ColorConstants.RED),
+                                pos.x, pos.y, TextAlignment.LEFT);
+                    }
+                    total += score;
+                    question++;
+                }
 
-                            int globalQuestionIndex = 0;
-                            
-                            foreach (var group in groupedQuestions)
-                            {
-                                document.Add(new Paragraph(group.Key)
-                                    .SetFontSize(12)
-                                    .SetMarginTop(15)
-                                    .SetMarginBottom(10));
-                                
-                                foreach (var detail in group.OrderBy(d => d.Question!.QuestionID))
-                                {
-                                    globalQuestionIndex++;
-                                    var question = detail.Question!;
-                                    var selectedOption = question.Options.FirstOrDefault(o => o.Value == detail.Score);
-                                    
-                                    document.Add(new Paragraph($"คำถามที่ {globalQuestionIndex}")
-                                        .SetMarginTop(10));
-                                        
-                                    document.Add(new Paragraph(question.QuestionText ?? "")
-                                        .SetMarginBottom(5)
-                                        .SetMarginLeft(20));
-                                    
-                                    if (selectedOption != null)
-                                    {
-                                        document.Add(new Paragraph($"ตอบ: {selectedOption.OptionText} ({detail.Score} คะแนน)")
-                                            .SetFontSize(12)
-                                            .SetMarginLeft(40));
-                                    }
-                                    else
-                                    {
-                                        document.Add(new Paragraph($"คะแนน: {detail.Score}")
-                                            .SetFontSize(12)
-                                            .SetMarginLeft(40));
-                                    }
-                                }
-                            }
-                        }
-                        else
+                int q4Score = total > 5 ? 5 : total;
+                if (positions.TryGetValue((4, q4Score), out var q4Pos))
+                {
+                    new Canvas(canvas, pageSize)
+                        .ShowTextAligned(new Paragraph("🌕").SetFontSize(12).SetFont(emojiFont).SetFontColor(ColorConstants.RED),
+                            q4Pos.x, q4Pos.y, TextAlignment.LEFT);
+                }
+
+                document.Close();
+                backgroundPdf.Close();
+                reader.Close();
+
+                var fileName = $"Evaluation_{evaluation.Patient.HN}_{evaluation.RecordDate:yyyyMMdd_HHmm}.pdf";
+                return File(stream.ToArray(), "application/pdf", fileName);
+            } else if (evaluation.Form.FormType == 3){
+                string modaimsBackgroundPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdf", "modaims.pdf");
+                MemoryStream stream = new MemoryStream();
+                PdfWriter writer = new PdfWriter(stream);
+                PdfDocument pdf = new PdfDocument(writer);
+
+                PdfReader reader = new PdfReader(modaimsBackgroundPath);
+                PdfDocument backgroundPdf = new PdfDocument(reader);
+
+                PdfFormXObject backgroundPage = backgroundPdf.GetPage(1).CopyAsFormXObject(pdf);
+
+                PageSize pageSize = new PageSize(backgroundPdf.GetPage(1).GetPageSize());
+                PdfPage page = pdf.AddNewPage(pageSize);
+
+                PdfCanvas canvas = new PdfCanvas(page);
+
+                canvas.AddXObject(backgroundPage);
+
+                Document document = new Document(pdf);
+
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph($"{(evaluation.Patient!.HN).Substring(2)}").SetFontSize(14).SetFont(thaiFont).SetFontColor(ColorConstants.BLUE), 100, 704, TextAlignment.LEFT);
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph($"{evaluation.Patient.Title?.TitleName}{evaluation.Patient.FirstName} {evaluation.Patient.LastName}").SetFontSize(14).SetFont(thaiFont).SetFontColor(ColorConstants.BLUE), 250, 704, TextAlignment.LEFT);
+
+                if (evaluation.Patient.PatientType != "OPD")
+                {
+                    new Canvas(canvas, pageSize)
+                        .ShowTextAligned(new Paragraph("✖︎").SetFontSize(8).SetFont(emojiFont), 398, 708, TextAlignment.LEFT);
+                }
+                else
+                {
+                    new Canvas(canvas, pageSize)
+                        .ShowTextAligned(new Paragraph("✖︎").SetFontSize(8).SetFont(emojiFont), 445, 708, TextAlignment.LEFT);
+                }
+
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph($"{evaluation.User?.FirstName} {evaluation.User?.LastName}").SetFontSize(14).SetFont(thaiFont).SetFontColor(ColorConstants.BLUE), 479, 649, TextAlignment.LEFT);
+
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph($"{evaluation.RecordDate:dd / MM / yyyy}").SetFontSize(14).SetFont(thaiFont).SetFontColor(ColorConstants.BLUE), 491, 613, TextAlignment.LEFT);
+
+                var scores = evaluation.Form.Questions
+                        .OrderBy(q => q.QuestionID)
+                        .Select(q => evaluation.EvaluationDetails
+                            .FirstOrDefault(ed => ed.QuestionID == q.QuestionID)?.Score ?? 0)
+                        .ToList();
+
+                int posX = 459;
+                int posY = 593;
+
+                int question = 0;
+                int x_offset = 22;
+                int y_offset = -20;
+                int addOffset = 0;
+                int totalScore = 0;
+
+                foreach (var score in scores)
+                {
+                    if (question == 1 || question == 4 || question == 6) // 2
+                    {
+                        addOffset += y_offset;
+                        new Canvas(canvas, pageSize)
+                            .ShowTextAligned(
+                                new Paragraph("🌕").SetFontSize(12).SetFont(emojiFont).SetFontColor(ColorConstants.RED),
+                                posX + (score * x_offset), posY + ((question * y_offset) + addOffset), TextAlignment.LEFT);
+                    }
+                    else if (question == 5) // 3
+                    {
+                        addOffset += y_offset * 2;
+                        new Canvas(canvas, pageSize)
+                            .ShowTextAligned(
+                                new Paragraph("🌕").SetFontSize(12).SetFont(emojiFont).SetFontColor(ColorConstants.RED),
+                                posX + (score * x_offset), posY + ((question * y_offset) + addOffset), TextAlignment.LEFT);
+                    }
+                    else if (question < 10) // 1
+                    {
+                        new Canvas(canvas, pageSize)
+                            .ShowTextAligned(
+                                new Paragraph("🌕").SetFontSize(12).SetFont(emojiFont).SetFontColor(ColorConstants.RED),
+                                posX + (score * x_offset), posY + ((question * y_offset) + addOffset), TextAlignment.LEFT);
+                    }
+
+                    if (question < 7)
+                    {
+                        totalScore += score;
+                    }
+
+                    if (question == 10 || question == 11)
+                    {
+                        int x = 0, y = 0;
+
+                        if (question == 10)
                         {
-                            int questionIndex = 0;
-                            foreach (var detail in evaluation.EvaluationDetails.Where(d => d.Question != null).OrderBy(d => d.Question!.QuestionID))
+                            y = 199;
+                            x = (score == 1) ? 463 : 520;
+                        }
+                        else if (question == 11)
+                        {
+                            y = 178;
+                            x = (score == 1) ? 463 : 520;
+                        }
+
+                        new Canvas(canvas, pageSize)
+                            .ShowTextAligned(
+                                new Paragraph("🌕")
+                                    .SetFontSize(12)
+                                    .SetFont(emojiFont)
+                                    .SetFontColor(ColorConstants.RED),
+                                x, y, TextAlignment.LEFT);
+                    }
+                    question++;
+                }
+
+                new Canvas(canvas, pageSize)
+                    .ShowTextAligned(new Paragraph($"รวมได้ {totalScore} คะแนน").SetFontSize(15).SetFont(thaiBoldFont).SetFontColor(ColorConstants.BLUE), 471, 153, TextAlignment.LEFT);
+
+                document.Close();
+                backgroundPdf.Close();
+                reader.Close();
+
+                var fileName = $"Evaluation_{evaluation.Patient.HN}_{evaluation.RecordDate:yyyyMMdd_HHmm}.pdf";
+                return File(stream.ToArray(), "application/pdf", fileName);
+            } else {
+                    try {
+                        using var stream = new MemoryStream();
+                        var writer = new PdfWriter(stream);
+                        var pdf = new PdfDocument(writer);
+                        var document = new Document(pdf, PageSize.A4);
+
+                        // Header
+                        var headerParagraph = new Paragraph("แบบประเมินการเคลื่อนไหวผิดปกติจากการรักษายาโรคจิต")
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetFontSize(12)
+                            .SetMargin(0)
+                            .SetFont(thaiBoldFont);
+                        document.Add(headerParagraph);
+
+                        var subHeaderParagraph = new Paragraph("Modified Simpson-Angus Rating Scale (Mod-SAS) สำหรับ Parkinsonism และ EPS อื่นๆ")
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetFontSize(12)
+                            .SetMargin(0)
+                            .SetFont(thaiBoldFont);
+                        document.Add(subHeaderParagraph);
+
+                        // Patient info section
+                        var patientInfo = new Paragraph()
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .Add($"HN {evaluation.Patient!.HN}")
+                            .Add("   ") // Spacing
+                            .Add($"ชื่อผู้ป่วย-นามสกุล {evaluation.Patient.Title?.TitleName}{evaluation.Patient.FirstName} {evaluation.Patient.LastName}")
+                            .Add("   ") // Spacing
+                            .Add("☐ OPD ☐ WARD")
+                            .SetFontSize(10)
+                            .SetMargin(0)
+                            .SetFont(thaiBoldFont);
+                        document.Add(patientInfo);
+
+                        // Create main table
+                        float[] columnWidths = { 6f, 2f, 2f, 2f, 2f, 2f };
+                        var table = new Table(columnWidths);
+                        table.SetWidth(UnitValue.CreatePercentValue(100));
+
+                        // First header row - "คะแนน" merged across score columns
+                        var testHeaderCell = new Cell(2, 1).Add(new Paragraph("การทดสอบ")
+                            .SetFontSize(11) // เพิ่มขนาดฟอนต์
+                            .SetMargin(0)
+                            .SetMultipliedLeading(0.8f))
+                            .SetFont(thaiBoldFont)
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                            .SetBackgroundColor(ColorConstants.WHITE)
+                            .SetBorder(new SolidBorder(1))
+                            .SetPadding(3);
+                        table.AddHeaderCell(testHeaderCell);
+
+                        var scoreHeaderCell = new Cell(1, 5).Add(new Paragraph("คะแนน")
+                            .SetFontSize(11)
+                            .SetMargin(0)
+                            .SetMultipliedLeading(0.8f))
+                            .SetFont(thaiBoldFont)
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                            .SetBackgroundColor(ColorConstants.WHITE)
+                            .SetBorder(new SolidBorder(1))
+                            .SetPadding(3);
+                        table.AddHeaderCell(scoreHeaderCell);
+
+                        var scoreCell0 = new Cell().Add(new Paragraph("0")
+                            .SetFontSize(11)
+                            .SetMargin(0)
+                            .SetMultipliedLeading(0.8f))
+                            .SetFont(thaiBoldFont)
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                            .SetBackgroundColor(ColorConstants.WHITE)
+                            .SetBorder(new SolidBorder(1))
+                            .SetPadding(3);
+                        table.AddHeaderCell(scoreCell0);
+                        var scoreCell1 = new Cell().Add(new Paragraph("1")
+                            .SetFontSize(11)
+                            .SetMargin(0)
+                            .SetMultipliedLeading(0.8f))
+                            .SetFont(thaiBoldFont)
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                            .SetBackgroundColor(ColorConstants.WHITE)
+                            .SetBorder(new SolidBorder(1))
+                            .SetPadding(3);
+                        table.AddHeaderCell(scoreCell1);
+                        var scoreCell2 = new Cell().Add(new Paragraph("2")
+                            .SetFontSize(11)
+                            .SetMargin(0)
+                            .SetMultipliedLeading(0.8f))
+                            .SetFont(thaiBoldFont)
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                            .SetBackgroundColor(ColorConstants.WHITE)
+                            .SetBorder(new SolidBorder(1))
+                            .SetPadding(3);
+                        table.AddHeaderCell(scoreCell2);
+                        var scoreCell3 = new Cell().Add(new Paragraph("3")
+                            .SetFontSize(11)
+                            .SetMargin(0)
+                            .SetMultipliedLeading(0.8f))
+                            .SetFont(thaiBoldFont)
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                            .SetBackgroundColor(ColorConstants.WHITE)
+                            .SetBorder(new SolidBorder(1))
+                            .SetPadding(3);
+                        table.AddHeaderCell(scoreCell3);
+                        var scoreCell4 = new Cell().Add(new Paragraph("4")
+                            .SetFontSize(11)
+                            .SetMargin(0)
+                            .SetMultipliedLeading(0.8f))
+                            .SetFont(thaiBoldFont)
+                            .SetTextAlignment(TextAlignment.CENTER)
+                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                            .SetBackgroundColor(ColorConstants.WHITE)
+                            .SetBorder(new SolidBorder(1))
+                            .SetPadding(3);
+                        table.AddHeaderCell(scoreCell4);
+
+                        // Add question rows
+                        var questions = evaluation.Form.Questions.OrderBy(q => q.QuestionID).ToList();
+                        for (int i = 0; i < questions.Count; i++)
+                        {
+                            var question = questions[i];
+                            var detail = evaluation.EvaluationDetails?.FirstOrDefault(ed => ed.QuestionID == question.QuestionID);
+                            var selectedScore = detail?.Score ?? 0;
+
+                            // Question text cell
+                            string questionText = GetQuestionDisplayText(i + 1, question.QuestionText);
+                            var questionCell = CreateCell(questionText, thaiFont, false);
+                            questionCell.SetFontSize(10); // ขนาด font สำหรับคำถาม
+                            questionCell.SetVerticalAlignment(VerticalAlignment.TOP); // ชิดขอบบน
+                            table.AddCell(questionCell);
+
+                            // Score cells with checkboxes
+                            for (int score = 0; score <= 4; score++)
                             {
-                                questionIndex++;
-                                var question = detail.Question!;
-                                var selectedOption = question.Options.FirstOrDefault(o => o.Value == detail.Score);
-                                
-                                document.Add(new Paragraph($"คำถามที่ {questionIndex}")
-                                    .SetFontSize(12)
-                                    .SetMarginTop(10));
-                                    
-                                document.Add(new Paragraph(question.QuestionText ?? "")
-                                    .SetFontSize(12)
-                                    .SetMarginBottom(5)
-                                    .SetMarginLeft(20));
-                                
-                                if (selectedOption != null)
+                                string checkMark = selectedScore == score ? "☐" : "☐";
+                                var scoreText = "";
+
+                                if (score == 0)
                                 {
-                                    document.Add(new Paragraph($"ตอบ: {selectedOption.OptionText} ({detail.Score} คะแนน)")
-                                        .SetFontSize(12)
-                                        .SetMarginLeft(40));
+                                    scoreText = $"{checkMark} ปกติ";
                                 }
                                 else
                                 {
-                                    document.Add(new Paragraph($"คะแนน: {detail.Score}")
-                                        .SetFontSize(12)
-                                        .SetMarginLeft(40));
+                                    // Get option text for this score
+                                    var option = question.Options.FirstOrDefault(o => o.Value == score);
+                                    if (option != null && !string.IsNullOrEmpty(option.OptionText))
+                                    {
+                                        scoreText = $"{checkMark} {option.OptionText}";
+                                    }
+                                    else
+                                    {
+                                        scoreText = checkMark;
+                                    }
                                 }
+
+                                var cell = CreateCell(scoreText, thaiFont, false);
+                                cell.SetFontSize(10);
+                                cell.SetTextAlignment(TextAlignment.LEFT);
+                                cell.SetVerticalAlignment(VerticalAlignment.TOP);
+                                cell.SetMargin(0);
+                                cell.SetPadding(3);
+                                table.AddCell(cell);
                             }
                         }
+
+                        document.Add(table);
+
+                        // Add summary section
+                        document.Add(new Paragraph(" ").SetFontSize(10));
+
+                        var summaryTitle = new Paragraph("สรุปผลการประเมิน")
+                            .SetFontSize(12)
+                            .SetFont(thaiFont);
+                        document.Add(summaryTitle);
+
+                        var resultParagraph = new Paragraph()
+                            .Add($"ผลการประเมิน: {evaluation.Result}")
+                            .SetFontSize(10);
+                        document.Add(resultParagraph);
+
+                        if (!string.IsNullOrEmpty(evaluation.ResultDetail))
+                        {
+                            var detailParagraph = new Paragraph()
+                                .Add($"รายละเอียด: {evaluation.ResultDetail}")
+                                .SetFontSize(10);
+                            document.Add(detailParagraph);
+                        }
+
+                        // Add evaluation info
+                        document.Add(new Paragraph(" ").SetFontSize(10));
+                        var evaluationInfo = new Paragraph()
+                            .Add($"วันที่ประเมิน: {evaluation.RecordDate:dd/MM/yyyy HH:mm}")
+                            .Add("\n")
+                            .Add($"ผู้ประเมิน: {evaluation.User?.Title?.TitleName}{evaluation.User?.FirstName} {evaluation.User?.LastName}")
+                            .SetFontSize(10);
+                        document.Add(evaluationInfo);
+                        document.Close();
+
+                        var fileName = $"Evaluation_{evaluation.Patient.HN}_{evaluation.RecordDate:yyyyMMdd_HHmm}.pdf";
+                        return File(stream.ToArray(), "application/pdf", fileName);
                     }
-
-                    // Results
-                    document.Add(new Paragraph("\n"));
-                    document.Add(new Paragraph("ผลการประเมิน")
-                        .SetFontSize(12)
-                        .SetMarginTop(20)
-                        .SetMarginBottom(10));
-
-                    document.Add(new Paragraph($"ระดับความรุนแรง: {interpreterName ?? evaluation.Result ?? "ไม่ระบุ"}")
-                        .SetFontSize(12)
-                        .SetMarginLeft(20));
-
-                    if (!string.IsNullOrEmpty(interpreterText))
+                    catch (Exception ex)
                     {
-                        document.Add(new Paragraph("แนวทางปฏิบัติ:")
-                            .SetFontSize(12)
-                            .SetMarginTop(10)
-                            .SetMarginLeft(20));
-                        document.Add(new Paragraph(interpreterText)
-                            .SetFontSize(12)
-                            .SetMarginLeft(40));
+                        return BadRequest($"เกิดข้อผิดพลาดในการสร้าง PDF: {ex.Message}");
                     }
-
-                    document.Add(new Paragraph($"\n\nสร้างรายงานเมื่อ {DateTime.Now:dd/MM/yyyy HH:mm:ss}")
-                        .SetTextAlignment(TextAlignment.CENTER)
-                        .SetFontSize(12)
-                        .SetMarginTop(30));
-                    document.Add(new Paragraph("ระบบประเมินผู้ป่วย")
-                        .SetTextAlignment(TextAlignment.CENTER)
-                        .SetFontSize(12)
-                        .SetFontSize(10));
-
-                    document.Close();
-
-                    var fileName = $"report_{evaluation.Patient?.HN}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
-                    return File(stream.ToArray(), "application/pdf", fileName);
-                }
-                catch (Exception ex)
-                {
-                    document.Close();
-                    return BadRequest($"เกิดข้อผิดพลาดในการสร้าง PDF: {ex.Message}");
                 }
             }
-
-            [HttpGet]
-            public async Task<IActionResult> ExportEvaluationPDF2(int evaId)
+            
+            private Cell CreateHeaderCell(string content, PdfFont font)
             {
-                var evaluation = await _db.Evaluation
-                    .Include(e => e.Patient)
-                        .ThenInclude(p => p!.Title)
-                    .Include(e => e.Form)
-                        .ThenInclude(f => f!.Questions)
-                        .ThenInclude(q => q.Options)
-                    .Include(e => e.EvaluationDetails)
-                        .ThenInclude(ed => ed.Question)
-                        .ThenInclude(q => q!.Options)
-                    .FirstOrDefaultAsync(e => e.EvaID == evaId && e.Form!.FormType == 1);
+                var paragraph = new Paragraph(content)
+                    .SetFont(font)
+                    .SetFontSize(11) // เพิ่มขนาดฟอนต์เล็กน้อยเพื่อดูหนา
+                    .SetMargin(0)
+                    .SetMultipliedLeading(0.6f); // ลดระยะห่างบรรทัดให้น้อยลง
 
-                if (evaluation == null)
-                    return NotFound("ไม่พบข้อมูลการประเมิน หรือไม่ใช่แบบฟอร์มประเภทที่ 1");
-
-                using var stream = new MemoryStream();
-                var writer = new PdfWriter(stream);
-                var pdf = new PdfDocument(writer);
-                var document = new Document(pdf, PageSize.A4);
-                document.SetMargins(40, 30, 40, 30);
-
-                PdfFont thaiFont;
-                var fontPaths = new[]
-                {
-                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "THSarabunNew.ttf"),
-                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "thsarabunnew.ttf"),
-                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "Tahoma.ttf"),
-                    System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "tahoma.ttf")
-                };
-                
-                thaiFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
-                foreach (var fontPath in fontPaths)
-                {
-                    if (System.IO.File.Exists(fontPath))
-                    {
-                        try
-                        {
-                            thaiFont = PdfFontFactory.CreateFont(fontPath, "Identity-H");
-                            break;
-                        }
-                        catch
-                        {
-                            continue;
-                        }
-                    }
-                }
-
-                document.SetFont(thaiFont).SetFontSize(12);
-
-                document.Add(new Paragraph("แบบประเมินอาการเคลื่อนไหวผิดปกติจากการรักษาโรคจิต")
+                return new Cell()
+                    .Add(paragraph)
+                    .SetFont(font)
                     .SetTextAlignment(TextAlignment.CENTER)
-                    .SetFontSize(16)
-                    .SetMarginBottom(5));
+                    .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                    .SetBackgroundColor(ColorConstants.LIGHT_GRAY)
+                    .SetBorder(new SolidBorder(1))
+                    .SetPadding(3);
+            }
 
-                document.Add(new Paragraph("Modified Simpson-Angus Rating Scale (Mod-SAS) สำหรับ Parkinsonism และ EPS อื่นๆ")
-                    .SetTextAlignment(TextAlignment.CENTER)
-                    .SetFontSize(12)
-                    .SetMarginBottom(15));
+            private Cell CreateCell(string content, PdfFont font, bool isBold = false)
+            {
+                var paragraph = new Paragraph(content)
+                    .SetFont(font)
+                    .SetFontSize(8) // ขนาด font เริ่มต้น
+                    .SetMargin(0) // ลบ margin
+                    .SetMultipliedLeading(0.8f); // ลดระยะห่างบรรทัดให้น้อยลง
 
-                var patientTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 3, 1, 3 }))
-                    .UseAllAvailableWidth();
-                patientTable.AddCell(new Cell().Add(new Paragraph("HN").SetFont(thaiFont)));
-                patientTable.AddCell(new Cell().Add(new Paragraph(evaluation.Patient?.HN ?? "")));
-                patientTable.AddCell(new Cell().Add(new Paragraph("ชื่อ-นามสกุล").SetFont(thaiFont)));
-                patientTable.AddCell(new Cell().Add(new Paragraph($"{evaluation.Patient?.Title?.TitleName}{evaluation.Patient?.FirstName} {evaluation.Patient?.LastName}")));
-                document.Add(patientTable);
+                return new Cell()
+                    .Add(paragraph)
+                    .SetBorder(new SolidBorder(1))
+                    .SetVerticalAlignment(VerticalAlignment.TOP) // ชิดขอบบน
+                    .SetTextAlignment(TextAlignment.LEFT)
+                    .SetPadding(3); // เพิ่ม padding เล็กน้อย
+            }
 
-                var infoTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 2 }))
-                    .UseAllAvailableWidth()
-                    .SetMarginTop(5);
-                infoTable.AddCell(new Cell().Add(new Paragraph("ประเภทผู้ป่วย").SetFont(thaiFont)));
-                infoTable.AddCell(new Cell().Add(new Paragraph(evaluation.Patient?.PatientType ?? "")));
-                infoTable.AddCell(new Cell().Add(new Paragraph("วันที่ประเมิน").SetFont(thaiFont)));
-                infoTable.AddCell(new Cell().Add(new Paragraph(evaluation.RecordDate.ToString("dd/MM/yyyy HH:mm"))));
-                document.Add(infoTable);
-
-                document.Add(new Paragraph("\n"));
-
-                var questionTable = new Table(UnitValue.CreatePercentArray(new float[] { 3, 1, 1, 1, 1, 1 }))
-                    .UseAllAvailableWidth();
-
-                questionTable.AddHeaderCell(new Cell().Add(new Paragraph("การทดสอบ").SetFont(thaiFont)));
-                for (int i = 0; i <= 4; i++)
-                    questionTable.AddHeaderCell(new Cell().Add(new Paragraph(i.ToString()).SetTextAlignment(TextAlignment.CENTER)));
-
-                var sortedDetails = evaluation.EvaluationDetails?
-                    .Where(d => d.Question != null)
-                    .OrderBy(d => d.Question!.QuestionID)
-                    .ToList() ?? new List<EvaluationDetail>();
-
-                foreach (var detail in sortedDetails)
-                {
-                    var questionText = detail.Question?.QuestionText ?? "ไม่พบคำถาม";
-                    int score = (int)(detail.Score ?? 0);
-
-                    questionTable.AddCell(new Cell().Add(new Paragraph(questionText).SetFontSize(10)));
-
-                    for (int i = 0; i <= 4; i++)
-                    {
-                        string mark = (i == score) ? "o" : " ";
-                        questionTable.AddCell(new Cell().Add(new Paragraph(mark).SetTextAlignment(TextAlignment.CENTER)));
-                    }
-                }
-
-                document.Add(questionTable.SetMarginTop(10));
-
-                decimal totalScore = 0;
-                if (evaluation.EvaluationDetails?.Any() == true)
-                {
-                    var scores = evaluation.EvaluationDetails.Where(ed => ed.Score.HasValue).Select(ed => ed.Score!.Value).ToList();
-                    if (scores.Any())
-                    {
-                        totalScore = evaluation.Form?.Scoring?.ToLower() switch
-                        {
-                            "max" => scores.Max(),
-                            "min" => scores.Min(),
-                            "sum" => scores.Sum(),
-                            _ => scores.Sum()
-                        };
-                    }
-                }
-
-                // ===== Footer: สรุปผล
-                document.Add(new Paragraph("\nผลการประเมิน")
-                    .SetFontSize(14)
-                    .SetMarginTop(20));
-
-                if (totalScore > 0)
-                {
-                    document.Add(new Paragraph($"คะแนนรวม: {totalScore} คะแนน"));
-                }
-
-                document.Add(new Paragraph($"ผลลัพธ์: {evaluation.Result ?? "ไม่ระบุ"}"));
-
-                document.Add(new Paragraph("\nลายเซ็นผู้ประเมิน ..........................................")
-                    .SetMarginTop(30));
-
-                document.Add(new Paragraph($"วันที่ {DateTime.Now:dd/MM/yyyy HH:mm}")
-                    .SetFontSize(10)
-                    .SetTextAlignment(TextAlignment.RIGHT));
-
-                document.Close();
-
-                var fileName = $"ModSAS_{evaluation.Patient?.HN}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
-                return File(stream.ToArray(), "application/pdf", fileName);
+            private string GetQuestionDisplayText(int questionNumber, string? questionText)
+            {
+                    return $"{questionNumber}. {questionText ?? ""}";
             }
 
             public async Task<IActionResult> Patients()
-            {
-                await SetUserProfileData();
-                ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
-                ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
+        {
+            await SetUserProfileData();
+            ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
+            ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
 
-                var patients = await _db.Patient
-                    .Include(p => p.Title)
-                    .Include(p => p.Treatment)
-                    .Include(p => p.District)
-                        .ThenInclude(d => d!.Amphur)
-                        .ThenInclude(a => a!.Province)
-                    .OrderBy(p => p.HN)
-                    .ToListAsync();
+            var patients = await _db.Patient
+                .Include(p => p.Title)
+                .Include(p => p.Treatment)
+                .Include(p => p.District)
+                    .ThenInclude(d => d!.Amphur)
+                    .ThenInclude(a => a!.Province)
+                .OrderBy(p => p.HN)
+                .ToListAsync();
 
-                return View(patients);
-            }
+            return View(patients);
+        }
 
-            // API Endpoints for Patient Management
             [HttpGet]
             public async Task<IActionResult> GetNextHN()
             {
@@ -721,7 +870,6 @@ namespace Project.Controllers
                 }
                 else
                 {
-                    // Extract number from HN (remove "HN" prefix)
                     var lastNumber = lastPatient.HN.Substring(2);
                     if (int.TryParse(lastNumber, out int number))
                     {
@@ -759,7 +907,7 @@ namespace Project.Controllers
             public async Task<IActionResult> GetProvinces()
             {
                 var provinces = await _db.Province
-                    .Where(p => p.PROVINCE_ID > 0)  // ไม่เอา ID = 0
+                    .Where(p => p.PROVINCE_ID > 0) 
                     .OrderBy(p => p.PROVINCE_NAME)
                     .ToListAsync();
                 return Json(provinces.Select(p => new
@@ -773,7 +921,7 @@ namespace Project.Controllers
             public async Task<IActionResult> GetAmphoes(int id)
             {
                 var amphoes = await _db.Amphur
-                    .Where(a => a.PROVINCE_ID == id && a.AMPHUR_ID > 0)  // ไม่เอา ID = 0
+                    .Where(a => a.PROVINCE_ID == id && a.AMPHUR_ID > 0) 
                     .OrderBy(a => a.AMPHUR_NAME)
                     .ToListAsync();
 
@@ -788,7 +936,7 @@ namespace Project.Controllers
             public async Task<IActionResult> GetTambons(int id)
             {
                 var districts = await _db.District
-                    .Where(d => d.AMPHUR_ID == id && d.DISTRICT_ID > 0)  // ไม่เอา ID = 0
+                    .Where(d => d.AMPHUR_ID == id && d.DISTRICT_ID > 0) 
                     .OrderBy(d => d.DISTRICT_NAME)
                     .ToListAsync();
 
@@ -841,7 +989,6 @@ namespace Project.Controllers
             {
                 try
                 {
-                    // Check if HN already exists
                     var existingPatient = await _db.Patient.FindAsync(model.HN);
                     if (existingPatient != null)
                     {
@@ -909,19 +1056,16 @@ namespace Project.Controllers
                 }
             }
 
-            // Form Management API Actions
             [HttpGet]
             public async Task<IActionResult> GetForms(string search = "", int? formType = null, string status = "")
             {
                 var query = _db.Form.AsQueryable();
 
-                // Apply search filter
                 if (!string.IsNullOrEmpty(search))
                 {
                     query = query.Where(f => f.FormName != null && f.FormName.Contains(search));
                 }
 
-                // Apply form type filter
                 if (formType.HasValue)
                 {
                     query = query.Where(f => f.FormType == formType.Value);
@@ -933,10 +1077,10 @@ namespace Project.Controllers
                     formName = f.FormName,
                     formType = f.FormType,
                     questionCount = f.Questions.Count(),
-                    evaluationCount = f.Evaluations.Count()
+                    evaluationCount = f.Evaluations.Count(),
+                    hasEvaluations = f.Evaluations.Any()
                 }).OrderBy(f => f.formID).ToListAsync();
 
-                // Apply status filter (after data retrieval)
                 if (!string.IsNullOrEmpty(status))
                 {
                     switch (status)
@@ -1040,13 +1184,6 @@ namespace Project.Controllers
             {
                 try
                 {
-                    // Debug logging
-                    Console.WriteLine($"Form Name: {formName}");
-                    Console.WriteLine($"Form Type: {formType}");
-                    Console.WriteLine($"Scoring Method: {scoring}");
-                    Console.WriteLine($"Questions JSON: {questionsJson}");
-                    Console.WriteLine($"Interpreters JSON: {interpretersJson}");
-
                     var existingForm = await _db.Form
                         .FirstOrDefaultAsync(f => f.FormName!.ToLower() == formName.ToLower());
 
@@ -1069,17 +1206,14 @@ namespace Project.Controllers
                                 Questions = new List<Question>()
                             };
 
-                            // Parse questions JSON if provided
                             if (!string.IsNullOrEmpty(questionsJson))
                             {
                                 var questionsData = System.Text.Json.JsonSerializer.Deserialize<List<QuestionData>>(questionsJson);
-                                Console.WriteLine($"Parsed {questionsData?.Count} questions");
 
                                 if (questionsData != null)
                                 {
                                     foreach (var questionData in questionsData)
                                     {
-                                        Console.WriteLine($"Question: {questionData.QuestionText}");
                                         var question = new Question
                                         {
                                             QuestionText = questionData.QuestionText,
@@ -1091,10 +1225,8 @@ namespace Project.Controllers
 
                                         if (questionData.Options != null)
                                         {
-                                            Console.WriteLine($"Adding {questionData.Options.Count} options");
                                             foreach (var optionData in questionData.Options)
                                             {
-                                                Console.WriteLine($"Option: {optionData.OptionText}, Value: {optionData.Value}");
                                                 var option = new Option
                                                 {
                                                     OptionText = optionData.OptionText,
@@ -1110,18 +1242,14 @@ namespace Project.Controllers
                             _db.Form.Add(form);
                             await _db.SaveChangesAsync();
 
-                            // Parse interpreters JSON if provided
                             if (!string.IsNullOrEmpty(interpretersJson))
                             {
                                 var interpretersData = System.Text.Json.JsonSerializer.Deserialize<List<InterpreterData>>(interpretersJson);
-                                Console.WriteLine($"Parsed {interpretersData?.Count} interpreters");
-
+ 
                                 if (interpretersData != null)
                                 {
                                     foreach (var interpreterData in interpretersData)
                                     {
-                                        Console.WriteLine($"Interpreter: Name={interpreterData.InterName}, Text={interpreterData.InterText}, Min={interpreterData.MinScore}, Max={interpreterData.MaxScore}");
-
                                         var interName = string.IsNullOrWhiteSpace(interpreterData.InterName)
                                             ? $"ระดับ {interpreterData.MinScore}-{interpreterData.MaxScore}"
                                             : interpreterData.InterName;
@@ -1146,11 +1274,8 @@ namespace Project.Controllers
                         }
                         catch (Exception ex)
                         {
-                            // Rollback transaction เมื่อเกิดข้อผิดพลาด
                             await transaction.RollbackAsync();
-                            Console.WriteLine($"Transaction Error: {ex.Message}");
-                            Console.WriteLine($"Stack Trace: {ex.StackTrace}");
-                            return Json(new { success = false, message = "เกิดข้อผิดพลาดในการบันทึกข้อมูล" });
+                            return Json(new { success = false, message = $"เกิดข้อผิดพลาดในการบันทึกข้อมูล {ex.Message}" });
                         }
                     }
 
@@ -1158,14 +1283,12 @@ namespace Project.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error: {ex.Message}");
-                    Console.WriteLine($"Stack Trace: {ex.StackTrace}");
                     return Json(new { success = false, message = ex.Message });
                 }
             }
 
             [HttpPost]
-            public async Task<IActionResult> UpdateForm([FromForm] int formId, [FromForm] string formName, [FromForm] int formType, [FromForm] string? scoring, [FromForm] string? questionsJson, [FromForm] string? interpretersJson)
+            public async Task<IActionResult> UpdateForm([FromForm] int formId, [FromForm] string formName, [FromForm] int formType, [FromForm] string? scoring, [FromForm] string? questionsJson, [FromForm] string? interpretersJson, [FromForm] bool forceUpdate = false)
             {
                 try
                 {
@@ -1173,6 +1296,8 @@ namespace Project.Controllers
                         .Include(f => f.Questions)
                             .ThenInclude(q => q.Options)
                         .Include(f => f.Interpreters)
+                        .Include(f => f.Evaluations)
+                            .ThenInclude(e => e.EvaluationDetails)
                         .FirstOrDefaultAsync(f => f.FormID == formId);
 
                     if (form == null)
@@ -1180,7 +1305,13 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ไม่พบแบบประเมิน" });
                     }
 
-                    // Check if name already exists (excluding current form)
+                    // ตรวจสอบว่าเป็นฟอร์มระบบหรือไม่
+                    var systemForms = new[] { "Mod-SAS", "Mod-BARS", "Mod-AIMS" };
+                    if (systemForms.Contains(form.FormName))
+                    {
+                        return Json(new { success = false, message = "ไม่สามารถแก้ไขแบบประเมินระบบได้" });
+                    }
+
                     var existingForm = await _db.Form
                         .FirstOrDefaultAsync(f => f.FormName != null &&
                                                 f.FormName.ToLower() == formName.ToLower() &&
@@ -1191,82 +1322,227 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ชื่อแบบประเมินนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น" });
                     }
 
+                    // ตรวจสอบว่ามีการประเมินแล้วหรือไม่
+                    var questionIds = form.Questions.Select(q => q.QuestionID).ToList();
+                    var evaluatedQuestionIds = new HashSet<int>();
+                    var evaluatedOptionIds = new HashSet<int>();
+
+                    if (form.Evaluations.Any())
+                    {
+                        var evaluationDetails = form.Evaluations
+                            .SelectMany(e => e.EvaluationDetails)
+                            .Where(ed => ed.QuestionID.HasValue)
+                            .ToList();
+
+                        evaluatedQuestionIds = evaluationDetails
+                            .Select(ed => ed.QuestionID!.Value)
+                            .ToHashSet();
+
+                        // หา option ที่เคยถูกใช้ในการประเมิน (ใช้วิธีแยกขั้นตอน)
+                        var evaluationScores = await _db.EvaluationDetail
+                            .Where(ed => ed.QuestionID.HasValue && evaluatedQuestionIds.Contains(ed.QuestionID.Value))
+                            .Select(ed => new { QuestionId = ed.QuestionID!.Value, Score = ed.Score ?? 0 })
+                            .ToListAsync();
+
+                        var allOptions = await _db.Option
+                            .Where(opt => opt.QuestionID.HasValue && evaluatedQuestionIds.Contains(opt.QuestionID.Value))
+                            .ToListAsync();
+
+                        var optionIdList = new List<int>();
+                        foreach (var evalScore in evaluationScores)
+                        {
+                            var matchingOption = allOptions
+                                .FirstOrDefault(opt => opt.QuestionID == evalScore.QuestionId && opt.Value == evalScore.Score);
+                            if (matchingOption != null)
+                            {
+                                optionIdList.Add(matchingOption.OptionID);
+                            }
+                        }
+
+                        evaluatedOptionIds = optionIdList.ToHashSet();
+                    }
+
                     using var transaction = await _db.Database.BeginTransactionAsync();
 
                     try
                     {
-                        // Update form basic info
+                        // อัพเดทข้อมูลพื้นฐานของฟอร์ม
                         form.FormName = formName;
                         form.FormType = formType;
                         form.Scoring = scoring;
 
-                        // Check if any questions are being used in evaluations
-                        var questionIds = form.Questions.Select(q => q.QuestionID).ToList();
-                        var hasEvaluationDetails = await _db.EvaluationDetail
-                            .AnyAsync(ed => ed.QuestionID.HasValue && questionIds.Contains(ed.QuestionID.Value));
-
-                        if (hasEvaluationDetails)
-                        {
-                            await transaction.RollbackAsync();
-                            return Json(new { 
-                                success = false, 
-                                message = "ไม่สามารถแก้ไขแบบประเมินนี้ได้ เนื่องจากมีผู้ป่วยทำการประเมินแล้ว หากต้องการแก้ไข กรุณาสร้างแบบประเมินใหม่" 
-                            });
-                        }
-
-                        // Safe to delete existing questions and options (no evaluation data exists)
-                        foreach (var question in form.Questions.ToList())
-                        {
-                            _db.Option.RemoveRange(question.Options);
-                            _db.Question.Remove(question);
-                        }
-
-                        // Delete existing interpreters
-                        _db.Interpreter.RemoveRange(form.Interpreters);
-
-                        // Parse and add new questions
+                        // จัดการคำถามใหม่
                         if (!string.IsNullOrEmpty(questionsJson))
                         {
-                            var questions = System.Text.Json.JsonSerializer.Deserialize<List<QuestionData>>(questionsJson);
-                            if (questions != null)
+                            var newQuestions = System.Text.Json.JsonSerializer.Deserialize<List<QuestionDataWithId>>(questionsJson);
+                            if (newQuestions != null)
                             {
-                                foreach (var questionData in questions)
+                                // ตรวจสอบการลบคำถามที่เคยถูกประเมิน
+                                var questionsToDelete = form.Questions
+                                    .Where(q => !newQuestions.Any(nq => nq.QuestionID == q.QuestionID))
+                                    .ToList();
+
+                                var deletingEvaluatedQuestions = questionsToDelete
+                                    .Where(q => evaluatedQuestionIds.Contains(q.QuestionID))
+                                    .ToList();
+
+                                if (deletingEvaluatedQuestions.Any() && !forceUpdate)
                                 {
-                                    var question = new Question
+                                    await transaction.RollbackAsync();
+                                    return Json(new { 
+                                        success = false, 
+                                        message = $"ไม่สามารถลบคำถามที่เคยถูกประเมินได้ ({deletingEvaluatedQuestions.Count} คำถาม) หากต้องการลบ ระบบจะลบประวัติการประเมินที่เกี่ยวข้องด้วย",
+                                        requiresForceUpdate = true,
+                                        affectedEvaluations = form.Evaluations.Count
+                                    });
+                                }
+
+                                // ลบคำถามที่ถูกขอให้ลบ
+                                foreach (var questionToDelete in questionsToDelete)
+                                {
+                                    // ถ้าเป็นคำถามที่เคยถูกประเมิน และ forceUpdate = true ต้องลบ evaluation details ที่เกี่ยวข้อง
+                                    if (evaluatedQuestionIds.Contains(questionToDelete.QuestionID) && forceUpdate)
                                     {
-                                        FormID = form.FormID,
-                                        QuestionText = questionData.QuestionText ?? "",
-                                        Section = questionData.Section
-                                    };
+                                        var relatedEvaluationDetails = await _db.EvaluationDetail
+                                            .Where(ed => ed.QuestionID == questionToDelete.QuestionID)
+                                            .ToListAsync();
+                                        _db.EvaluationDetail.RemoveRange(relatedEvaluationDetails);
+                                    }
 
-                                    _db.Question.Add(question);
-                                    await _db.SaveChangesAsync(); // Save to get QuestionID
+                                    _db.Option.RemoveRange(questionToDelete.Options);
+                                    _db.Question.Remove(questionToDelete);
+                                }
 
-                                    // Add options
+                                // จัดการคำถามที่เหลือ
+                                foreach (var questionData in newQuestions)
+                                {
+                                    Question question;
+                                    bool isNewQuestion = false;
+
+                                    if (questionData.QuestionID > 0)
+                                    {
+                                        // คำถามเดิม - อัพเดท
+                                        question = form.Questions.FirstOrDefault(q => q.QuestionID == questionData.QuestionID)!;
+                                        if (question != null)
+                                        {
+                                            question.QuestionText = questionData.QuestionText ?? "";
+                                            question.Section = questionData.Section;
+                                        }
+                                        else
+                                        {
+                                            continue; // ข้าม question ที่ไม่พบ
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // คำถามใหม่
+                                        question = new Question
+                                        {
+                                            FormID = form.FormID,
+                                            QuestionText = questionData.QuestionText ?? "",
+                                            Section = questionData.Section
+                                        };
+                                        _db.Question.Add(question);
+                                        isNewQuestion = true;
+                                    }
+
+                                    await _db.SaveChangesAsync(); // บันทึกเพื่อได้ QuestionID
+
+                                    // จัดการตัวเลือก
+                                    if (questionData.Options != null && !isNewQuestion)
+                                    {
+                                        // ตรวจสอบการลบตัวเลือกที่เคยถูกใช้
+                                        var currentOptions = question.Options.ToList();
+                                        var optionsToDelete = currentOptions
+                                            .Where(o => !questionData.Options.Any(no => no.OptionID == o.OptionID))
+                                            .ToList();
+
+                                        var deletingUsedOptions = optionsToDelete
+                                            .Where(o => evaluatedOptionIds.Contains(o.OptionID))
+                                            .ToList();
+
+                                        if (deletingUsedOptions.Any() && !forceUpdate)
+                                        {
+                                            await transaction.RollbackAsync();
+                                            return Json(new { 
+                                                success = false, 
+                                                message = $"ไม่สามารถลบตัวเลือกที่เคยถูกใช้ในการประเมินได้ หากต้องการลบ ระบบจะลบประวัติการประเมินที่เกี่ยวข้องด้วย",
+                                                requiresForceUpdate = true,
+                                                affectedEvaluations = form.Evaluations.Count
+                                            });
+                                        }
+
+                                        // ลบตัวเลือกที่ถูกขอให้ลบ และลบ evaluation details ที่เกี่ยวข้องถ้า forceUpdate = true
+                                        if (forceUpdate)
+                                        {
+                                            var deletingUsedOptionIds = deletingUsedOptions.Select(o => o.OptionID).ToList();
+                                            var relatedEvaluationDetails = await _db.EvaluationDetail
+                                                .Where(ed => ed.QuestionID == question.QuestionID)
+                                                .ToListAsync();
+                                            
+                                            // ลบ evaluation details ที่ใช้ option ที่กำลังจะลบ
+                                            foreach (var evalDetail in relatedEvaluationDetails)
+                                            {
+                                                var usedOption = deletingUsedOptions.FirstOrDefault(o => 
+                                                    o.QuestionID == evalDetail.QuestionID && o.Value == evalDetail.Score);
+                                                if (usedOption != null)
+                                                {
+                                                    _db.EvaluationDetail.Remove(evalDetail);
+                                                }
+                                            }
+                                        }
+                                        
+                                        _db.Option.RemoveRange(optionsToDelete);
+                                    }
+                                    else if (isNewQuestion && questionData.Options != null)
+                                    {
+                                        // คำถามใหม่ - ลบตัวเลือกเก่าทั้งหมดแล้วเพิ่มใหม่
+                                        _db.Option.RemoveRange(question.Options);
+                                    }
+
+                                    // เพิ่ม/อัพเดทตัวเลือก
                                     if (questionData.Options != null)
                                     {
                                         foreach (var optionData in questionData.Options)
                                         {
-                                            var option = new Option
+                                            if (optionData.OptionID > 0 && !isNewQuestion)
                                             {
-                                                QuestionID = question.QuestionID,
-                                                OptionText = optionData.OptionText ?? "",
-                                                Value = optionData.Value ?? 0
-                                            };
-                                            _db.Option.Add(option);
+                                                // ตัวเลือกเดิม - อัพเดท
+                                                var existingOption = question.Options
+                                                    .FirstOrDefault(o => o.OptionID == optionData.OptionID);
+                                                if (existingOption != null)
+                                                {
+                                                    existingOption.OptionText = optionData.OptionText ?? "";
+                                                    existingOption.Value = optionData.Value ?? 0;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                // ตัวเลือกใหม่
+                                                var option = new Option
+                                                {
+                                                    QuestionID = question.QuestionID,
+                                                    OptionText = optionData.OptionText ?? "",
+                                                    Value = optionData.Value ?? 0
+                                                };
+                                                _db.Option.Add(option);
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
 
-                        // Parse and add new interpreters
+                        // จัดการเกณฑ์การแปรผล
                         if (!string.IsNullOrEmpty(interpretersJson))
                         {
-                            var interpreters = System.Text.Json.JsonSerializer.Deserialize<List<InterpreterData>>(interpretersJson);
-                            if (interpreters != null)
+                            var newInterpreters = System.Text.Json.JsonSerializer.Deserialize<List<InterpreterDataWithId>>(interpretersJson);
+                            if (newInterpreters != null)
                             {
-                                foreach (var interpreterData in interpreters)
+                                // เพิ่มเกณฑ์ใหม่เท่านั้น (ห้ามลบเกณฑ์เก่า)
+                                var newOnlyInterpreters = newInterpreters.Where(i => i.InterpreterID <= 0).ToList();
+                                
+                                foreach (var interpreterData in newOnlyInterpreters)
                                 {
                                     var interpreter = new Interpreter
                                     {
@@ -1278,13 +1554,38 @@ namespace Project.Controllers
                                     };
                                     _db.Interpreter.Add(interpreter);
                                 }
+
+                                // อัพเดทเกณฑ์เดิม
+                                var existingInterpreters = newInterpreters.Where(i => i.InterpreterID > 0).ToList();
+                                foreach (var interpreterData in existingInterpreters)
+                                {
+                                    var existingInterpreter = form.Interpreters
+                                        .FirstOrDefault(i => i.InterID == interpreterData.InterpreterID);
+                                    if (existingInterpreter != null)
+                                    {
+                                        existingInterpreter.MinScore = interpreterData.MinScore ?? 0;
+                                        existingInterpreter.MaxScore = interpreterData.MaxScore ?? 0;
+                                        existingInterpreter.InterName = interpreterData.InterName ?? "";
+                                        existingInterpreter.InterText = interpreterData.InterText ?? "";
+                                    }
+                                }
                             }
                         }
 
                         await _db.SaveChangesAsync();
                         await transaction.CommitAsync();
 
-                        return Json(new { success = true, message = "อัพเดทแบบประเมินเรียบร้อย" });
+                        var deletedEvaluations = 0;
+                        if (forceUpdate && form.Evaluations.Any())
+                        {
+                            deletedEvaluations = form.Evaluations.Count;
+                        }
+
+                        return Json(new { 
+                            success = true, 
+                            message = "อัพเดทแบบประเมินเรียบร้อย",
+                            deletedEvaluations = deletedEvaluations
+                        });
                     }
                     catch (Exception ex)
                     {
@@ -1299,15 +1600,18 @@ namespace Project.Controllers
             }
 
             [HttpDelete]
-            public async Task<IActionResult> DeleteForm(int id)
+            public async Task<IActionResult> DeleteForm(int id, [FromBody] DeleteFormRequest? request = null)
             {
                 try
                 {
+                    var forceDelete = request?.ForceDelete ?? false;
+                    
                     var form = await _db.Form
                         .Include(f => f.Questions)
                             .ThenInclude(q => q.Options)
                         .Include(f => f.Interpreters)
                         .Include(f => f.Evaluations)
+                            .ThenInclude(e => e.EvaluationDetails)
                         .FirstOrDefaultAsync(f => f.FormID == id);
 
                     if (form == null)
@@ -1315,35 +1619,71 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ไม่พบแบบประเมิน" });
                     }
 
-                    // Check if form is being used in evaluations
-                    if (form.Evaluations.Any())
+                    // ตรวจสอบว่าเป็นฟอร์มระบบหรือไม่
+                    var systemForms = new[] { "Mod-SAS", "Mod-BARS", "Mod-AIMS" };
+                    if (systemForms.Contains(form.FormName))
                     {
-                        return Json(new { success = false, message = "ไม่สามารถลบแบบประเมินนี้ได้ เนื่องจากมีการใช้งานอยู่" });
+                        return Json(new { success = false, message = "ไม่สามารถลบแบบประเมินระบบได้" });
+                    }
+
+                    // นับจำนวนการประเมินที่เกี่ยวข้อง
+                    int evaluationsCount = form.Evaluations.Count;
+
+                    // ถ้ามีการประเมินและไม่ได้ระบุ forceDelete ให้แจ้งเตือน
+                    if (evaluationsCount > 0 && !forceDelete)
+                    {
+                        return Json(new { 
+                            success = false, 
+                            message = "ไม่สามารถลบแบบประเมินนี้ได้ เนื่องจากมีประวัติการประเมิน " + evaluationsCount + " รายการ",
+                            hasEvaluations = true,
+                            evaluationsCount = evaluationsCount
+                        });
                     }
 
                     using var transaction = await _db.Database.BeginTransactionAsync();
 
                     try
                     {
-                        // Delete options first
+                        int deletedEvaluations = 0;
+
+                        // ลบประวัติการประเมินที่เกี่ยวข้อง (ถ้ามี)
+                        if (form.Evaluations.Any())
+                        {
+                            foreach (var evaluation in form.Evaluations)
+                            {
+                                // ลบรายละเอียดการประเมิน
+                                if (evaluation.EvaluationDetails.Any())
+                                {
+                                    _db.EvaluationDetail.RemoveRange(evaluation.EvaluationDetails);
+                                }
+                                
+                                // ลบการประเมิน
+                                _db.Evaluation.Remove(evaluation);
+                                deletedEvaluations++;
+                            }
+                        }
+
+                        // ลบคำถามและตัวเลือก
                         foreach (var question in form.Questions)
                         {
                             _db.Option.RemoveRange(question.Options);
                         }
-
-                        // Delete questions
                         _db.Question.RemoveRange(form.Questions);
 
-                        // Delete interpreters
+                        // ลบเกณฑ์การแปรผล
                         _db.Interpreter.RemoveRange(form.Interpreters);
 
-                        // Delete form
+                        // ลบแบบประเมิน
                         _db.Form.Remove(form);
 
                         await _db.SaveChangesAsync();
                         await transaction.CommitAsync();
 
-                        return Json(new { success = true, message = "ลบแบบประเมินเรียบร้อย" });
+                        return Json(new { 
+                            success = true, 
+                            message = "ลบแบบประเมินเรียบร้อย",
+                            deletedEvaluations = deletedEvaluations
+                        });
                     }
                     catch (Exception ex)
                     {
@@ -1355,6 +1695,32 @@ namespace Project.Controllers
                 {
                     return Json(new { success = false, message = "เกิดข้อผิดพลาด: " + ex.Message });
                 }
+            }
+
+            public class DeleteFormRequest
+            {
+                public bool ForceDelete { get; set; }
+            }
+
+            public class QuestionDataWithId : QuestionData
+            {
+                [JsonPropertyName("questionID")]
+                public int QuestionID { get; set; }
+
+                [JsonPropertyName("options")]
+                public new List<OptionDataWithId>? Options { get; set; }
+            }
+
+            public class OptionDataWithId : OptionData
+            {
+                [JsonPropertyName("optionID")]
+                public int OptionID { get; set; }
+            }
+
+            public class InterpreterDataWithId : InterpreterData
+            {
+                [JsonPropertyName("interpreterID")]
+                public int InterpreterID { get; set; }
             }
 
         public class QuestionData
@@ -1409,13 +1775,11 @@ namespace Project.Controllers
                 return Json(new { exists = exists });
             }
 
-            // Treatment CRUD methods
             [HttpGet]
             public async Task<IActionResult> GetTreatments(string search = "")
             {
                 var query = _db.Treatment.AsQueryable();
 
-                // Apply search filter
                 if (!string.IsNullOrEmpty(search))
                 {
                     query = query.Where(t => t.TreatmentName != null && t.TreatmentName.Contains(search));
@@ -1440,7 +1804,6 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "กรุณากรอกชื่อสิทธิ์การรักษา" });
                     }
 
-                    // Check if treatment name already exists
                     var existingTreatment = await _db.Treatment
                         .FirstOrDefaultAsync(t => t.TreatmentName == model.RightName);
 
@@ -1481,7 +1844,6 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ไม่พบข้อมูลสิทธิ์การรักษา" });
                     }
 
-                    // Check if treatment name already exists (excluding current treatment)
                     var existingTreatment = await _db.Treatment
                         .FirstOrDefaultAsync(t => t.TreatmentName == model.RightName && t.TreatmentID != model.RightID);
 
@@ -1512,7 +1874,6 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ไม่พบข้อมูลสิทธิ์การรักษา" });
                     }
 
-                    // Check if treatment is being used by any patient
                     var patientsUsingTreatment = await _db.Patient
                         .Where(p => p.TreatmentID == id)
                         .CountAsync();
@@ -1539,13 +1900,11 @@ namespace Project.Controllers
                 public string RightName { get; set; } = string.Empty;
             }
 
-            // User Profile methods
             [HttpGet]
             public async Task<IActionResult> GetUserProfile()
             {
                 try
                 {
-                    // Use ClaimTypes.NameIdentifier instead of "UserID"
                     var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                     
                     if (string.IsNullOrEmpty(userId))
@@ -1598,14 +1957,12 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ไม่พบไฟล์รูปภาพ" });
                     }
 
-                    // Validate file type
                     var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
                     if (!allowedTypes.Contains(profilePicture.ContentType.ToLower()))
                     {
                         return Json(new { success = false, message = "รูปแบบไฟล์ไม่ถูกต้อง (อนุญาตเฉพาะ JPG, PNG, GIF)" });
                     }
 
-                    // Validate file size (5MB)
                     if (profilePicture.Length > 5 * 1024 * 1024)
                     {
                         return Json(new { success = false, message = "ขนาดไฟล์ใหญ่เกินไป (สูงสุด 5MB)" });
@@ -1617,8 +1974,7 @@ namespace Project.Controllers
                         Directory.CreateDirectory(uploadsPath);
                     }
 
-                    // Remove old profile picture if exists
-                    if (!string.IsNullOrEmpty(user.Picture))
+                    if (!string.IsNullOrEmpty(user!.Picture))
                     {
                         var oldFilePath = System.IO.Path.Combine(uploadsPath, user.Picture);
                         if (System.IO.File.Exists(oldFilePath))
@@ -1627,23 +1983,19 @@ namespace Project.Controllers
                         }
                     }
 
-                    // Generate filename using UserID
                     var fileName = $"{user.UserID}{System.IO.Path.GetExtension(profilePicture.FileName)}";
                     var filePath = System.IO.Path.Combine(uploadsPath, fileName);
 
-                    // Save file
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
                         await profilePicture.CopyToAsync(fileStream);
                     }
 
-                    // Update user profile picture in database
                     user.Picture = fileName;
                     await _db.SaveChangesAsync();
 
                     var pictureUrl = $"/uploads/profile/{fileName}";
-                    
-                    // Set cache headers to prevent caching of profile pictures
+
                     Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
                     Response.Headers["Pragma"] = "no-cache";
                     Response.Headers["Expires"] = "0";
@@ -1677,7 +2029,6 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
                     }
 
-                    // Remove file if exists
                     if (!string.IsNullOrEmpty(user.Picture))
                     {
                         var uploadsPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile");
@@ -1688,7 +2039,6 @@ namespace Project.Controllers
                             System.IO.File.Delete(filePath);
                         }
 
-                        // Update database
                         user.Picture = null;
                         await _db.SaveChangesAsync();
                     }
@@ -1709,7 +2059,6 @@ namespace Project.Controllers
             {
                 try
                 {
-                    // Use ClaimTypes.NameIdentifier instead of "UserID"
                     var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
                     if (string.IsNullOrEmpty(userId))
                     {
@@ -1722,13 +2071,11 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
                     }
 
-                    // Validate required fields
                     if (string.IsNullOrEmpty(model.FirstName) || string.IsNullOrEmpty(model.LastName))
                     {
                         return Json(new { success = false, message = "กรุณากรอกชื่อและนามสกุล" });
                     }
 
-                    // Handle password change if provided
                     if (!string.IsNullOrEmpty(model.CurrentPassword))
                     {
                         if (string.IsNullOrEmpty(model.NewPassword))
@@ -1736,10 +2083,8 @@ namespace Project.Controllers
                             return Json(new { success = false, message = "กรุณากรอกรหัสผ่านใหม่" });
                         }
 
-                        // Create password service instance for verification
                         var passwordService = new PasswordService();
-                        
-                        // Verify current password
+
                         if (!passwordService.VerifyPassword(model.CurrentPassword, user.PasswordHash))
                         {
                             return Json(new { success = false, message = "รหัสผ่านปัจจุบันไม่ถูกต้อง" });
@@ -1750,21 +2095,18 @@ namespace Project.Controllers
                             return Json(new { success = false, message = "รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร" });
                         }
 
-                        // Hash new password
                         user.PasswordHash = passwordService.HashPassword(model.NewPassword);
                     }
 
-                    // Update profile information
                     user.TitleID = model.TitleID;
                     user.FirstName = model.FirstName;
                     user.LastName = model.LastName;
 
                     await _db.SaveChangesAsync();
 
-                    // Update claims if profile info changed (not password)
                     if (string.IsNullOrEmpty(model.CurrentPassword))
                     {
-                        // Reload user with title for updated claims
+
                         var updatedUser = await _db.User
                             .Include(u => u.Title)
                             .Include(u => u.Role)
@@ -1772,7 +2114,7 @@ namespace Project.Controllers
 
                         if (updatedUser != null)
                         {
-                            // Create new claims with updated information
+
                             var claims = new List<System.Security.Claims.Claim>
                             {
                                 new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.NameIdentifier, updatedUser.UserID.ToString()),

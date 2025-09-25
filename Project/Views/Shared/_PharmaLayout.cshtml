@@ -3,22 +3,53 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ระบบประเมิน</title>
+    <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site2.css" />
     
     <!-- Prevent caching of profile pictures -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="~/css/sweetalert2.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="preload" href="/img/logo.png" as="image" />
+    <link rel="icon" type="image/x-icon" href="/img/logo.ico">
     @if (ViewBag.ProfileImageUrl != null)
     {
         <link rel="preload" as="image" href="@ViewBag.ProfileImageUrl" />
     }
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+    
+    <!-- Custom pagination styles -->
+    <style>
+        .pagination-sm .page-link {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+        }
+        
+        .pagination .page-link {
+            color: var(--mint-green, #51c3b7);
+            border: 1px solid #dee2e6;
+        }
+        
+        .pagination .page-link:hover {
+            color: var(--dark-green, #05685e);
+            background-color: rgba(81, 195, 183, 0.1);
+            border-color: var(--mint-green, #51c3b7);
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: var(--mint-green, #51c3b7);
+            border-color: var(--mint-green, #51c3b7);
+            color: white;
+        }
+        
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            background-color: #fff;
+            border-color: #dee2e6;
+        }
+    </style>
 </head>
 
     <style>
@@ -243,7 +274,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Patients" ? "active" : "")" href="@Url.Action("Patients", "Pharma")">
-                            <i class="fas fa-users me-1"></i>จัดการรายชื่อผู้ป่วย
+                            <i class="fas fa-users me-1"></i>เวชระเบียนผู้ป่วย
                         </a>
                     </li>
                     <li class="nav-item">
@@ -304,10 +335,8 @@
             // Check if there's a profile image from ViewBag
             const profileUrl = '@Html.Raw(ViewBag.ProfileImageUrl?.ToString() ?? "")';
             if (profileUrl && profileUrl.trim() !== '') {
-                // Image is already loaded from server with timestamp
-                console.log('Profile image loaded from ViewBag:', profileUrl);
+                updateNavbarAvatar(profileUrl);
             } else {
-                // Fallback: Show initials if no profile image
                 resetNavbarAvatar();
             }
         });
@@ -332,7 +361,6 @@
                 })
                 .on('error', function() {
                     // If image fails to load, show initials
-                    console.log('Profile image failed to load, showing initials');
                     resetNavbarAvatar();
                 });
             
@@ -367,8 +395,7 @@
                     }
                 })
                 .fail(function() {
-                    console.log('Failed to refresh profile picture');
-                    resetNavbarAvatar();
+                   resetNavbarAvatar();
                 });
         }
 

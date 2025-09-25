@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+This file is used by the publish/package process of your Web project. You can customize the behavior of this process
+by editing this MSBuild file. In order to learn more about this please visit https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project>
+  <PropertyGroup>
+    <TimeStampOfAssociatedLegacyPublishXmlFile />
+    <EncryptedPassword>AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAdIjoX3yC6kal8WhHlW3qTgAAAAACAAAAAAAQZgAAAAEAACAAAABweo/f8m1G8n9fvGdS/S6aUV93fAPTKBoAROfj5d12QwAAAAAOgAAAAAIAACAAAAAWwNlCPpSZZUhApC5acDl9ETjzLWgtU+L5kVkKz1Hw9yAAAACJt9jcUY2O34ltwgrDobdjzp+3LBSYPVHHFn3Zp8J7gkAAAAC9sfUb6ONGG+ljlIL52/ZvFiofqpuerLs0oqcDer8EuLXGxJB4cs+5ZreHVWhIdLPwwhMLQa0d8EY54SRi4Gyd</EncryptedPassword>
+    <History>True|2025-09-25T15:17:08.6202696Z||;True|2025-09-24T21:43:21.9853898+07:00||;True|2025-09-22T20:03:43.0940990+07:00||;True|2025-09-22T19:59:14.7982613+07:00||;True|2025-09-19T10:14:28.6367845+07:00||;True|2025-09-17T23:57:11.7259194+07:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+  <ItemGroup>
+    <DestinationConnectionStrings Include="DefaultConnection">
+      <Value>Server=db27562.databaseasp.net%3b Database=db27562%3b User Id=db27562%3b Password=Am7!8#sS%3fZ6z%3b Encrypt=False%3b MultipleActiveResultSets=True%3b</Value>
+    </DestinationConnectionStrings>
+  </ItemGroup>
+  <ItemGroup>
+    <EFMigrations Include="Project.Data.ApplicationDbContext">
+      <Value>Server=db27562.databaseasp.net%3b Database=db27562%3b User Id=db27562%3b Password=Am7!8#sS%3fZ6z%3b Encrypt=False%3b MultipleActiveResultSets=True%3b</Value>
+    </EFMigrations>
+  </ItemGroup>
+</Project>

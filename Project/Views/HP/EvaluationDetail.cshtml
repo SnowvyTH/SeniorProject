@@ -1,0 +1,739 @@
+@model Project.Models.Entity.Evaluation
+@{
+    ViewData["Title"] = "รายละเอียดการประเมิน";
+    Layout = "~/Views/Shared/_HPLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">
+                <i class="fas fa-file-medical me-2"></i>รายละเอียดการประเมิน
+            </h2>
+            <p class="text-muted mb-0">ผลการประเมินของผู้ป่วยเสี่ยงสูง</p>
+        </div>
+        <div>
+            <a href="/HP/Patients" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>กลับ
+            </a>
+        </div>
+    </div>
+
+    <!-- Patient Information -->
+    <div class="modern-card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-user-injured me-2"></i>ข้อมูลผู้ป่วยและการประเมิน
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="patient-info-section">
+                        <h6 class="section-title mb-3">
+                            <i class="fas fa-hospital-user me-2"></i>ข้อมูลผู้ป่วย
+                        </h6>
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">HN:</label>
+                            <span class="ms-2 fw-bold text-primary">@Model.Patient?.HN</span>
+                        </div>
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">ชื่อ-นามสกุล:</label>
+                            <span class="ms-2">@($"{Model.Patient?.Title?.TitleName}{Model.Patient?.FirstName} {Model.Patient?.LastName}")</span>
+                        </div>
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">อายุ:</label>
+                            <span class="ms-2">
+                                @if (Model.Patient?.BirthDate.HasValue == true)
+                                {
+                                    var age = DateTime.Now.Year - Model.Patient.BirthDate.Value.Year;
+                                    <text>@(age) ปี</text>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">ไม่ระบุ</span>
+                                }
+                            </span>
+                        </div>
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">โทรศัพท์:</label>
+                            <span class="ms-2">
+                                @if (!string.IsNullOrEmpty(Model.Patient?.Tel))
+                                {
+                                    var tel = Model.Patient.Tel;
+                                    if (tel.Length == 10 && tel.StartsWith("08"))
+                                    {
+                                        <text>@($"{tel.Substring(0, 3)}-{tel.Substring(3, 3)}-{tel.Substring(6, 4)}")</text>
+                                    }
+                                    else
+                                    {
+                                        <text>@tel</text>
+                                    }
+                                }
+                                else
+                                {
+                                    <text>ไม่ระบุ</text>
+                                }
+                            </span>
+                        </div>
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">ประเภทผู้ป่วย:</label>
+                            <span class="badge @(Model.Patient?.PatientType == "OPD" ? "bg-primary" : "bg-success") ms-2">
+                                @Model.Patient?.PatientType
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="evaluation-info-section">
+                        <h6 class="section-title mb-3">
+                            <i class="fas fa-clipboard-check me-2"></i>ข้อมูลการประเมิน
+                        </h6>
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">วันที่ทำการประเมิน:</label>
+                            <span class="ms-2">@Model.RecordDate.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">ผู้ประเมิน:</label>
+                            <span class="ms-2">@($"{Model.User?.Title?.TitleName}{Model.User?.FirstName} {Model.User?.LastName}")</span>
+                        </div>
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">แบบประเมิน:</label>
+                            <span class="ms-2 fw-bold">@Model.Form?.FormName</span>
+                        </div>
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">คะแนนรวม:</label>
+                            @{
+                                var totalScore = Model.EvaluationDetails?.Sum(ed => ed.Score ?? 0) ?? 0;
+                            }
+                            <span class="">
+                                @{
+                                    var result = ViewBag.InterpreterName ?? Model.Result ?? "ไม่ระบุ";
+                                    var severityClass = result switch {
+                                        "ปกติ" => "text-safe fw-bold",
+                                        "ไม่พบอาการ" => "text-safe fw-bold", 
+                                        "Absent" => "text-safe fw-bold",
+                                        "Questionable" => "text-safe fw-bold",
+                                        "Mild akathisia" => "text-low-risk fw-bold",
+                                        "Mild" => "text-low-risk fw-bold",
+                                        "น้อยมาก" => "text-low-risk fw-bold",
+                                        "Moderate" => "text-medium-risk fw-bold",
+                                        "Moderate akathisia" => "text-medium-risk fw-bold",
+                                        "เล็กน้อย" => "text-low-risk fw-bold",
+                                        "Marked akathisia" => "text-high-risk fw-bold",
+                                        "ปานกลาง" => "text-high-risk fw-bold",
+                                        "Severe" => "text-critical fw-bold",
+                                        "Severe akathisia" => "text-critical fw-bold",
+                                        "รุนแรง" => "text-critical fw-bold",
+                                        "ผิดปกติที่ควรระวัง" => "text-high-risk fw-bold",
+                                        _ => "text-muted"
+                                    };
+                                }
+                                @{
+                                    var riskLevel = result switch {
+                                        "ปกติ" => "ปลอดภัย",
+                                        "ไม่พบอาการ" => "ปลอดภัย",
+                                        "Absent" => "ปลอดภัย",
+                                        "Questionable" => "ปลอดภัย",
+                                        "Mild akathisia" => "เสี่ยงต่ำ",
+                                        "Mild" => "เสี่ยงต่ำ",
+                                        "น้อยมาก" => "เสี่ยงต่ำ",
+                                        "Moderate" => "เสี่ยงปานกลาง",
+                                        "Moderate akathisia" => "เสี่ยงปานกลาง",
+                                        "เล็กน้อย" => "เสี่ยงต่ำ",
+                                        "Marked akathisia" => "เสี่ยงสูง",
+                                        "ปานกลาง" => "เสี่ยงสูง",
+                                        "Severe" => "เสี่ยงสูงมาก",
+                                        "Severe akathisia" => "เสี่ยงสูงมาก",
+                                        "รุนแรง" => "เสี่ยงสูงมาก",
+                                        "ผิดปกติที่ควรระวัง" => "เสี่ยงสูง",
+                                        _ => "ไม่ทราบ"
+                                    };
+                                    var riskBadgeClass = result switch {
+                                        "ปกติ" => "bg-success",
+                                        "ไม่พบอาการ" => "bg-success",
+                                        "Absent" => "bg-success",
+                                        "Questionable" => "bg-success",
+                                        "Mild akathisia" => "bg-info",
+                                        "Mild" => "bg-info",
+                                        "น้อยมาก" => "bg-info",
+                                        "Moderate" => "bg-warning",
+                                        "Moderate akathisia" => "bg-warning",
+                                        "เล็กน้อย" => "bg-info",
+                                        "Marked akathisia" => "bg-warning text-dark",
+                                        "ปานกลาง" => "bg-warning text-dark",
+                                        "Severe" => "bg-danger",
+                                        "Severe akathisia" => "bg-danger",
+                                        "รุนแรง" => "bg-danger",
+                                        "ผิดปกติที่ควรระวัง" => "bg-warning text-dark",
+                                        _ => "bg-secondary"
+                                    };
+                                }
+                                <span class="badge @riskBadgeClass">@totalScore คะแนน</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="severity-info-section">
+                        <h6 class="section-title mb-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>ผลการประเมิน
+                        </h6>
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">ระดับความรุนแรง:</label>
+                            <div class="">
+                                <span class="severity-badge @severityClass">
+                                    <i class="fas fa-shield-alt me-2"></i>@result
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-item mb-3">
+                            <label class="fw-bold text-muted">สถานะความเสี่ยง:</label>
+                            <div class="">
+                                <span class="badge @riskBadgeClass">@riskLevel</span>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(ViewBag.InterpreterText))
+                        {
+                            <div class="info-item mb-3">
+                                <label class="fw-bold text-muted">แนวทางปฏิบัติ:</label>
+                                <div class="mt-1">
+                                     @Html.Raw(((string)ViewBag.InterpreterText).Replace("\n", "<br>"))
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluation Details -->
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <div class="modern-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list-check me-2"></i>รายละเอียดการตอบคำถาม
+                    </h5>
+                    <div>
+                        <span class="badge bg-light text-dark" id="questionCounter">
+                            <span id="currentQuestion">1</span> / <span id="totalQuestions">@Model.EvaluationDetails?.Count()</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.EvaluationDetails?.Any() == true)
+                    {
+                        <div class="evaluation-details">
+                            @if (Model.Form?.FormType == 3)
+                            {
+                                // แบบประเมินแบบกลุ่ม - แสดงตาม section
+                                var groupedQuestions = Model.EvaluationDetails
+                                    .Where(d => d.Question != null)
+                                    .GroupBy(d => d.Question!.Section)
+                                    .OrderBy(g => g.Key);
+                                
+                                int overallQuestionIndex = 0;
+                                
+                                @foreach (var sectionGroup in groupedQuestions)
+                                {
+                                    @foreach (var detail in sectionGroup.OrderBy(d => d.Question?.QuestionID))
+                                    {
+                                        overallQuestionIndex++;
+                                        <div class="question-slide" data-question-index="@(overallQuestionIndex - 1)" style="display: none;">
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <div class="question-header">
+                                                            <h6 class="text-primary fw-bold mb-1">
+                                                                <i class="fas fa-question-circle me-2"></i>คำถามที่ @overallQuestionIndex
+                                                            </h6>
+                                                            <span class="badge bg-info section-badge">
+                                                                <i class="fas fa-layer-group me-1"></i>@detail.Question!.Section
+                                                            </span>
+                                                        </div>
+                                                        <div class="text-end">
+                                                            <span class="badge bg-primary">คะแนน: @(detail.Score ?? 0)</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-text-box p-3 mb-3 border rounded">
+                                                        <p class="mb-0 fw-bold">@detail.Question!.QuestionText</p>
+                                                    </div>
+                                                    
+                                                    <div class="answer-section">
+                                                        <h6 class="text-muted mb-2">
+                                                            <i class="fas fa-check-circle me-2"></i>คำตอบที่เลือก:
+                                                        </h6>
+                                                        <div class="selected-answer p-3 border rounded">
+                                                            @{
+                                                                var selectedOption = detail.Question?.Options?.FirstOrDefault(o => o.Value == detail.Score);
+                                                            }
+                                                            @if (selectedOption != null)
+                                                            {
+                                                                <p class="mb-1 fw-bold text-success">@selectedOption.OptionText</p>
+                                                                <small class="text-muted">คะแนน: @(detail.Score ?? 0) คะแนน</small>
+                                                            }
+                                                            else
+                                                            {
+                                                                <p class="mb-1 fw-bold text-muted">ไม่พบคำตอบ</p>
+                                                                <small class="text-muted">คะแนน: @(detail.Score ?? 0) คะแนน</small>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // แบบประเมินมาตรฐาน - แสดงตามลำดับ
+                                int questionIndex = 0;
+                                @foreach (var detail in Model.EvaluationDetails.OrderBy(d => d.Question?.QuestionID))
+                                {
+                                    questionIndex++;
+                                    <div class="question-slide" data-question-index="@(questionIndex - 1)" style="display: none;">
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                                    <div class="question-header">
+                                                        <h6 class="text-primary fw-bold mb-1">
+                                                            <i class="fas fa-question-circle me-2"></i>คำถามที่ @questionIndex
+                                                        </h6>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="question-text-box p-3 mb-3 border rounded">
+                                                    <p class="mb-0 fw-bold">@detail.Question?.QuestionText</p>
+                                                </div>
+                                                
+                                                <div class="answer-section">
+                                                    <h6 class="text-muted mb-2">
+                                                        <i class="fas fa-check-circle me-2"></i>คำตอบที่เลือก:
+                                                    </h6>
+                                                    <div class="selected-answer p-3 border rounded">
+                                                        @{
+                                                            var selectedOption = detail.Question?.Options?.FirstOrDefault(o => o.Value == detail.Score);
+                                                        }
+                                                        @if (selectedOption != null)
+                                                        {
+                                                            <p class="mb-1 fw-bold text-success">@selectedOption.OptionText</p>
+                                                            <small class="text-muted">คะแนน: @(detail.Score ?? 0) คะแนน</small>
+                                                        }
+                                                        else
+                                                        {
+                                                            <p class="mb-1 fw-bold text-muted">ไม่พบคำตอบ</p>
+                                                            <small class="text-muted">คะแนน: @(detail.Score ?? 0) คะแนน</small>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        
+                        <!-- Navigation Buttons -->
+                        <div class="d-flex justify-content-between mt-4 mb-4">
+                            <button type="button" class="btn btn-outline-secondary" id="prevBtn" onclick="previousQuestion()" style="display: none;">
+                                <i class="fas fa-chevron-left me-2"></i>คำถามก่อนหน้า
+                            </button>
+                            <div></div>
+                            <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                                คำถามถัดไป<i class="fas fa-chevron-right ms-2"></i>
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                            <p>ไม่พบรายละเอียดการตอบคำถาม</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation Sidebar -->
+        <div class="col-md-4">
+            @if (Model.EvaluationDetails?.Any() == true)
+            {
+                <!-- Question Navigation -->
+                <div class="modern-card sticky-top mb-3" style="top: 20px;">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-map me-2"></i>นำทางคำถาม
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="page-grid" id="pageNavigation">
+                            @{
+                                int totalQuestions = 0;
+                                if (Model.Form?.FormType == 3)
+                                {
+                                    var groupedQuestions = Model.EvaluationDetails
+                                        .Where(d => d.Question != null)
+                                        .GroupBy(d => d.Question!.Section)
+                                        .OrderBy(g => g.Key);
+                                    
+                                    foreach (var sectionGroup in groupedQuestions)
+                                    {
+                                        foreach (var detail in sectionGroup.OrderBy(d => d.Question?.QuestionID))
+                                        {
+                                            <div class="page-btn" data-page="@totalQuestions" onclick="goToQuestion(@totalQuestions)">
+                                                @(totalQuestions + 1)
+                                            </div>
+                                            totalQuestions++;
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    totalQuestions = Model.EvaluationDetails.Count();
+                                    for (int i = 0; i < totalQuestions; i++)
+                                    {
+                                        <div class="page-btn" data-page="@i" onclick="goToQuestion(@i)">
+                                            @(i + 1)
+                                        </div>
+                                    }
+                                }
+                            }
+                        </div>
+                        <div class="mt-3 text-center">
+                            <small class="text-muted">คลิกเพื่อไปยังคำถามที่ต้องการ</small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        :root {
+            --hp-primary: #2c5aa0;
+            --hp-dark-primary: #1e3d6f;
+            --hp-light-primary: #e3f2fd;
+        }
+
+        /* Custom Severity Color Classes */
+        .text-safe {
+            color: #28a745 !important;
+            font-weight: 600;
+        }
+        
+        .text-low-risk {
+            color: #20c997 !important;
+            font-weight: 600;
+        }
+        
+        .text-medium-risk {
+            color: #ffc107 !important;
+            font-weight: 700;
+        }
+        
+        .text-high-risk {
+            color: #fd7e14 !important;
+            font-weight: 700;
+        }
+        
+        .text-critical {
+            color: #dc3545 !important;
+            font-weight: 700;
+            text-shadow: 0 0 2px rgba(220, 53, 69, 0.3);
+        }
+
+        .modern-card {
+            border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            border: none;
+            overflow: hidden;
+        }
+
+        .modern-card .card-header {
+            background: linear-gradient(135deg, var(--hp-primary) 0%, var(--hp-dark-primary) 100%);
+            color: white;
+            border-radius: 16px 16px 0 0;
+            border-bottom: none;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+
+        .modern-card .card-header.bg-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+        }
+
+        .modern-card .card-header.bg-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+        }
+
+        .modern-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .page-title {
+            color: var(--hp-primary);
+            font-weight: 700;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .section-title {
+            color: var(--hp-primary);
+            font-weight: 600;
+            font-family: 'Kanit', sans-serif;
+            border-bottom: 2px solid var(--hp-light-primary);
+            padding-bottom: 0.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .info-item label {
+            min-width: 120px;
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        .severity-badge {
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .clinical-guidelines {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-left: 4px solid #ffc107;
+        }
+
+        .guideline-content {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #856404;
+        }
+
+        .clinical-guidelines-inline {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-radius: 8px;
+            padding: 1rem;
+            border-left: 3px solid #ffc107;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .guideline-content-inline {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #856404;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef !important;
+        }
+
+        .question-header h6 {
+            color: var(--hp-primary) !important;
+            font-weight: 700;
+        }
+
+        .question-text-box {
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border-left: 4px solid var(--hp-primary);
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .selected-answer {
+            border-left: 4px solid #28a745;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .section-badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .badge {
+            border-radius: 6px;
+        }
+
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .sticky-top {
+            position: sticky !important;
+        }
+
+        /* Page Navigation Grid */
+        .page-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.5rem;
+        }
+
+        .page-btn {
+            aspect-ratio: 1;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .page-btn:hover {
+            background: rgba(44, 90, 160, 0.1);
+            border-color: var(--hp-primary);
+        }
+
+        .page-btn.current {
+            background: var(--hp-primary);
+            color: white;
+            border-color: var(--hp-primary);
+        }
+
+        .summary-stats .stat-item {
+            padding: 0.5rem;
+            border-radius: 6px;
+            background: rgba(220, 53, 69, 0.05);
+        }
+
+        #questionCounter {
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+        }
+
+        /* Responsive Styles */
+        .summary-stats .stat-item {
+            padding: 0.5rem;
+            border-radius: 6px;
+            background: rgba(44, 90, 160, 0.05);
+        }
+
+        #questionCounter {
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        let currentQuestionIndex = 0;
+        const totalQuestions = @(Model.EvaluationDetails?.Count() ?? 0);
+
+        $(document).ready(function() {
+            if (totalQuestions > 0) {
+                initializeNavigation();
+                showQuestion(0);
+            }
+        });
+
+        function initializeNavigation() {
+            // Hide all questions initially
+            $('.question-slide').hide();
+            
+            // Show first question
+            showQuestion(0);
+        }
+
+        function showQuestion(index) {
+            // Hide all questions
+            $('.question-slide').hide();
+            
+            // Show current question
+            $(`.question-slide[data-question-index="${index}"]`).show();
+            
+            // Update current question index
+            currentQuestionIndex = index;
+            
+            // Update navigation
+            updateNavigation();
+            updateQuestionCounter();
+            updatePageNavigation();
+        }
+
+        function updateNavigation() {
+            const prevBtn = $('#prevBtn');
+            const nextBtn = $('#nextBtn');
+            
+            // Show/hide previous button
+            if (currentQuestionIndex === 0) {
+                prevBtn.hide();
+            } else {
+                prevBtn.show();
+            }
+            
+            // Show/hide next button
+            if (currentQuestionIndex === totalQuestions - 1) {
+                nextBtn.hide();
+            } else {
+                nextBtn.show();
+            }
+        }
+
+        function updateQuestionCounter() {
+            $('#currentQuestion').text(currentQuestionIndex + 1);
+            $('#totalQuestions').text(totalQuestions);
+        }
+
+        function updatePageNavigation() {
+            $('.page-btn').removeClass('current');
+            $(`.page-btn[data-page="${currentQuestionIndex}"]`).addClass('current');
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                showQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < totalQuestions - 1) {
+                showQuestion(currentQuestionIndex + 1);
+            }
+        }
+
+        function goToQuestion(index) {
+            if (index >= 0 && index < totalQuestions) {
+                showQuestion(index);
+            }
+        }
+
+        // Keyboard navigation
+        $(document).keydown(function(e) {
+            if (e.key === 'ArrowLeft' && currentQuestionIndex > 0) {
+                e.preventDefault();
+                previousQuestion();
+            } else if (e.key === 'ArrowRight' && currentQuestionIndex < totalQuestions - 1) {
+                e.preventDefault();
+                nextQuestion();
+            }
+        });
+    </script>
+}

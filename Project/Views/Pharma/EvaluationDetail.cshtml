@@ -60,7 +60,29 @@
                     </div>
                     <div class="info-item mb-3">
                         <label class="fw-bold text-muted">ระดับความรุนแรง:</label>
-                        <span class="ms-2">@(ViewBag.InterpreterName ?? Model.Result ?? "ไม่ระบุ")</span>
+                        @{
+                            var result = ViewBag.InterpreterName ?? Model.Result ?? "ไม่ระบุ";
+                            var severityClass = result switch {
+                                "ปกติ" => "text-safe fw-bold",
+                                "ไม่พบอาการ" => "text-safe fw-bold", 
+                                "Absent" => "text-safe fw-bold",
+                                "Questionable" => "text-safe fw-bold",
+                                "Mild akathisia" => "text-low-risk fw-bold",
+                                "Mild" => "text-low-risk fw-bold",
+                                "น้อยมาก" => "text-low-risk fw-bold",
+                                "Moderate" => "text-medium-risk fw-bold",
+                                "Moderate akathisia" => "text-medium-risk fw-bold",
+                                "เล็กน้อย" => "text-low-risk fw-bold",
+                                "Marked akathisia" => "text-high-risk fw-bold",
+                                "ปานกลาง" => "text-high-risk fw-bold",
+                                "Severe" => "text-critical fw-bold",
+                                "Severe akathisia" => "text-critical fw-bold",
+                                "รุนแรง" => "text-critical fw-bold",
+                                "ผิดปกติที่ควรระวัง" => "text-high-risk fw-bold",
+                                _ => "text-muted"
+                            };
+                        }
+                        <span class="ms-2 @severityClass">@result</span>
                     </div>
                     <div class="info-item mb-3">
                         <label class="fw-bold text-muted">แนวทางปฎิบัติ:</label>
@@ -81,107 +103,187 @@
     </div>
 
     <!-- Evaluation Details -->
-    <div class="modern-card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">
-                <i class="fas fa-list-check me-2"></i>รายละเอียดการตอบ
-            </h5>
-        </div>
-        <div class="card-body">
-            @if (Model.EvaluationDetails?.Any() == true)
-            {
-                <div class="evaluation-details">
-                    @if (Model.Form?.FormType == 3)
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <div class="modern-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list-check me-2"></i>รายละเอียดการตอบ
+                    </h5>
+                    <div>
+                        <span class="badge bg-light text-dark" id="questionCounter">
+                            <span id="currentQuestion">1</span> / <span id="totalQuestions">@Model.EvaluationDetails?.Count()</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.EvaluationDetails?.Any() == true)
                     {
-                        // แบบประเมินแบบกลุ่ม - แสดงตาม section
-                        var groupedQuestions = Model.EvaluationDetails
-                            .Where(d => d.Question != null)
-                            .GroupBy(d => d.Question!.Section)
-                            .OrderBy(g => g.Key);
-                        
-                        int overallQuestionIndex = 0;
-                        
-                        @foreach (var sectionGroup in groupedQuestions)
-                        {
-                            <div class="section-group mb-4">
-                                <div class="section-header mb-3 p-3 bg-primary text-white rounded">
-                                    <h5 class="mb-0">
-                                        <i class="fas fa-layer-group me-2"></i>
-                                        @(sectionGroup.Key ?? "ไม่ระบุหมวดหมู่")
-                                    </h5>
-                                </div>
+                        <div class="evaluation-details">
+                            @if (Model.Form?.FormType == 3)
+                            {
+                                // แบบประเมินแบบกลุ่ม - แสดงตาม section
+                                var groupedQuestions = Model.EvaluationDetails
+                                    .Where(d => d.Question != null)
+                                    .GroupBy(d => d.Question!.Section)
+                                    .OrderBy(g => g.Key);
                                 
-                                @foreach (var detail in sectionGroup.OrderBy(d => d.Question?.QuestionID))
+                                int overallQuestionIndex = 0;
+                                
+                                @foreach (var sectionGroup in groupedQuestions)
                                 {
-                                    overallQuestionIndex++;
-                                    <div class="detail-item mb-3 p-3 border rounded ms-3">
-                                        <div class="question-header mb-2">
-                                            <h6 class="fw-bold text-primary">
-                                                <i class="fas fa-question-circle me-2"></i>
-                                                คำถามที่ @overallQuestionIndex
-                                            </h6>
-                                            <p class="mb-2">@Html.Raw(detail.Question?.QuestionText?.Replace("\n", "<br>"))</p>
+                                    @foreach (var detail in sectionGroup.OrderBy(d => d.Question?.QuestionID))
+                                    {
+                                        overallQuestionIndex++;
+                                        <div class="question-slide" data-question-index="@(overallQuestionIndex - 1)" style="display: none;">
+                                            <div class="section-info mb-3">
+                                                <span class="badge bg-primary">@(sectionGroup.Key ?? "ไม่ระบุหมวดหมู่")</span>
+                                            </div>
+                                            <div class="detail-item p-3 border rounded">
+                                                <div class="question-header mb-3">
+                                                    <h6 class="fw-bold text-primary">
+                                                        <i class="fas fa-question-circle me-2"></i>
+                                                        คำถามที่ @overallQuestionIndex
+                                                    </h6>
+                                                    <p class="mb-3 question-text">@Html.Raw(detail.Question?.QuestionText?.Replace("\n", "<br>"))</p>
+                                                </div>
+                                                <div class="answer-section">
+                                                    <div class="selected-answer p-3 bg-light rounded">
+                                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                                            <strong>คำตอบที่เลือก:</strong>
+                                                            <span class="badge bg-success">@detail.Score คะแนน</span>
+                                                        </div>
+                                                        <div class="answer-text">
+                                                            @{
+                                                                var selectedOption = detail.Question?.Options?.FirstOrDefault(o => o.Value == detail.Score);
+                                                            }
+                                                            @if (selectedOption != null)
+                                                            {
+                                                                <div class="p-2 bg-white rounded border">
+                                                                    @Html.Raw(selectedOption.OptionText?.Replace("\n", "<br>"))
+                                                                </div>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="answer-section">
-                                            <div class="selected-answer p-2 bg-light rounded">
-                                                <strong>คำตอบที่เลือก:</strong>
-                                                <span class="badge bg-success ms-2">@detail.Score คะแนน</span>
-                                                <div class="mt-1">
-                                                    @{
-                                                        var selectedOption = detail.Question?.Options?.FirstOrDefault(o => o.Value == detail.Score);
-                                                    }
-                                                    @if (selectedOption != null)
-                                                    {
-                                                        <span class="text-muted">@Html.Raw(selectedOption.OptionText?.Replace("\n", "<br>"))</span>
-                                                    }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // แบบประเมินมาตรฐาน - แสดงตามลำดับ
+                                int questionIndex = 0;
+                                @foreach (var detail in Model.EvaluationDetails.OrderBy(d => d.Question?.QuestionID))
+                                {
+                                    questionIndex++;
+                                    <div class="question-slide" data-question-index="@(questionIndex - 1)" style="display: none;">
+                                        <div class="detail-item p-3 border rounded">
+                                            <div class="question-header mb-3">
+                                                <h6 class="fw-bold text-primary">
+                                                    <i class="fas fa-question-circle me-2"></i>
+                                                    คำถามที่ @questionIndex
+                                                </h6>
+                                                <p class="mb-3 question-text">@Html.Raw(detail.Question?.QuestionText?.Replace("\n", "<br>"))</p>
+                                            </div>
+                                            <div class="answer-section">
+                                                <div class="selected-answer p-3 bg-light rounded">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <strong>คำตอบที่เลือก:</strong>
+                                                        <span class="badge bg-success">@detail.Score คะแนน</span>
+                                                    </div>
+                                                    <div class="answer-text">
+                                                        @{
+                                                            var selectedOption = detail.Question?.Options?.FirstOrDefault(o => o.Value == detail.Score);
+                                                        }
+                                                        @if (selectedOption != null)
+                                                        {
+                                                            <div class="p-2 bg-white rounded border">
+                                                                @Html.Raw(selectedOption.OptionText?.Replace("\n", "<br>"))
+                                                            </div>
+                                                        }
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 }
-                            </div>
-                        }
+                            }
+                        </div>
+                        
+                        <!-- Navigation Buttons -->
+                        <div class="d-flex justify-content-between mt-4 mb-4">
+                            <button type="button" class="btn btn-outline-secondary" id="prevBtn" onclick="previousQuestion()" style="display: none;">
+                                <i class="fas fa-chevron-left me-2"></i>คำถามก่อนหน้า
+                            </button>
+                            <div></div>
+                            <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                                คำถามถัดไป<i class="fas fa-chevron-right ms-2"></i>
+                            </button>
+                        </div>
                     }
                     else
                     {
-                        // แบบประเมินมาตรฐาน - แสดงตามลำดับ
-                        int questionIndex = 0;
-                        @foreach (var detail in Model.EvaluationDetails.OrderBy(d => d.Question?.QuestionID))
-                        {
-                            questionIndex++;
-                            <div class="detail-item mb-4 p-3 border rounded">
-                                <div class="question-header mb-2">
-                                    <h6 class="fw-bold text-primary">
-                                        <i class="fas fa-question-circle me-2"></i>
-                                        คำถามที่ @questionIndex
-                                    </h6>
-                                    <p class="mb-2">@Html.Raw(detail.Question?.QuestionText?.Replace("\n", "<br>"))</p>
-                                </div>
-                                <div class="answer-section">
-                                    <div class="selected-answer p-2 bg-light rounded">
-                                        <strong>คำตอบที่เลือก:</strong>
-                                        <span class="badge bg-success ms-2">@detail.Score คะแนน</span>
-                                        <div class="mt-1">
-                                            @{
-                                                var selectedOption = detail.Question?.Options?.FirstOrDefault(o => o.Value == detail.Score);
-                                            }
-                                            @if (selectedOption != null)
-                                            {
-                                                <span class="text-muted">@Html.Raw(selectedOption.OptionText?.Replace("\n", "<br>"))</span>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
+                        <div class="text-center text-muted">
+                            <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                            <p>ไม่พบรายละเอียดการตอบคำถาม</p>
+                        </div>
                     }
                 </div>
-            }
-            else
+            </div>
+        </div>
+        
+        <!-- Navigation Sidebar -->
+        <div class="col-md-4">
+            @if (Model.EvaluationDetails?.Any() == true)
             {
-                <div class="text-center text-muted">
-                    <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
-                    <p>ไม่พบรายละเอียดการตอบคำถาม</p>
+                <!-- Question Navigation -->
+                <div class="modern-card sticky-top mb-3" style="top: 20px;">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-map me-2"></i>นำทางคำถาม
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="page-grid" id="pageNavigation">
+                            @{
+                                int totalQuestions = 0;
+                                if (Model.Form?.FormType == 3)
+                                {
+                                    var groupedQuestions = Model.EvaluationDetails
+                                        .Where(d => d.Question != null)
+                                        .GroupBy(d => d.Question!.Section)
+                                        .OrderBy(g => g.Key);
+                                    
+                                    foreach (var sectionGroup in groupedQuestions)
+                                    {
+                                        foreach (var detail in sectionGroup.OrderBy(d => d.Question?.QuestionID))
+                                        {
+                                            totalQuestions++;
+                                            <div class="page-btn" data-page="@(totalQuestions - 1)" onclick="goToQuestion(@(totalQuestions - 1))">
+                                                @totalQuestions
+                                            </div>
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    totalQuestions = Model.EvaluationDetails.Count();
+                                    for (int i = 0; i < totalQuestions; i++)
+                                    {
+                                        <div class="page-btn" data-page="@i" onclick="goToQuestion(@i)">
+                                            @(i + 1)
+                                        </div>
+                                    }
+                                }
+                            }
+                        </div>
+                        <div class="mt-2 text-center">
+                            <small class="text-muted">คลิกเพื่อไปยังคำถามที่ต้องการ</small>
+                        </div>
+                    </div>
                 </div>
             }
         </div>
@@ -197,6 +299,33 @@
             --purple: #6f42c1;
             --teal: #20c997;
             --indigo: #6610f2;
+        }
+
+        /* Custom Severity Color Classes */
+        .text-safe {
+            color: #28a745 !important; /* เขียวเข้ม - ปลอดภัย */
+            font-weight: 600;
+        }
+        
+        .text-low-risk {
+            color: #20c997 !important; /* เขียวอ่อน - เสี่ยงต่ำ */
+            font-weight: 600;
+        }
+        
+        .text-medium-risk {
+            color: #ffc107 !important; /* เหลือง - เสี่ยงปานกลาง */
+            font-weight: 700;
+        }
+        
+        .text-high-risk {
+            color: #fd7e14 !important; /* ส้ม - เสี่ยงสูง */
+            font-weight: 700;
+        }
+        
+        .text-critical {
+            color: #dc3545 !important; /* แดง - อันตรายมาก */
+            font-weight: 700;
+            text-shadow: 0 0 2px rgba(220, 53, 69, 0.3);
         }
 
         .modern-card {
@@ -303,5 +432,178 @@
             background-color: #6c757d;
             border-color: #6c757d;
         }
+
+        /* Navigation Styles */
+        .question-slide {
+            min-height: 300px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .answer-text {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .sticky-top {
+            position: sticky !important;
+        }
+
+        /* Page Navigation Grid */
+        .page-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 0.5rem;
+        }
+
+        .page-btn {
+            aspect-ratio: 1;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .page-btn:hover {
+            background: rgba(81, 195, 183, 0.1);
+            border-color: var(--mint-green);
+        }
+
+        .page-btn.current {
+            background: var(--mint-green);
+            color: white;
+            border-color: var(--mint-green);
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .summary-item label {
+            min-width: 100px;
+            margin-bottom: 0;
+            font-size: 0.9rem;
+        }
+
+        #questionCounter {
+            font-size: 0.9rem;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .section-info {
+            margin-bottom: 1rem;
+        }
+
+        .section-info .badge {
+            font-size: 0.85rem;
+            padding: 0.5rem 0.75rem;
+        }
     </style>
+}
+
+@section Scripts {
+    <script>
+        let currentQuestionIndex = 0;
+        const totalQuestions = @(Model.EvaluationDetails?.Count() ?? 0);
+
+        $(document).ready(function() {
+            if (totalQuestions > 0) {
+                initializeNavigation();
+                showQuestion(0);
+            }
+        });
+
+        function initializeNavigation() {
+            // Hide all questions initially
+            $('.question-slide').hide();
+            
+            // Show first question
+            showQuestion(0);
+        }
+
+        function showQuestion(index) {
+            // Hide all questions
+            $('.question-slide').hide();
+            
+            // Show current question
+            $(`.question-slide[data-question-index="${index}"]`).show();
+            
+            // Update current question index
+            currentQuestionIndex = index;
+            
+            // Update navigation
+            updateNavigation();
+            updateQuestionCounter();
+            updatePageNavigation();
+        }
+
+        function updateNavigation() {
+            const prevBtn = $('#prevBtn');
+            const nextBtn = $('#nextBtn');
+            
+            // Show/hide previous button
+            if (currentQuestionIndex === 0) {
+                prevBtn.hide();
+            } else {
+                prevBtn.show();
+            }
+            
+            // Show/hide next button
+            if (currentQuestionIndex === totalQuestions - 1) {
+                nextBtn.hide();
+            } else {
+                nextBtn.show();
+            }
+        }
+
+        function updateQuestionCounter() {
+            $('#currentQuestion').text(currentQuestionIndex + 1);
+            $('#totalQuestions').text(totalQuestions);
+        }
+
+        function updatePageNavigation() {
+            $('.page-btn').removeClass('current');
+            $(`.page-btn[data-page="${currentQuestionIndex}"]`).addClass('current');
+        }
+
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                showQuestion(currentQuestionIndex - 1);
+            }
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < totalQuestions - 1) {
+                showQuestion(currentQuestionIndex + 1);
+            }
+        }
+
+        function goToQuestion(index) {
+            if (index >= 0 && index < totalQuestions) {
+                showQuestion(index);
+            }
+        }
+
+        // Keyboard navigation
+        $(document).keydown(function(e) {
+            if (e.key === 'ArrowLeft' && currentQuestionIndex > 0) {
+                e.preventDefault();
+                previousQuestion();
+            } else if (e.key === 'ArrowRight' && currentQuestionIndex < totalQuestions - 1) {
+                e.preventDefault();
+                nextQuestion();
+            }
+        });
+    </script>
 }

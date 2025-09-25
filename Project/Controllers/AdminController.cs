@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Project.Models.Entity;
 using Project.Data;
+using Project.Services;
 
 namespace Project.Controllers
 {
@@ -10,10 +11,12 @@ namespace Project.Controllers
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _db;
+        private readonly IPasswordService _passwordService;
 
-        public AdminController(ApplicationDbContext db)
+        public AdminController(ApplicationDbContext db, IPasswordService passwordService)
         {
             _db = db;
+            _passwordService = passwordService;
         }
 
         private async Task SetUserProfileData()
@@ -65,7 +68,6 @@ namespace Project.Controllers
             return View();
         }
 
-        // User Management API Actions
         [HttpGet]
         public async Task<IActionResult> GetUsers(string search = "", string roleFilter = "", string statusFilter = "")
         {
@@ -73,7 +75,6 @@ namespace Project.Controllers
 
             var query = _db.User.Include(u => u.Title).AsQueryable();
 
-            // Apply search filter
             if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(u => u.FirstName.Contains(search) || 
@@ -82,13 +83,11 @@ namespace Project.Controllers
                                        u.Title.TitleName.Contains(search));
             }
 
-            // Apply role filter
             if (!string.IsNullOrEmpty(roleFilter) && int.TryParse(roleFilter, out int roleInt))
             {
                 query = query.Where(u => u.RoleID == roleInt);
             }
 
-            // Apply status filter
             if (!string.IsNullOrEmpty(statusFilter) && bool.TryParse(statusFilter, out bool statusBool))
             {
                 query = query.Where(u => u.IsActive == statusBool);
@@ -139,7 +138,6 @@ namespace Project.Controllers
 
             try
             {
-                // Validate required fields
                 if (string.IsNullOrEmpty(form["Username"]) || string.IsNullOrEmpty(form["Password"]) ||
                     string.IsNullOrEmpty(form["FirstName"]) || string.IsNullOrEmpty(form["LastName"]) ||
                     string.IsNullOrEmpty(form["TitleID"]) || string.IsNullOrEmpty(form["RoleID"]))
@@ -147,20 +145,13 @@ namespace Project.Controllers
                     return Json(new { success = false, message = "กรุณากรอกข้อมูลให้ครบถ้วน" });
                 }
 
-                // Check if username already exists
                 var existingUser = await _db.User.FirstOrDefaultAsync(u => u.Username == form["Username"].ToString());
                 if (existingUser != null)
                 {
                     return Json(new { success = false, message = "ชื่อผู้ใช้นี้มีอยู่แล้ว" });
                 }
 
-                // Hash password
-                var passwordService = HttpContext.RequestServices.GetService<Services.PasswordService>();
-                if (passwordService == null)
-                {
-                    return Json(new { success = false, message = "ไม่พบ Password Service" });
-                }
-                var hashedPassword = passwordService.HashPassword(form["Password"].ToString()!);
+                var hashedPassword = _passwordService.HashPassword(form["Password"].ToString()!);
 
                 var user = new User
                 {
@@ -203,7 +194,6 @@ namespace Project.Controllers
                     return Json(new { success = false, message = "ไม่พบผู้ใช้" });
                 }
 
-                // Validate required fields
                 if (string.IsNullOrEmpty(form["Username"]) || string.IsNullOrEmpty(form["FirstName"]) ||
                     string.IsNullOrEmpty(form["LastName"]) || string.IsNullOrEmpty(form["TitleID"]) ||
                     string.IsNullOrEmpty(form["RoleID"]))
@@ -211,7 +201,6 @@ namespace Project.Controllers
                     return Json(new { success = false, message = "กรุณากรอกข้อมูลให้ครบถ้วน" });
                 }
 
-                // Check if username is already taken by another user
                 var existingUser = await _db.User.FirstOrDefaultAsync(u => u.Username == form["Username"].ToString() && u.UserID != userId);
                 if (existingUser != null)
                 {
@@ -224,14 +213,9 @@ namespace Project.Controllers
                 user.Username = form["Username"].ToString()!;
                 user.RoleID = int.Parse(form["RoleID"].ToString()!);
 
-                // Update password if provided
                 if (!string.IsNullOrEmpty(form["Password"]))
                 {
-                    var passwordService = HttpContext.RequestServices.GetService<Project.Services.PasswordService>();
-                    if (passwordService != null)
-                    {
-                        user.PasswordHash = passwordService.HashPassword(form["Password"].ToString()!);
-                    }
+                    user.PasswordHash = _passwordService.HashPassword(form["Password"].ToString()!);
                 }
 
                 await _db.SaveChangesAsync();

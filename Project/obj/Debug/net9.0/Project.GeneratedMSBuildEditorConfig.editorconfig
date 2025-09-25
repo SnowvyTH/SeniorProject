@@ -56,8 +56,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/Project/Project/Views/HP/EvaluationDetail.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSFBcRXZhbHVhdGlvbkRldGFpbC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/Project/Project/Views/HP/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSFBcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Project/Project/Views/HP/Patients.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSFBcUGF0aWVudHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Project/Project/Views/Pharma/CreateForm.cshtml]
@@ -80,10 +88,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGhhcm1hXEV2YWx1YXRpb25Gb3JtLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Project/Project/Views/Pharma/EvaluationPDF.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGhhcm1hXEV2YWx1YXRpb25QREYuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
 [D:/Project/Project/Views/Pharma/Forms.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGhhcm1hXEZvcm1zLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -100,10 +104,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGhhcm1hXFByb2ZpbGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/Project/Project/Views/Pharma/StartEvaluation.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGhhcm1hXFN0YXJ0RXZhbHVhdGlvbi5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
 [D:/Project/Project/Views/Pharma/Treatments.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGhhcm1hXFRyZWF0bWVudHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -114,6 +114,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [D:/Project/Project/Views/Shared/_AdminLayout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9BZG1pbkxheW91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/Project/Project/Views/Shared/_HPLayout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9IUExheW91dC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/Project/Project/Views/Shared/_PharmaLayout.cshtml]

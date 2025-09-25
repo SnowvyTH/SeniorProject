@@ -152,7 +152,6 @@ D:\Project\Project\obj\Debug\net9.0\rjsmcshtml.dswa.cache.json
 D:\Project\Project\obj\Debug\net9.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 D:\Project\Project\obj\Debug\net9.0\scopedcss\bundle\Project.styles.css
 D:\Project\Project\obj\Debug\net9.0\scopedcss\projectbundle\Project.bundle.scp.css
-D:\Project\Project\obj\Debug\net9.0\compressed\ir86nxngkb-61n19gt1b8.gz
 D:\Project\Project\obj\Debug\net9.0\compressed\pny6gljfzy-xtxxf3hu2r.gz
 D:\Project\Project\obj\Debug\net9.0\compressed\h5kjrugxa6-bqjiyaj88i.gz
 D:\Project\Project\obj\Debug\net9.0\compressed\6wo08u1ia8-c2jlpeoesf.gz
@@ -241,6 +240,13 @@ d:\Project\Project\bin\Debug\net9.0\itext.styledxmlparser.dll
 d:\Project\Project\bin\Debug\net9.0\itext.svg.dll
 d:\Project\Project\bin\Debug\net9.0\itext.commons.dll
 d:\Project\Project\bin\Debug\net9.0\Microsoft.DotNet.PlatformAbstractions.dll
-d:\Project\Project\bin\Debug\net9.0\BouncyCastle.Cryptography.dll
-d:\Project\Project\bin\Debug\net9.0\itext.bouncy-castle-adapter.dll
-d:\Project\Project\bin\Debug\net9.0\itext.font_asian.dll
+D:\Project\Project\bin\Debug\net9.0\BouncyCastle.Cryptography.dll
+D:\Project\Project\bin\Debug\net9.0\itext.bouncy-castle-adapter.dll
+D:\Project\Project\bin\Debug\net9.0\itext.html2pdf.dll
+D:\Project\Project\bin\Debug\net9.0\Razor.Templating.Core.dll
+D:\Project\Project\obj\Debug\net9.0\Project.MvcApplicationPartsAssemblyInfo.cs
+D:\Project\Project\obj\Debug\net9.0\compressed\xohpv7tp7j-rgnswa8fv7.gz
+D:\Project\Project\obj\Debug\net9.0\compressed\1vbndpapma-1dljn267ol.gz
+D:\Project\Project\obj\Debug\net9.0\compressed\calkufgl2x-n4i0zh21v8.gz
+D:\Project\Project\obj\Debug\net9.0\compressed\at6r7p1kze-o21wahxuga.gz
+D:\Project\Project\obj\Debug\net9.0\compressed\4m6l9iwdi7-al8r27nwld.gz

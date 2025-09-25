@@ -491,12 +491,13 @@
         // Copy all the functions from CreateForm.cshtml for handling questions, sections, and options
         function addQuestion(questionData = null) {
             questionsCount++;
+            let questionId = questionData ? questionData.questionID || 0 : 0;
             let questionHtml = '';
             
             if (selectedFormType === 1) {
                 // ประเภท 1: แบบประเมินมาตรฐาน
                 questionHtml = `
-                    <div class="question-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-question="${questionsCount}">
+                    <div class="question-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-question="${questionsCount}" data-question-id="${questionId}">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h6 class="fw-bold text-primary mb-0"><i class="fas fa-question-circle me-2"></i>คำถามที่ ${questionsCount}</h6>
                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestion(${questionsCount})">
@@ -504,7 +505,7 @@
                             </button>
                         </div>
                         <div class="mb-3">
-                            <input type="text" class="form-control form-control-lg question-text" placeholder="กรอกคำถาม" value="${questionData ? questionData.questionText : ''}" required>
+                            <input type="text" class="form-control form-control-lg question-text" placeholder="กรอกคำถาม" value="${questionData ? questionData.questionText || '' : ''}" required>
                         </div>
                         <div class="options-container" data-question="${questionsCount}">
                         </div>
@@ -512,7 +513,7 @@
             } else if (selectedFormType === 2) {
                 // ประเภท 2: แบบประเมินข้อความยาว
                 questionHtml = `
-                    <div class="question-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-question="${questionsCount}">
+                    <div class="question-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-question="${questionsCount}" data-question-id="${questionId}">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h6 class="fw-bold text-success mb-0"><i class="fas fa-question-circle me-2"></i>คำถามที่ ${questionsCount}</h6>
                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestion(${questionsCount})">
@@ -521,7 +522,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">คำถาม</label>
-                            <textarea class="form-control question-text" rows="3" placeholder="กรอกคำถาม (สามารถพิมพ์ข้อความยาวได้)" required>${questionData ? questionData.questionText : ''}</textarea>
+                            <textarea class="form-control question-text" rows="3" placeholder="กรอกคำถาม (สามารถพิมพ์ข้อความยาวได้)" required>${questionData ? questionData.questionText || '' : ''}</textarea>
                         </div>
                         <div class="options-container" data-question="${questionsCount}">
                         </div>
@@ -577,8 +578,9 @@
         
         function addQuestionToSection(sectionId, questionData = null) {
             let sectionQuestionsCount = $(`.questions-in-section[data-section="${sectionId}"] .question-in-section-item`).length + 1;
+            let questionId = questionData ? questionData.questionID || 0 : 0;
             let questionHtml = `
-                <div class="question-in-section-item mb-3 p-3 rounded-2" style="background: #ffffff; border: 1px solid #e0e0e0;" data-question="${sectionId}-${sectionQuestionsCount}">
+                <div class="question-in-section-item mb-3 p-3 rounded-2" style="background: #ffffff; border: 1px solid #e0e0e0;" data-question="${sectionId}-${sectionQuestionsCount}" data-question-id="${questionId}">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <h6 class="fw-bold text-secondary mb-0"><i class="fas fa-question-circle me-2"></i>คำถามย่อยที่ ${sectionQuestionsCount}</h6>
                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeQuestionFromSection('${sectionId}-${sectionQuestionsCount}')">
@@ -586,7 +588,7 @@
                         </button>
                     </div>
                     <div class="mb-3">
-                        <input type="text" class="form-control question-text" placeholder="กรอกคำถาม" value="${questionData ? questionData.questionText : ''}" required>
+                        <input type="text" class="form-control question-text" placeholder="กรอกคำถาม" value="${questionData ? questionData.questionText || '' : ''}" required>
                     </div>
                     <div class="options-container" data-question="${sectionId}-${sectionQuestionsCount}">
                     </div>
@@ -607,15 +609,16 @@
         
         function addOption(questionId, optionData = null) {
             let optionCount = $(`.options-container[data-question="${questionId}"] .option-item`).length + 1;
+            let optionId = optionData ? optionData.optionID || 0 : 0;
             let optionHtml = '';
             
             if (selectedFormType === 1) {
                 // ประเภท 1: แบบประเมินมาตรฐาน
                 optionHtml = `
-                    <div class="option-item mb-2">
+                    <div class="option-item mb-2" data-option-id="${optionId}">
                         <div class="input-group">
-                            <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ ${optionCount}" value="${optionData ? optionData.optionText : ''}" required>
-                            <input type="number" class="form-control option-value" style="max-width: 100px;" placeholder="คะแนน" value="${optionData ? optionData.value : ''}" required>
+                            <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ ${optionCount}" value="${optionData ? optionData.optionText || '' : ''}" required>
+                            <input type="number" class="form-control option-value" style="max-width: 100px;" placeholder="คะแนน" value="${optionData ? optionData.value || '' : ''}" required>
                             ${optionCount === 1 ? `<button class="btn btn-outline-success" type="button" onclick="addOption('${questionId}')"><i class="fas fa-plus"></i></button>` : ''}
                             ${optionCount > 1 ? `<button class="btn btn-outline-danger" type="button" onclick="$(this).closest('.option-item').remove()"><i class="fas fa-minus"></i></button>` : ''}
                         </div>
@@ -623,15 +626,15 @@
             } else if (selectedFormType === 2) {
                 // ประเภท 2: แบบประเมินข้อความยาว
                 optionHtml = `
-                    <div class="option-item mb-3">
+                    <div class="option-item mb-3" data-option-id="${optionId}">
                         <div class="row">
                             <div class="col-md-8">
                                 <label class="form-label">ตัวเลือกที่ ${optionCount}</label>
-                                <textarea class="form-control option-text" rows="2" placeholder="กรอกตัวเลือก (สามารถพิมพ์ข้อความยาวได้)" required>${optionData ? optionData.optionText : ''}</textarea>
+                                <textarea class="form-control option-text" rows="2" placeholder="กรอกตัวเลือก (สามารถพิมพ์ข้อความยาวได้)" required>${optionData ? optionData.optionText || '' : ''}</textarea>
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label">คะแนน</label>
-                                <input type="number" class="form-control option-value" placeholder="คะแนน" value="${optionData ? optionData.value : ''}" required>
+                                <input type="number" class="form-control option-value" placeholder="คะแนน" value="${optionData ? optionData.value || '' : ''}" required>
                             </div>
                             <div class="col-md-2 d-flex align-items-end">
                                 ${optionCount === 1 ? `<button class="btn btn-outline-success w-100 mb-2" type="button" onclick="addOption('${questionId}')"><i class="fas fa-plus"></i></button>` : ''}
@@ -642,10 +645,10 @@
             } else if (selectedFormType === 3) {
                 // ประเภท 3: แบบประเมินแบบมี Section
                 optionHtml = `
-                    <div class="option-item mb-2">
+                    <div class="option-item mb-2" data-option-id="${optionId}">
                         <div class="input-group">
-                            <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ ${optionCount} (ไม่บังคับ)" value="${optionData ? optionData.optionText : ''}">
-                            <input type="number" class="form-control option-value" style="max-width: 100px;" placeholder="คะแนน" value="${optionData ? optionData.value : ''}" required>
+                            <input type="text" class="form-control option-text" placeholder="ตัวเลือกที่ ${optionCount} (ไม่บังคับ)" value="${optionData ? optionData.optionText || '' : ''}">
+                            <input type="number" class="form-control option-value" style="max-width: 100px;" placeholder="คะแนน" value="${optionData ? optionData.value || '' : ''}" required>
                             ${optionCount === 1 ? `<button class="btn btn-outline-success" type="button" onclick="addOption('${questionId}')"><i class="fas fa-plus"></i></button>` : ''}
                             ${optionCount > 1 ? `<button class="btn btn-outline-danger" type="button" onclick="$(this).closest('.option-item').remove()"><i class="fas fa-minus"></i></button>` : ''}
                         </div>
@@ -729,8 +732,9 @@
         
         function addResultSetting(interpreterData = null) {
             resultSettingsCount++;
+            let interpreterId = interpreterData ? interpreterData.interID || 0 : 0;
             let resultSettingHtml = `
-                <div class="result-setting-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-result-setting="${resultSettingsCount}">
+                <div class="result-setting-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-result-setting="${resultSettingsCount}" data-interpreter-id="${interpreterId}">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="fw-bold text-primary mb-0"><i class="fas fa-chart-line me-2"></i>ช่วงคะแนนที่ ${resultSettingsCount}</h6>
                         <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeResultSetting(${resultSettingsCount})">
@@ -858,14 +862,16 @@
                     let sectionName = $(this).find('.section-name').val();
                     $(this).find('.question-in-section-item').each(function() {
                         let questionText = $(this).find('.question-text').val();
-                        let questionId = $(this).data('question');
+                        let questionId = $(this).data('question-id') || 0; // Get actual question ID
                         let options = [];
                         
                         $(this).find('.option-item').each(function() {
                             let optionText = $(this).find('.option-text').val();
                             let optionValue = $(this).find('.option-value').val();
+                            let optionId = $(this).data('option-id') || 0; // Get actual option ID
                             if (optionValue) {
                                 options.push({
+                                    optionID: optionId,
                                     optionText: optionText || '',
                                     value: parseInt(optionValue)
                                 });
@@ -874,6 +880,7 @@
                         
                         if (questionText.trim()) {
                             questionsData.push({
+                                questionID: questionId,
                                 questionText: questionText,
                                 section: sectionName,
                                 options: options
@@ -885,13 +892,16 @@
                 // Type 1 and 2: Standard questions
                 $('.question-item').each(function() {
                     let questionText = $(this).find('.question-text').val();
+                    let questionId = $(this).data('question-id') || 0; // Get actual question ID
                     let options = [];
                     
                     $(this).find('.option-item').each(function() {
                         let optionText = $(this).find('.option-text').val();
                         let optionValue = $(this).find('.option-value').val();
+                        let optionId = $(this).data('option-id') || 0; // Get actual option ID
                         if (optionText.trim() && optionValue) {
                             options.push({
+                                optionID: optionId,
                                 optionText: optionText,
                                 value: parseInt(optionValue)
                             });
@@ -900,6 +910,7 @@
                     
                     if (questionText.trim() && options.length > 0) {
                         questionsData.push({
+                            questionID: questionId,
                             questionText: questionText,
                             section: null,
                             options: options
@@ -915,9 +926,11 @@
                 let maxScore = $(this).find('.max-score').val();
                 let interName = $(this).find('.result-name').val();
                 let interText = $(this).find('.result-text').val();
+                let interpreterId = $(this).data('interpreter-id') || 0; // Get actual interpreter ID
                 
                 if (minScore && maxScore) {
                     interpretersData.push({
+                        interpreterID: interpreterId,
                         minScore: parseInt(minScore),
                         maxScore: parseInt(maxScore),
                         interName: interName || '',
@@ -942,19 +955,95 @@
                 contentType: false,
                 success: function(result) {
                     if (result.success) {
+                        let successMessage = 'แก้ไขแบบประเมินเรียบร้อยแล้ว';
+                        if (result.deletedEvaluations > 0) {
+                            successMessage += ` (ลบประวัติการประเมิน ${result.deletedEvaluations} รายการ)`;
+                        }
+                        
                         Swal.fire({
                             icon: 'success',
                             title: 'บันทึกสำเร็จ!',
-                            text: 'แก้ไขแบบประเมินเรียบร้อยแล้ว',
+                            text: successMessage,
                             confirmButtonColor: '#51c3b7'
                         }).then(() => {
                             window.location.href = '@Url.Action("Forms", "Pharma")';
+                        });
+                    } else if (result.requiresForceUpdate) {
+                        // แสดงคำเตือนการลบข้อมูลที่เกี่ยวข้อง
+                        Swal.fire({
+                            title: 'ต้องการลบประวัติการประเมินหรือไม่?',
+                            html: `
+                                <div class="text-start">
+                                    <p class="mb-2"><strong>เหตุผล:</strong> ${result.message}</p>
+                                    <p class="mb-2"><strong>ข้อมูลที่จะถูกลบ:</strong></p>
+                                    <ul class="text-muted">
+                                        <li>ประวัติการประเมิน: ${result.affectedEvaluations} รายการ</li>
+                                        <li>รายละเอียดการประเมินที่เกี่ยวข้อง</li>
+                                    </ul>
+                                    <div class="alert alert-warning mt-3 mb-0">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>คำเตือน:</strong> การดำเนินการนี้ไม่สามารถย้อนกลับได้
+                                    </div>
+                                </div>
+                            `,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#51c3b7',
+                            confirmButtonText: 'ลบและดำเนินการต่อ',
+                            cancelButtonText: 'ยกเลิก',
+                            width: '500px'
+                        }).then((confirmResult) => {
+                            if (confirmResult.isConfirmed) {
+                                // ส่งข้อมูลอีกครั้งพร้อม forceUpdate = true
+                                formData.append('forceUpdate', 'true');
+                                
+                                $.ajax({
+                                    url: '@Url.Action("UpdateForm", "Pharma")',
+                                    type: 'POST',
+                                    data: formData,
+                                    processData: false,
+                                    contentType: false,
+                                    success: function(forceResult) {
+                                        if (forceResult.success) {
+                                            let successMessage = 'แก้ไขแบบประเมินเรียบร้อยแล้ว';
+                                            if (forceResult.deletedEvaluations > 0) {
+                                                successMessage += ` (ลบประวัติการประเมิน ${forceResult.deletedEvaluations} รายการ)`;
+                                            }
+                                            
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: 'บันทึกสำเร็จ!',
+                                                text: successMessage,
+                                                confirmButtonColor: '#51c3b7'
+                                            }).then(() => {
+                                                window.location.href = '@Url.Action("Forms", "Pharma")';
+                                            });
+                                        } else {
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'เกิดข้อผิดพลาด',
+                                                text: 'เกิดข้อผิดพลาดในการบันทึก: ' + forceResult.message,
+                                                confirmButtonColor: '#51c3b7'
+                                            });
+                                        }
+                                    },
+                                    error: function(xhr, status, error) {
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'เกิดข้อผิดพลาด',
+                                            text: 'เกิดข้อผิดพลาดในการบันทึก: ' + error,
+                                            confirmButtonColor: '#51c3b7'
+                                        });
+                                    }
+                                });
+                            }
                         });
                     } else {
                         Swal.fire({
                             icon: 'error',
                             title: 'เกิดข้อผิดพลาด',
-                            text: 'เกิดข้อผิดพลาดในการบันทึก: ' + result.message,
+                            text: result.message,
                             confirmButtonColor: '#51c3b7'
                         });
                     }

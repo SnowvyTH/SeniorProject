@@ -10,9 +10,10 @@
         "dependencies": {
           "Microsoft.EntityFrameworkCore.SqlServer": "9.0.7",
           "Microsoft.EntityFrameworkCore.Tools": "9.0.7",
-          "itext7": "9.2.0",
-          "itext7.bouncy-castle-adapter": "9.2.0",
-          "itext7.font-asian": "9.2.0"
+          "Razor.Templating.Core": "2.1.0",
+          "itext": "9.3.0",
+          "itext.bouncy-castle-adapter": "9.3.0",
+          "itext.pdfhtml": "6.2.1"
         },
         "runtime": {
           "Project.dll": {}
@@ -53,11 +54,11 @@
           }
         }
       },
-      "BouncyCastle.Cryptography/2.4.0": {
+      "BouncyCastle.Cryptography/2.6.2": {
         "runtime": {
           "lib/net6.0/BouncyCastle.Cryptography.dll": {
             "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.4.0.33771"
+            "fileVersion": "2.6.2.46322"
           }
         }
       },
@@ -69,7 +70,7 @@
           }
         }
       },
-      "itext/9.2.0": {
+      "itext/9.3.0": {
         "dependencies": {
           "Microsoft.DotNet.PlatformAbstractions": "1.1.0",
           "Microsoft.Extensions.DependencyModel": "9.0.7",
@@ -80,105 +81,94 @@
           "System.Runtime.Loader": "4.3.0",
           "System.Runtime.Serialization.Formatters": "4.3.0",
           "System.Security.Cryptography.Csp": "4.3.0",
+          "System.Security.Cryptography.Xml": "6.0.2",
           "System.Text.Encoding.CodePages": "6.0.0",
           "System.Text.RegularExpressions": "4.3.1",
           "System.Threading.Thread": "4.3.0",
           "System.Threading.ThreadPool": "4.3.0",
           "System.Xml.XmlDocument": "4.3.0",
-          "itext.commons": "9.2.0"
+          "itext.commons": "9.3.0"
         },
         "runtime": {
           "lib/netstandard2.0/itext.barcodes.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           },
           "lib/netstandard2.0/itext.bouncy-castle-connector.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           },
           "lib/netstandard2.0/itext.forms.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           },
           "lib/netstandard2.0/itext.io.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           },
           "lib/netstandard2.0/itext.kernel.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           },
           "lib/netstandard2.0/itext.layout.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           },
           "lib/netstandard2.0/itext.pdfa.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           },
           "lib/netstandard2.0/itext.pdfua.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           },
           "lib/netstandard2.0/itext.sign.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           },
           "lib/netstandard2.0/itext.styledxmlparser.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           },
           "lib/netstandard2.0/itext.svg.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           }
         }
       },
-      "itext.bouncy-castle-adapter/9.2.0": {
+      "itext.bouncy-castle-adapter/9.3.0": {
         "dependencies": {
-          "BouncyCastle.Cryptography": "2.4.0",
-          "itext.commons": "9.2.0"
+          "BouncyCastle.Cryptography": "2.6.2",
+          "itext.commons": "9.3.0"
         },
         "runtime": {
           "lib/netstandard2.0/itext.bouncy-castle-adapter.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           }
         }
       },
-      "itext.commons/9.2.0": {
+      "itext.commons/9.3.0": {
         "dependencies": {
           "Microsoft.Extensions.Logging": "9.0.7",
           "System.Text.Json": "9.0.7"
         },
         "runtime": {
           "lib/netstandard2.0/itext.commons.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+            "assemblyVersion": "9.3.0.0",
+            "fileVersion": "9.3.0.0"
           }
         }
       },
-      "itext.font-asian/9.2.0": {
+      "itext.pdfhtml/6.2.1": {
+        "dependencies": {
+          "itext": "9.3.0"
+        },
         "runtime": {
-          "lib/netstandard2.0/itext.font_asian.dll": {
-            "assemblyVersion": "9.2.0.0",
-            "fileVersion": "9.2.0.0"
+          "lib/netstandard2.0/itext.html2pdf.dll": {
+            "assemblyVersion": "6.2.1.0",
+            "fileVersion": "6.2.1.0"
           }
-        }
-      },
-      "itext7/9.2.0": {
-        "dependencies": {
-          "itext": "9.2.0"
-        }
-      },
-      "itext7.bouncy-castle-adapter/9.2.0": {
-        "dependencies": {
-          "itext.bouncy-castle-adapter": "9.2.0"
-        }
-      },
-      "itext7.font-asian/9.2.0": {
-        "dependencies": {
-          "itext.font-asian": "9.2.0"
         }
       },
       "Microsoft.Bcl.AsyncInterfaces/7.0.0": {
@@ -897,6 +887,14 @@
           }
         }
       },
+      "Razor.Templating.Core/2.1.0": {
+        "runtime": {
+          "lib/net6.0/Razor.Templating.Core.dll": {
+            "assemblyVersion": "2.1.0.0",
+            "fileVersion": "2.1.0.0"
+          }
+        }
+      },
       "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {},
       "runtime.fedora.23-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {},
       "runtime.fedora.24-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {},
@@ -1395,6 +1393,7 @@
           "runtime.native.System.Security.Cryptography.OpenSsl": "4.3.0"
         }
       },
+      "System.Security.Cryptography.Pkcs/6.0.5": {},
       "System.Security.Cryptography.Primitives/4.3.0": {
         "dependencies": {
           "System.Diagnostics.Debug": "4.3.0",
@@ -1420,6 +1419,11 @@
             "assemblyVersion": "6.0.0.0",
             "fileVersion": "6.0.21.52210"
           }
+        }
+      },
+      "System.Security.Cryptography.Xml/6.0.2": {
+        "dependencies": {
+          "System.Security.Cryptography.Pkcs": "6.0.5"
         }
       },
       "System.Security.Permissions/6.0.0": {
@@ -1566,12 +1570,12 @@
       "path": "azure.identity/1.11.4",
       "hashPath": "azure.identity.1.11.4.nupkg.sha512"
     },
-    "BouncyCastle.Cryptography/2.4.0": {
+    "BouncyCastle.Cryptography/2.6.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-SwXsAV3sMvAU/Nn31pbjhWurYSjJ+/giI/0n6tCrYoupEK34iIHCuk3STAd9fx8yudM85KkLSVdn951vTng/vQ==",
-      "path": "bouncycastle.cryptography/2.4.0",
-      "hashPath": "bouncycastle.cryptography.2.4.0.nupkg.sha512"
+      "sha512": "sha512-7oWOcvnntmMKNzDLsdxAYqApt+AjpRpP2CShjMfIa3umZ42UQMvH0tl1qAliYPNYO6vTdcGMqnRrCPmsfzTI1w==",
+      "path": "bouncycastle.cryptography/2.6.2",
+      "hashPath": "bouncycastle.cryptography.2.6.2.nupkg.sha512"
     },
     "Humanizer.Core/2.14.1": {
       "type": "package",
@@ -1580,54 +1584,33 @@
       "path": "humanizer.core/2.14.1",
       "hashPath": "humanizer.core.2.14.1.nupkg.sha512"
     },
-    "itext/9.2.0": {
+    "itext/9.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-UL1BBg5x3COlcZTPOy/+v0rpbYFtvq7H91fs66rRQ4iMJcQx8TiEo6LCpuwvLTTGFkJZ1FWcWr2aekUkQt6zhg==",
-      "path": "itext/9.2.0",
-      "hashPath": "itext.9.2.0.nupkg.sha512"
+      "sha512": "sha512-VFfpdCRnntNzaEp154l5UxHs/Gbg9JKBjUAEf3zuEH+4QBz3FzyyygImt93Ul5nmTdTPoQ5hjUiG/K3heacbyg==",
+      "path": "itext/9.3.0",
+      "hashPath": "itext.9.3.0.nupkg.sha512"
     },
-    "itext.bouncy-castle-adapter/9.2.0": {
+    "itext.bouncy-castle-adapter/9.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-qn2exafWaUTDK45co7U76BZvQ2xcIz8F1X0lkc9icH86kZOfZZr89qkM7wIIN9R/9nvsC7ErF60whcgLmBYBpA==",
-      "path": "itext.bouncy-castle-adapter/9.2.0",
-      "hashPath": "itext.bouncy-castle-adapter.9.2.0.nupkg.sha512"
+      "sha512": "sha512-C7q8wbwDyc2npzKBRF46KnueJON6in3QEdPlsz7VvXDqClRF1C0VfE6HwVCpJJ5Q5qADNSYNbtXFZgD7T1/51g==",
+      "path": "itext.bouncy-castle-adapter/9.3.0",
+      "hashPath": "itext.bouncy-castle-adapter.9.3.0.nupkg.sha512"
     },
-    "itext.commons/9.2.0": {
+    "itext.commons/9.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-TWZ3q5Dcfsmpl9UN9XEDWL4W7yTxWpx43LeEUHzJUOMEuN9mV9JV5J5aek5sbahCB8Lg9UPULcKpqz499gZxWA==",
-      "path": "itext.commons/9.2.0",
-      "hashPath": "itext.commons.9.2.0.nupkg.sha512"
+      "sha512": "sha512-kSoAGkXjI0vASBREnT1rvhUae1xQX2jd/W5ot0pmaqeurzpVGP04u10Mk0DqZZBTDaF5p/g9KRFnqxhjfOE2hA==",
+      "path": "itext.commons/9.3.0",
+      "hashPath": "itext.commons.9.3.0.nupkg.sha512"
     },
-    "itext.font-asian/9.2.0": {
+    "itext.pdfhtml/6.2.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-3v9uRCASyqikNdu7zQeMmCW0q1MxDXXEWyUIB3pwwnC27CYY3gu2jRIzN2pCbUTpIRjn3PazbmOo1ODsOxKs5w==",
-      "path": "itext.font-asian/9.2.0",
-      "hashPath": "itext.font-asian.9.2.0.nupkg.sha512"
-    },
-    "itext7/9.2.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-fsOz8BpXlMN5GJM+7gdpUCqYhOR4GWKT3krnhB6Tbwio7QxIMyos3x7DTfdYsDAPOojr+NW/iKmnDCB4Vc9xWg==",
-      "path": "itext7/9.2.0",
-      "hashPath": "itext7.9.2.0.nupkg.sha512"
-    },
-    "itext7.bouncy-castle-adapter/9.2.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-EmcyTAm63zZm8lkrvjcgsVQ8vERrROTDzl1awvdTCoOUIZ8PNjHQdMn1CjF4LDl1W3diifGB+wYOSpRGHCkvNg==",
-      "path": "itext7.bouncy-castle-adapter/9.2.0",
-      "hashPath": "itext7.bouncy-castle-adapter.9.2.0.nupkg.sha512"
-    },
-    "itext7.font-asian/9.2.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-tQ68NLfXnQjawl3aRaRBCH1h7wGicJK8e/ojg8uZ3lkfGEFqUiFq+mFEQkS/n4+ssFO6cJfsXVXe5EeduDkakQ==",
-      "path": "itext7.font-asian/9.2.0",
-      "hashPath": "itext7.font-asian.9.2.0.nupkg.sha512"
+      "sha512": "sha512-Fp10GdAVk0XNirrhryo4Z5ya+Cg1A3NqCYPz7fHlPkCgcGCHRISF4CBJnZe9+64jSc/XVg22w6jt2xp0dD+OxQ==",
+      "path": "itext.pdfhtml/6.2.1",
+      "hashPath": "itext.pdfhtml.6.2.1.nupkg.sha512"
     },
     "Microsoft.Bcl.AsyncInterfaces/7.0.0": {
       "type": "package",
@@ -1943,6 +1926,13 @@
       "sha512": "sha512-YqueG52R/Xej4VVbKuRIodjiAhV0HR/XVbLbNrJhCZnzjnSjgMJ/dCdV0akQQxavX6hp/LC6rqLGLcXeQYU7XA==",
       "path": "mono.texttemplating/3.0.0",
       "hashPath": "mono.texttemplating.3.0.0.nupkg.sha512"
+    },
+    "Razor.Templating.Core/2.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-bZFEUp+ZYdEb51zJNsuXd3IEvkz0Y6OAqF4bnJzq/B8gRdlY9cA1PkDY6uWnmFANk6whKi6QVypxA8QWRS9LOA==",
+      "path": "razor.templating.core/2.1.0",
+      "hashPath": "razor.templating.core.2.1.0.nupkg.sha512"
     },
     "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {
       "type": "package",
@@ -2406,6 +2396,13 @@
       "path": "system.security.cryptography.encoding/4.3.0",
       "hashPath": "system.security.cryptography.encoding.4.3.0.nupkg.sha512"
     },
+    "System.Security.Cryptography.Pkcs/6.0.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-eWlSq9kImkq+nDaFH/NnxVtzvZB6gRyFW/SLSMrqsR34hyoBx9++NuBrZbBqeE1UXNkl42EyGhuOxuboZCMByg==",
+      "path": "system.security.cryptography.pkcs/6.0.5",
+      "hashPath": "system.security.cryptography.pkcs.6.0.5.nupkg.sha512"
+    },
     "System.Security.Cryptography.Primitives/4.3.0": {
       "type": "package",
       "serviceable": true,
@@ -2419,6 +2416,13 @@
       "sha512": "sha512-rp1gMNEZpvx9vP0JW0oHLxlf8oSiQgtno77Y4PLUBjSiDYoD77Y8uXHr1Ea5XG4/pIKhqAdxZ8v8OTUtqo9PeQ==",
       "path": "system.security.cryptography.protecteddata/6.0.0",
       "hashPath": "system.security.cryptography.protecteddata.6.0.0.nupkg.sha512"
+    },
+    "System.Security.Cryptography.Xml/6.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-8K1hhUWBhVIq0RJxa2M3pUpgcRIDhqwFUq0v44D9vnAsW0yRVLeJiSmDXtsPZOMyqo9uxnzLKWwhsux0NW0thQ==",
+      "path": "system.security.cryptography.xml/6.0.2",
+      "hashPath": "system.security.cryptography.xml.6.0.2.nupkg.sha512"
     },
     "System.Security.Permissions/6.0.0": {
       "type": "package",

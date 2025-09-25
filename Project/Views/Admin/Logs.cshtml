@@ -10,9 +10,6 @@
             <button type="button" class="btn btn-outline-secondary" onclick="refreshLogs()">
                 <i class="fas fa-sync-alt me-1"></i>รีเฟรช
             </button>
-            <button type="button" class="btn btn-outline-danger" onclick="clearOldLogs()">
-                <i class="fas fa-trash me-1"></i>ลบข้อมูลเก่า (30 วัน)
-            </button>
         </div>
     </div>
 
@@ -269,24 +266,5 @@
             loadLogStats();
         }
 
-        function clearOldLogs() {
-            if(confirm('คุณต้องการลบข้อมูลการเข้าใช้งานที่เก่ากว่า 30 วันหรือไม่?\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้')) {
-                $.ajax({
-                    url: '@Url.Action("ClearOldLogs", "Admin")',
-                    method: 'POST',
-                    success: function(response) {
-                        if(response.success) {
-                            alert(`ลบข้อมูลเก่าสำเร็จ (${response.deletedCount} รายการ)`);
-                            refreshLogs();
-                        } else {
-                            alert('เกิดข้อผิดพลาด: ' + response.message);
-                        }
-                    },
-                    error: function() {
-                        alert('เกิดข้อผิดพลาดในการลบข้อมูล');
-                    }
-                });
-            }
-        }
     </script>
 }
