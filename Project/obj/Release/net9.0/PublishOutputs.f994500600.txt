@@ -7,6 +7,11 @@ D:\Project\Project\obj\Release\net9.0\PubTmp\Out\Project.pdb
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\Azure.Core.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\Azure.Identity.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\BouncyCastle.Cryptography.dll
+D:\Project\Project\obj\Release\net9.0\PubTmp\Out\ClosedXML.dll
+D:\Project\Project\obj\Release\net9.0\PubTmp\Out\ClosedXML.Parser.dll
+D:\Project\Project\obj\Release\net9.0\PubTmp\Out\DocumentFormat.OpenXml.dll
+D:\Project\Project\obj\Release\net9.0\PubTmp\Out\DocumentFormat.OpenXml.Framework.dll
+D:\Project\Project\obj\Release\net9.0\PubTmp\Out\ExcelNumberFormat.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\itext.barcodes.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\itext.bouncy-castle-connector.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\itext.forms.dll
@@ -49,10 +54,13 @@ D:\Project\Project\obj\Release\net9.0\PubTmp\Out\Microsoft.IdentityModel.Tokens.
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\Microsoft.SqlServer.Server.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\Microsoft.Win32.SystemEvents.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\Razor.Templating.Core.dll
+D:\Project\Project\obj\Release\net9.0\PubTmp\Out\RBush.dll
+D:\Project\Project\obj\Release\net9.0\PubTmp\Out\SixLabors.Fonts.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\System.ClientModel.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\System.Configuration.ConfigurationManager.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\System.Drawing.Common.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\System.IdentityModel.Tokens.Jwt.dll
+D:\Project\Project\obj\Release\net9.0\PubTmp\Out\System.IO.Packaging.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\System.Memory.Data.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\System.Runtime.Caching.dll
 D:\Project\Project\obj\Release\net9.0\PubTmp\Out\System.Security.Cryptography.ProtectedData.dll

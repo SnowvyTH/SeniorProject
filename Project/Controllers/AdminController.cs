@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Project.Models.Entity;
@@ -41,7 +41,6 @@ namespace Project.Controllers
             ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
             ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
 
-            // ดึงข้อมูลสถิติ
             var patientCount = await _db.Patient.CountAsync();
             var userCount = await _db.User.CountAsync();
             var formCount = await _db.Form.CountAsync();
@@ -267,7 +266,6 @@ namespace Project.Controllers
             return View();
         }
 
-        // Title Management API Actions
         [HttpGet]
         public async Task<IActionResult> GetTitles(string search = "")
         {
@@ -275,7 +273,6 @@ namespace Project.Controllers
 
             var query = _db.Title.AsQueryable();
 
-            // Apply search filter
             if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(t => t.TitleName != null && t.TitleName.Contains(search));
@@ -302,7 +299,6 @@ namespace Project.Controllers
                     return Json(new { success = false, message = "กรุณากรอกคำนำหน้า" });
                 }
 
-                // Check if title already exists
                 var existingTitle = await _db.Title.FirstOrDefaultAsync(t => t.TitleName == form["TitleName"].ToString());
                 if (existingTitle != null)
                 {
@@ -403,7 +399,6 @@ namespace Project.Controllers
             return View();
         }
 
-        // Treatment Management API Actions
         [HttpGet]
         public async Task<IActionResult> GetTreatments(string search = "")
         {
@@ -411,7 +406,6 @@ namespace Project.Controllers
 
             var query = _db.Treatment.AsQueryable();
 
-            // Apply search filter
             if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(t => t.TreatmentName != null && t.TreatmentName.Contains(search));
@@ -437,7 +431,6 @@ namespace Project.Controllers
                     return Json(new { success = false, message = "กรุณากรอกชื่อสิทธิ์การรักษา" });
                 }
 
-                // Check if treatment already exists
                 var existingTreatment = await _db.Treatment.FirstOrDefaultAsync(t => t.TreatmentName == form["TreatmentName"].ToString());
                 if (existingTreatment != null)
                 {
@@ -480,7 +473,6 @@ namespace Project.Controllers
                     return Json(new { success = false, message = "ไม่พบสิทธิ์การรักษา" });
                 }
 
-                // Check if treatment name is already taken by another treatment
                 var existingTreatment = await _db.Treatment.FirstOrDefaultAsync(t => t.TreatmentName == form["TreatmentName"].ToString() && t.TreatmentID != treatmentId);
                 if (existingTreatment != null)
                 {
@@ -512,7 +504,6 @@ namespace Project.Controllers
                     return Json(new { success = false, message = "ไม่พบสิทธิ์การรักษา" });
                 }
 
-                // Check if treatment is being used by any patient
                 var patientsWithTreatment = await _db.Patient.CountAsync(p => p.TreatmentID == treatmentID);
                 if (patientsWithTreatment > 0)
                 {
@@ -541,7 +532,6 @@ namespace Project.Controllers
             return View();
         }
 
-        // Log Management API Actions
         [HttpGet]
         public async Task<IActionResult> GetLogs(string search = "", string dateFrom = "", string dateTo = "", 
             string roleFilter = "", int page = 1, int pageSize = 20)
@@ -553,7 +543,6 @@ namespace Project.Controllers
                     .ThenInclude(u => u.Title)
                 .AsQueryable();
 
-            // Apply search filter
             if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(l => l.User != null && 
@@ -562,7 +551,6 @@ namespace Project.Controllers
                      l.User.Username.Contains(search)));
             }
 
-            // Apply date range filter
             if (!string.IsNullOrEmpty(dateFrom) && DateTime.TryParse(dateFrom, out DateTime fromDate))
             {
                 query = query.Where(l => l.LogDateTime.HasValue && l.LogDateTime.Value.Date >= fromDate.Date);
@@ -573,7 +561,6 @@ namespace Project.Controllers
                 query = query.Where(l => l.LogDateTime.HasValue && l.LogDateTime.Value.Date <= toDate.Date);
             }
 
-            // Apply role filter
             if (!string.IsNullOrEmpty(roleFilter) && int.TryParse(roleFilter, out int roleInt))
             {
                 query = query.Where(l => l.User != null && l.User.RoleID == roleInt);
@@ -662,7 +649,7 @@ namespace Project.Controllers
         [HttpGet]
         public async Task<IActionResult> LoginChart()
         {
-            var endDate = DateTime.Today; // วันที่ปัจจุบัน
+            var endDate = DateTime.Today; 
             var startDate = endDate.AddDays(-11);
 
             var dailyLoginCounts = await _db.Log
@@ -680,10 +667,9 @@ namespace Project.Controllers
             var labels = new List<string>();
             var dataPoints = new List<int>();
 
-            // สร้างข้อมูลสำหรับทุกวันใน 30 วันที่ผ่านมา
             for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
             {
-                labels.Add(date.ToString("dd/MM")); // รูปแบบ "25/07"
+                labels.Add(date.ToString("dd/MM")); 
                 var count = dailyLoginCounts.FirstOrDefault(d => d.Date == date)?.Count ?? 0;
                 dataPoints.Add(count);
             }
@@ -723,11 +709,11 @@ namespace Project.Controllers
                     {
                         case 1:
                             roleName = "เภสัช";
-                            color = "rgba(81, 195, 183, 0.8)"; // Mint green
+                            color = "rgba(81, 195, 183, 0.8)"; 
                             break;
                         case 2:
                             roleName = "หัวหน้าแผนกเภสัช";
-                            color = "rgba(34, 197, 94, 0.8)"; // Green
+                            color = "rgba(34, 197, 94, 0.8)"; 
                             break;
                         case 3:
                             roleName = "ผู้ดูแลระบบ";
@@ -735,7 +721,7 @@ namespace Project.Controllers
                             break;
                         default:
                             roleName = "อื่นๆ";
-                            color = "rgba(239, 68, 68, 0.8)"; // Red
+                            color = "rgba(239, 68, 68, 0.8)"; 
                             break;
                     }
 
@@ -757,7 +743,6 @@ namespace Project.Controllers
             }
         }
 
-        // Profile Picture Management for Admin
         [HttpPost]
         public async Task<IActionResult> UploadUserProfilePicture(int userId, IFormFile profilePicture)
         {
@@ -774,27 +759,23 @@ namespace Project.Controllers
                     return Json(new { success = false, message = "ไม่พบไฟล์รูปภาพ" });
                 }
 
-                // Validate file type
                 var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
                 if (!allowedTypes.Contains(profilePicture.ContentType.ToLower()))
                 {
                     return Json(new { success = false, message = "รูปแบบไฟล์ไม่ถูกต้อง (อนุญาตเฉพาะ JPG, PNG, GIF)" });
                 }
 
-                // Validate file size (5MB)
                 if (profilePicture.Length > 5 * 1024 * 1024)
                 {
                     return Json(new { success = false, message = "ขนาดไฟล์ใหญ่เกินไป (สูงสุด 5MB)" });
                 }
 
-                // Create uploads directory if not exists
                 var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile");
                 if (!Directory.Exists(uploadsPath))
                 {
                     Directory.CreateDirectory(uploadsPath);
                 }
 
-                // Remove old profile picture if exists
                 if (!string.IsNullOrEmpty(user.Picture))
                 {
                     var oldFilePath = Path.Combine(uploadsPath, user.Picture);
@@ -804,23 +785,19 @@ namespace Project.Controllers
                     }
                 }
 
-                // Generate filename using UserID
                 var fileName = $"{user.UserID}{Path.GetExtension(profilePicture.FileName)}";
                 var filePath = Path.Combine(uploadsPath, fileName);
 
-                // Save file
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await profilePicture.CopyToAsync(stream);
                 }
 
-                // Update user profile picture in database
                 user.Picture = fileName;
                 await _db.SaveChangesAsync();
 
                 var pictureUrl = $"/uploads/profile/{fileName}";
                 
-                // Set cache headers to prevent caching of profile pictures
                 Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
                 Response.Headers["Pragma"] = "no-cache";
                 Response.Headers["Expires"] = "0";
@@ -848,7 +825,6 @@ namespace Project.Controllers
                     return Json(new { success = false, message = "ไม่พบข้อมูลผู้ใช้" });
                 }
 
-                // Remove file if exists
                 if (!string.IsNullOrEmpty(user.Picture))
                 {
                     var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profile");
@@ -859,7 +835,6 @@ namespace Project.Controllers
                         System.IO.File.Delete(filePath);
                     }
 
-                    // Update database
                     user.Picture = null;
                     await _db.SaveChangesAsync();
                 }
@@ -875,7 +850,6 @@ namespace Project.Controllers
             }
         }
 
-        // Admin Profile Picture for Navbar
         [HttpGet]
         public async Task<IActionResult> GetCurrentUserProfile()
         {

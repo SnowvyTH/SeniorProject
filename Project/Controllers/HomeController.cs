@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -68,7 +68,6 @@ public class HomeController : Controller
             return View(model);
         }
 
-        // ตรวจสอบว่าบัญชียังใช้งานได้หรือไม่
         if (!user.IsActive)
         {
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
@@ -79,7 +78,6 @@ public class HomeController : Controller
             return View(model);
         }
 
-        // สร้าง Claims สำหรับ Authentication
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
@@ -104,7 +102,6 @@ public class HomeController : Controller
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, 
             new ClaimsPrincipal(claimsIdentity), authProperties);
 
-        // บันทึก Log การเข้าสู่ระบบ
         var log = new Log
         {
             UserID = user.UserID,
@@ -113,7 +110,6 @@ public class HomeController : Controller
         _context.Log.Add(log);
         await _context.SaveChangesAsync();
 
-        // ส่งผลลัพธ์สำหรับ AJAX request
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
         {
             var redirectUrl = user.RoleID switch
@@ -126,12 +122,11 @@ public class HomeController : Controller
             return Json(new { success = true, redirectUrl = redirectUrl });
         }
 
-        // Redirect ตามสิทธิ์ของผู้ใช้
         return user.RoleID switch
         {
-            1 => RedirectToAction("Index", "Pharma"),      // เภสัช
-            2 => RedirectToAction("Index", "HP"),          // หัวหน้าเภสัช
-            3 => RedirectToAction("Index", "Admin"),       // ผู้ดูแลระบบ
+            1 => RedirectToAction("Index", "Pharma"),
+            2 => RedirectToAction("Index", "HP"),
+            3 => RedirectToAction("Index", "Admin"),
             _ => RedirectToAction("AccessDenied")
         };
     }

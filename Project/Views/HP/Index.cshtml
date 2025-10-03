@@ -1,10 +1,10 @@
-@{
+﻿@{
     ViewData["Title"] = "หน้าหลักหัวหน้าเภสัช";
     Layout = "~/Views/Shared/_HPLayout.cshtml";
 }
 
 <div class="container-fluid">
-    <!-- Executive Statistics Banner -->
+    
     <div class="stats-banner">
         <div class="container-fluid">
             <div class="row">
@@ -47,7 +47,7 @@
             </div>
         </div>
     </div>
-    <!-- Global Filters Section -->
+    
     <div class="row">
         <div class="col-md-12">
             <div class="filter-card">
@@ -85,7 +85,7 @@
                                 </span>
                                 <select class="form-select" id="formFilter">
                                     <option value="">ทั้งหมด</option>
-                                    <!-- ตัวเลือกจะโหลดจาก JavaScript -->
+                                    
                                 </select>
                             </div>
                         </div>
@@ -98,36 +98,13 @@
                             </button>
                         </div>
                     </div>
-                    
-                    <!-- Quick Date Filters -->
-                    @* <div class="row mt-3">
-                        <div class="col-12">
-                            <div class="quick-filters">
-                                <span class="me-3 text-muted">
-                                    <i class="fas fa-clock me-1"></i>ช่วงเวลาด่วน:
-                                </span>
-                                <button class="btn btn-outline-primary btn-sm me-2" onclick="setQuickDate('today')">
-                                    <i class="fas fa-calendar-day me-1"></i>วันนี้
-                                </button>
-                                <button class="btn btn-outline-primary btn-sm me-2" onclick="setQuickDate('week')">
-                                    <i class="fas fa-calendar-week me-1"></i>7 วันย้อนหลัง
-                                </button>
-                                <button class="btn btn-outline-primary btn-sm me-2" onclick="setQuickDate('month')">
-                                    <i class="fas fa-calendar-alt me-1"></i>30 วันย้อนหลัง
-                                </button>
-                                <button class="btn btn-outline-secondary btn-sm" onclick="setQuickDate('all')">
-                                    <i class="fas fa-infinity me-1"></i>ทั้งหมด
-                                </button>
-                            </div>
-                        </div>
-                    </div> *@
                 </div>
             </div>
         </div>
     </div>
-    <!-- Charts Row -->
+    
     <div class="row">
-        <!-- Trend Chart -->
+        
         <div class="col-md-8">
             <div class="chart-card">
                 <div class="chart-header">
@@ -141,7 +118,7 @@
             </div>
         </div>
         
-        <!-- Score Distribution -->
+        
         <div class="col-md-4">
             <div class="chart-card">
                 <div class="chart-header">
@@ -158,7 +135,7 @@
                         </div>
                     </div>
                     <div class="distribution-legend mt-3" id="distributionLegend">
-                        <!-- Legend will be populated by JavaScript -->
+                        
                     </div>
                 </div>
             </div>
@@ -673,18 +650,79 @@
             text-align: center;
         }
 
-        /* Responsive Design */
-        @@media (max-width: 768px) {
+        /* Responsive Design - Tablet (iPad) */
+        @@media (max-width: 1024px) and (min-width: 769px) {
+            .container-fluid {
+                padding: 0 20px;
+            }
+            
             .stats-banner {
-                padding: 2rem 0;
-                margin-bottom: 2rem;
+                padding: 0.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .stat-item {
+                padding: 1.5rem;
+                margin: 0 0.3rem;
+            }
+            
+            .stat-icon {
+                width: 55px;
+                height: 55px;
+                margin-right: 1.2rem;
+            }
+            
+            .stat-icon i {
+                font-size: 1.3rem;
+            }
+            
+            .stat-number {
+                font-size: 2.4rem;
+            }
+            
+            .stat-label {
+                font-size: 0.95rem;
+            }
+            
+            .chart-card, .data-card, .filter-card {
+                margin-bottom: 1.2rem;
+            }
+            
+            .chart-body, .card-body {
+                padding: 1rem;
+            }
+            
+            .btn {
+                padding: 0.65rem 1.2rem;
+                font-size: 0.95rem;
+            }
+        }
+
+        /* Responsive Design - Mobile (iPhone and smaller) */
+        @@media (max-width: 768px) {
+            .container-fluid {
+                padding: 0 10px;
+            }
+            
+            .stats-banner {
+                padding: 1rem 0.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .stats-banner .row {
+                margin: 0;
+            }
+            
+            .stats-banner .col-md-4 {
+                padding: 0;
+                margin-bottom: 0.8rem;
             }
             
             .stat-item {
                 flex-direction: column;
                 text-align: center;
-                padding: 1rem;
-                margin: 0.5rem 0;
+                padding: 1.2rem 0.8rem;
+                margin: 0;
             }
             
             .stat-item::after {
@@ -693,7 +731,7 @@
             
             .stat-icon {
                 margin-right: 0;
-                margin-bottom: 1rem;
+                margin-bottom: 0.8rem;
                 width: 50px;
                 height: 50px;
             }
@@ -703,25 +741,192 @@
             }
             
             .stat-number {
-                font-size: 2.2rem;
+                font-size: 2rem;
             }
             
             .stat-label {
-                font-size: 0.9rem;
+                font-size: 0.85rem;
             }
             
             .stat-description {
-                font-size: 0.8rem;
+                font-size: 0.75rem;
             }
             
-            .chart-header {
+            .filter-card .card-body {
+                padding: 0.8rem;
+            }
+            
+            .filter-card .row > div {
+                margin-bottom: 0.8rem;
+            }
+            
+            .filter-card .col-md-6,
+            .filter-card .col-md-3 {
+                padding: 0 0.5rem;
+            }
+            
+            .filter-card label {
+                font-size: 0.85rem;
+                margin-bottom: 0.3rem;
+            }
+            
+            .filter-card .input-group,
+            .filter-card .form-select {
+                font-size: 0.85rem;
+            }
+            
+            .filter-card .btn {
+                width: 100%;
+                margin: 0.3rem 0 !important;
+            }
+            
+            .chart-card, .data-card {
+                margin-bottom: 1rem;
+                border-radius: 12px;
+            }
+            
+            .chart-header, .card-header {
+                padding: 0.8rem 1rem;
                 flex-direction: column;
                 align-items: flex-start;
+            }
+            
+            .chart-header h5, .card-header h5 {
+                font-size: 1rem;
+                margin-bottom: 0.5rem;
             }
             
             .chart-controls {
                 margin-left: 0;
                 margin-top: 0.5rem;
+                width: 100%;
+            }
+            
+            .chart-controls select {
+                width: 100%;
+                font-size: 0.85rem;
+            }
+            
+            .chart-body, .card-body {
+                padding: 0.8rem;
+            }
+            
+            #trendChart {
+                height: 250px !important;
+            }
+            
+            #distributionChartContainer {
+                height: 220px !important;
+                min-height: 220px;
+            }
+            
+            #distributionChart {
+                max-height: 200px !important;
+            }
+            
+            .distribution-legend {
+                gap: 0.4rem;
+            }
+            
+            .legend-item {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.75rem;
+            }
+            
+            .legend-color {
+                width: 12px;
+                height: 12px;
+            }
+            
+            .patient-item, .pharmacist-item, .alert-item {
+                padding: 0.8rem;
+                margin-bottom: 0.5rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .patient-score, .assessment-count {
+                margin-top: 0.5rem;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+            }
+            
+            .quick-filters {
+                padding: 0.8rem;
+            }
+            
+            .quick-filters .btn-outline-primary,
+            .quick-filters .btn-outline-secondary {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.8rem;
+                margin: 0.2rem;
+            }
+        }
+
+        /* Extra small mobile - iPhone SE, etc */
+        @@media (max-width: 480px) {
+            .container-fluid {
+                padding: 0 8px;
+            }
+            
+            .stats-banner {
+                padding: 0.8rem 0.3rem;
+            }
+            
+            .stat-item {
+                padding: 1rem 0.6rem;
+            }
+            
+            .stat-number {
+                font-size: 1.8rem;
+            }
+            
+            .stat-label {
+                font-size: 0.8rem;
+            }
+            
+            .chart-header h5, .card-header h5 {
+                font-size: 0.9rem;
+            }
+            
+            .chart-body, .card-body {
+                padding: 0.6rem;
+            }
+            
+            .form-control, .form-select {
+                font-size: 0.8rem;
+                padding: 0.5rem;
+            }
+            
+            .input-group-text {
+                padding: 0.5rem 0.6rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Landscape orientation for mobile */
+        @@media (max-height: 500px) and (orientation: landscape) {
+            .stats-banner {
+                margin-bottom: 0.5rem;
+            }
+            
+            .stat-item {
+                flex-direction: row;
+                padding: 0.8rem;
+            }
+            
+            .stat-icon {
+                margin-right: 0.8rem;
+                margin-bottom: 0;
+            }
+            
+            .chart-body, .card-body {
+                padding: 0.5rem;
             }
         }
 
@@ -813,31 +1018,24 @@
 @section Scripts {
     <script src="~/js/chart.js"></script>
     <script>
-        // Global variables
         let trendChart;
         let distributionChart;
         
         $(document).ready(function() {
             
-            // ตั้งค่า default dates
             setDefaultDates();
             
-            // โหลดรายการแบบฟอร์มที่มีในระบบ
             loadAvailableForms();
             
-            // โหลดข้อมูล dashboard เริ่มต้น
             loadDashboardData();
             
-            // โหลดข้อมูลกราฟ trend แยกต่างหาก
             setTimeout(() => {
                 loadTrendChartData();
             }, 200);
             
-            // Initialize charts
             initializeTrendChart();
             initializeDistributionChart();
             
-            // Filter event handlers
             $('#applyFilters').on('click', function() {
                 if (validateDateRange()) {
                     applyFilters();
@@ -864,10 +1062,8 @@
                 success: function(forms) {
                     
                     const formSelect = $('#formFilter');
-                    // เคลียร์ options เดิม (ยกเว้น "ทั้งหมด")
                     formSelect.find('option:not(:first)').remove();
                     
-                    // เพิ่ม options ใหม่
                     forms.forEach(function(form) {
                         formSelect.append(new Option(form.formName, form.formName));
                     });
@@ -882,16 +1078,14 @@
             const today = new Date();
             const lastWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
             
-            // ใช้ค่าจาก ViewBag ถ้ามี
             const startDate = '@ViewBag.StartDate' || lastWeek.toISOString().split('T')[0];
             const endDate = '@ViewBag.EndDate' || today.toISOString().split('T')[0];
-            const formType = ''; // เปลี่ยนเป็น "ทั้งหมด" เสมอ
+            const formType = ''; 
             
             $('#startDate').val(startDate);
             $('#endDate').val(endDate);
             $('#formFilter').val(formType);
             
-            // ตั้งค่า max date สำหรับ input
             $('#startDate').attr('max', today.toISOString().split('T')[0]);
             $('#endDate').attr('max', today.toISOString().split('T')[0]);
         }
@@ -900,11 +1094,10 @@
             const startDate = new Date($('#startDate').val());
             const endDate = new Date($('#endDate').val());
             const today = new Date();
-            today.setHours(23, 59, 59, 999); // ตั้งเวลาเป็นท้ายวัน
+            today.setHours(23, 59, 59, 999); 
             
             const messageElement = $('#dateValidationMessage');
             
-            // ตรวจสอบวันที่ไม่เกินวันนี้
             if (startDate > today) {
                 messageElement.text('วันที่เริ่มต้นไม่สามารถเกินวันนี้ได้').show();
                 return false;
@@ -915,7 +1108,6 @@
                 return false;
             }
             
-            // ตรวจสอบวันที่เริ่มต้นต้องไม่เกินวันที่สิ้นสุด
             if (startDate > endDate) {
                 messageElement.text('วันที่เริ่มต้นต้องไม่เกินวันที่สิ้นสุด').show();
                 return false;
@@ -971,17 +1163,15 @@
         }
         
         function updateStatsBanner(data) {
-            // รันตัวเลขแบบ animation
             animateNumber('#totalEvaluations', data.totalEvaluations || 0);
             animateNumber('#activePatients', data.patientsAssessed || 0);
             animateNumber('#highRiskCases', data.severeCases || 0);
         }
         
-        // ฟังก์ชันสำหรับทำ animation ตัวเลขวิ่ง
         function animateNumber(selector, targetValue) {
             const element = $(selector);
             const currentValue = parseInt(element.text()) || 0;
-            const duration = 1000; // 1 วินาที
+            const duration = 1000; 
             const steps = 50;
             const increment = (targetValue - currentValue) / steps;
             let step = 0;
@@ -1024,7 +1214,7 @@
                     endDate = today;
                     break;
                 default:
-                    return; // กำหนดเอง - ไม่ต้องทำอะไร
+                    return; 
             }
             
             $('#startDate').val(startDate.toISOString().split('T')[0]);
@@ -1042,11 +1232,9 @@
             const endDate = $('#endDate').val();
             const formType = $('#formFilter').val();
             
-            // โหลดข้อมูลใหม่
             loadDashboardData();
             updateDistributionChart();
             
-            // บังคับให้กราฟ trend อัพเดท
             setTimeout(() => {
                 loadTrendChartData();
             }, 100);
@@ -1062,17 +1250,14 @@
             $('#quickDateFilter').val('');
             $('#dateValidationMessage').hide();
             
-            // โหลดข้อมูลใหม่
             loadDashboardData();
             updateDistributionChart();
             
-            // บังคับให้กราฟ trend อัพเดท
             setTimeout(() => {
                 loadTrendChartData();
             }, 100);
         }
 
-        // Trend Chart
         function initializeTrendChart() {
             const ctx = document.getElementById('trendChart').getContext('2d');
             
@@ -1080,7 +1265,7 @@
                 type: 'line',
                 data: {
                     labels: [],
-                    datasets: [] // จะโหลดแบบ dynamic ตามแบบฟอร์มที่มีในระบบ
+                    datasets: [] 
                 },
                 options: {
                     responsive: true,
@@ -1129,7 +1314,6 @@
         
         function updateTrendChart(trendData) {
             if (!trendData || trendData.length === 0) {
-                // สร้างข้อมูล empty สำหรับช่วงวันที่ที่เลือก
                 const startDate = new Date($('#startDate').val());
                 const endDate = new Date($('#endDate').val());
                 const dates = [];
@@ -1145,7 +1329,6 @@
                 return;
             }
             
-            // สร้างช่วงวันที่ที่ต้องแสดง
             const startDate = new Date($('#startDate').val());
             const endDate = new Date($('#endDate').val());
             const dates = [];
@@ -1154,11 +1337,9 @@
                 dates.push(new Date(d).toISOString().split('T')[0]);
             }
             
-            // หาแบบฟอร์มที่มีข้อมูลใน trendData
             const availableForms = [...new Set(trendData.map(item => item.formType))];
             const colors = ['#2c5aa0', '#27ae60', '#f39c12', '#e74c3c', '#9b59b6', '#34495e', '#1abc9c', '#f1c40f'];
             
-            // สร้าง datasets สำหรับแต่ละแบบฟอร์ม
             const datasets = availableForms.map((formType, index) => {
                 const formData = dates.map(date => {
                     const record = trendData.find(item => item.date === date && item.formType === formType);
@@ -1171,7 +1352,7 @@
                     label: formType,
                     data: formData,
                     borderColor: color,
-                    backgroundColor: color + '20', // เพิ่ม transparency
+                    backgroundColor: color + '20', 
                     borderWidth: 3,
                     fill: false,
                     tension: 0.4,
@@ -1182,7 +1363,6 @@
                 };
             });
             
-            // ฟอร์แมตวันที่ให้อ่านง่าย
             const formattedDates = dates.map(date => {
                 const d = new Date(date);
                 return d.toLocaleDateString('th-TH', { day: '2-digit', month: '2-digit' });
@@ -1193,7 +1373,6 @@
             trendChart.update();
         }
 
-        // Distribution Chart
         function initializeDistributionChart() {
             const ctx = document.getElementById('distributionChart').getContext('2d');
             distributionChart = new Chart(ctx, {
@@ -1213,7 +1392,7 @@
                     aspectRatio: 1,
                     plugins: {
                         legend: {
-                            display: false // ใช้ custom legend แทน
+                            display: false 
                         },
                         tooltip: {
                             callbacks: {
@@ -1229,7 +1408,6 @@
                 }
             });
             
-            // Load initial data
             updateDistributionChart();
         }
 
@@ -1249,20 +1427,16 @@
                 success: function(data) {
                     
                     if (data && data.length > 0) {
-                        // มีข้อมูล - แสดงกราฟ
                         $('#distributionChart').show();
                         $('#noDataMessage').hide();
                         
-                        // Update chart data
                         distributionChart.data.labels = data.map(item => item.label);
                         distributionChart.data.datasets[0].data = data.map(item => item.count);
                         distributionChart.data.datasets[0].backgroundColor = data.map(item => item.color);
                         distributionChart.update();
                         
-                        // Update legend
                         updateDistributionLegend(data);
                     } else {
-                        // ไม่มีข้อมูล - ซ่อนกราฟและแสดงข้อความ
                         $('#distributionChart').hide();
                         $('#noDataMessage').show();
                         $('#distributionLegend').html('');
@@ -1290,7 +1464,6 @@
 
 
 
-        // Quick Date Filter Functions
         function setQuickDate(period) {
             const today = new Date();
             let startDate, endDate;
@@ -1319,10 +1492,8 @@
             $('#startDate').val(startDate.toISOString().split('T')[0]);
             $('#endDate').val(endDate.toISOString().split('T')[0]);
             
-            // Apply filters immediately
             applyFilters();
             
-            // Show toast notification
             showToast(`ตั้งค่าช่วงเวลา: ${getDateRangeText(period)}`, 'success');
         }
         

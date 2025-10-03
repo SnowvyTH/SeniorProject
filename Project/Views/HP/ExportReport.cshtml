@@ -1,0 +1,689 @@
+﻿@{
+    ViewData["Title"] = "รายงานการประเมิน";
+    Layout = "~/Views/Shared/_HPLayout.cshtml";
+}
+
+<div class="container-fluid">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">
+                <i class="fas fa-file-pdf me-2"></i>รายงานการประเมินผู้ป่วย
+            </h2>
+        </div>
+    </div>
+
+    
+    <div class="modern-card mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-10">
+                    <label class="form-label fw-bold">
+                        เลือกแบบประเมิน
+                    </label>
+                    <select class="form-select" id="formSelect" onchange="loadEvaluations()">
+                        <option value="">-- เลือกแบบประเมินที่ต้องการออกรายงาน --</option>
+                        @foreach (var form in ViewBag.Forms)
+                        {
+                            <option value="@form.FormID">@form.FormName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-2">
+                    <label class="form-label fw-bold">
+                        ออกรายงาน
+                    </label><br />
+                    <button type="button" class="btn btn-danger btn-large me-2" id="exportPdfBtn" onclick="exportToPDF()" disabled>
+                        <i class="fas fa-file-pdf me-2"></i>PDF
+                    </button>
+                    <button type="button" class="btn btn-success btn-large" id="exportExcelBtn" onclick="exportToExcel()" disabled>
+                        <i class="fas fa-file-excel me-2"></i>Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="modern-card" id="dataPreviewCard" style="display: none;">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-table me-2"></i>ข้อมูลรายงาน
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div id="loadingSpinner" class="text-center p-5" style="display: none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">กำลังโหลด...</span>
+                </div>
+                <p class="mt-3 text-muted">กำลังโหลดข้อมูล...</p>
+            </div>
+
+            <div id="noDataMessage" class="text-center p-5" style="display: none;">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">ไม่พบข้อมูลการประเมิน</h5>
+                <p class="text-muted">ยังไม่มีการประเมินในแบบฟอร์มนี้</p>
+            </div>
+
+            <div class="table-responsive" id="dataTable" style="display: none;">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="5%" class="text-center">ลำดับ</th>
+                            <th width="15%">วันที่ประเมิน</th>
+                            <th width="15%">HN</th>
+                            <th width="25%">ชื่อผู้ป่วย</th>
+                            <th width="15%">ความเสี่ยง</th>
+                            <th width="25%">แนวทางปฏิบัติ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="evaluationTableBody">
+                        
+                    </tbody>
+                </table>
+            </div>
+            
+            
+            <div class="mobile-eval-list" id="mobileEvalList" style="display: none;">
+                
+            </div>
+        </div>
+
+
+    </div>
+</div>
+        
+        <div class="card-footer mt-3" id="paginationSection" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted" id="paginationInfo"></small>
+                </div>
+                <ul class="pagination pagination-sm mb-0" id="evaluationPagination">
+                    
+                </ul>
+            </div>
+        </div>
+
+@section Styles {
+    <style>
+        .modern-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: none;
+            background: white;
+        }
+
+        .modern-card .card-header {
+            background: linear-gradient(135deg, #2c5aa0 0%, #3498db 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+        }
+
+        .modern-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .page-title {
+            color: #2c5aa0;
+            font-weight: 700;
+        }
+
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+            background-color: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(44, 90, 160, 0.1);
+        }
+
+        .btn {
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            border: none;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-danger:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            border: none;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .btn-success:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-select:focus {
+            border-color: #2c5aa0;
+            box-shadow: 0 0 0 0.2rem rgba(44, 90, 160, 0.25);
+        }
+
+        .badge {
+            padding: 6px 12px;
+            font-weight: 500;
+            border-radius: 6px;
+        }
+
+        .risk-badge {
+            font-size: 0.9rem;
+        }
+
+        .risk-high {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .risk-medium {
+            background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+            color: white;
+        }
+
+        .risk-low {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+
+        .guideline-text {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            max-width: 300px;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Design for ExportReport Page */
+        
+        /* Tablet (iPad) */
+        @@media (max-width: 1024px) and (min-width: 769px) {
+            .page-title {
+                font-size: 1.6rem;
+            }
+            
+            .modern-card .card-body {
+                padding: 1.2rem;
+            }
+            
+            .table th, .table td {
+                font-size: 0.9rem;
+                padding: 0.6rem;
+            }
+            
+            .btn {
+                padding: 0.6rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Mobile */
+        @@media (max-width: 768px) {
+            .container-fluid {
+                padding: 0 10px;
+            }
+            
+            .page-title {
+                font-size: 1.3rem;
+            }
+            
+            .modern-card {
+                border-radius: 12px;
+            }
+            
+            .modern-card .card-body {
+                padding: 1rem;
+            }
+            
+            .row.g-3 {
+                row-gap: 1rem !important;
+            }
+            
+            .col-10, .col-2 {
+                width: 100% !important;
+            }
+            
+            .btn-large {
+                width: 100%;
+                margin: 0.3rem 0 !important;
+            }
+            
+            #exportExcelBtn {
+                margin-top: 0.5rem !important;
+            }
+            
+            .form-label {
+                font-size: 0.9rem;
+                margin-bottom: 0.3rem;
+            }
+            
+            .form-select {
+                font-size: 0.85rem;
+            }
+            
+            /* Hide table, show mobile cards */
+            .table-responsive {
+                display: none !important;
+            }
+            
+            .mobile-eval-list {
+                display: block !important;
+                padding: 1rem;
+            }
+            
+            .eval-card-mobile {
+                background: #f8f9fa;
+                border-radius: 12px;
+                padding: 1rem;
+                margin-bottom: 1rem;
+                border: 1px solid #e9ecef;
+            }
+            
+            .eval-card-mobile .eval-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 0.8rem;
+                padding-bottom: 0.8rem;
+                border-bottom: 1px solid #dee2e6;
+            }
+            
+            .eval-card-mobile .eval-number {
+                background: var(--primary-color);
+                color: white;
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
+            
+            .eval-card-mobile .eval-date {
+                font-size: 0.85rem;
+                color: #6c757d;
+            }
+            
+            .eval-card-mobile .eval-row {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.4rem 0;
+                font-size: 0.85rem;
+            }
+            
+            .eval-card-mobile .eval-label {
+                color: #6c757d;
+                font-weight: 500;
+            }
+            
+            .eval-card-mobile .eval-value {
+                font-weight: 600;
+                text-align: right;
+                flex: 1;
+                margin-left: 1rem;
+            }
+            
+            .eval-card-mobile .guideline-text {
+                max-width: 100%;
+                font-size: 0.8rem;
+                margin-top: 0.5rem;
+                padding: 0.6rem;
+                background: white;
+                border-radius: 8px;
+                border-left: 3px solid var(--primary-color);
+            }
+            
+            .card-header h5 {
+                font-size: 1rem;
+            }
+            
+            #paginationSection {
+                padding: 1rem;
+            }
+            
+            .pagination {
+                font-size: 0.85rem;
+            }
+            
+            #paginationInfo {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Desktop - Hide mobile cards */
+        @@media (min-width: 769px) {
+            .mobile-eval-list {
+                display: none !important;
+            }
+        }
+
+        /* Extra small mobile */
+        @@media (max-width: 480px) {
+            .page-title {
+                font-size: 1.1rem;
+            }
+            
+            .modern-card {
+                border-radius: 10px;
+            }
+            
+            .eval-card-mobile {
+                padding: 0.8rem;
+            }
+            
+            .eval-card-mobile .eval-row {
+                flex-direction: column;
+                gap: 0.2rem;
+            }
+            
+            .eval-card-mobile .eval-value {
+                text-align: left;
+                margin-left: 0;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/js/pagination.js"></script>
+    <script>
+        let currentPage = 1;
+        const pageSize = 10;
+        let allEvaluations = [];
+        let currentFormName = '';
+
+        function loadEvaluations() {
+            const formId = $('#formSelect').val();
+            
+            if (!formId) {
+                $('#dataPreviewCard').fadeOut();
+                $('#exportPdfBtn').prop('disabled', true);
+                $('#exportExcelBtn').prop('disabled', true);
+                return;
+            }
+
+            $('#dataPreviewCard').fadeIn();
+            $('#loadingSpinner').show();
+            $('#noDataMessage').hide();
+            $('#dataTable').hide();
+            $('#paginationSection').hide();
+            $('#exportPdfBtn').prop('disabled', true);
+            $('#exportExcelBtn').prop('disabled', true);
+
+            currentFormName = $('#formSelect option:selected').text();
+
+            $.ajax({
+                url: '@Url.Action("GetEvaluationsByForm", "HP")',
+                type: 'GET',
+                data: { formId: formId },
+                success: function(result) {
+                    $('#loadingSpinner').hide();
+                    
+                    if (result.success && result.data.length > 0) {
+                        allEvaluations = result.data;
+                        currentPage = 1;
+                        displayEvaluations();
+                        $('#exportPdfBtn').prop('disabled', false);
+                        $('#exportExcelBtn').prop('disabled', false);
+                    } else {
+                        $('#noDataMessage').show();
+                    }
+                },
+                error: function() {
+                    $('#loadingSpinner').hide();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถโหลดข้อมูลได้'
+                    });
+                }
+            });
+        }
+
+        function displayEvaluations() {
+            const paginatedData = paginateData(allEvaluations, currentPage, pageSize);
+            const tbody = $('#evaluationTableBody');
+            const mobileList = $('#mobileEvalList');
+            tbody.empty();
+            mobileList.empty();
+
+            if (paginatedData.items.length === 0) {
+                $('#noDataMessage').show();
+                $('#dataTable').hide();
+                $('#mobileEvalList').hide();
+                $('#paginationSection').hide();
+                return;
+            }
+
+            $('#noDataMessage').hide();
+            $('#dataTable').show().addClass('fade-in');
+            $('#mobileEvalList').show();
+            $('#paginationSection').show();
+
+            paginatedData.items.forEach(function(item, index) {
+                const rowNumber = ((currentPage - 1) * pageSize) + index + 1;
+                const recordDate = new Date(item.recordDate).toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                let riskClass = 'risk-low';
+                const riskLower = item.risk.toLowerCase();
+                if (riskLower.includes('รุนแรง') || riskLower.includes('severe') || riskLower.includes('สูง') || riskLower.includes('high')) {
+                    riskClass = 'risk-high';
+                } else if (riskLower.includes('ปานกลาง') || riskLower.includes('moderate') || riskLower.includes('medium')) {
+                    riskClass = 'risk-medium';
+                }
+
+                const row = `
+                    <tr>
+                        <td class="text-center">${rowNumber}</td>
+                        <td>${recordDate}</td>
+                        <td><strong>${item.hn}</strong></td>
+                        <td>${item.patientName}</td>
+                        <td><span class="badge risk-badge ${riskClass}">${item.risk}</span></td>
+                        <td><div class="guideline-text">${item.guideline}</div></td>
+                    </tr>
+                `;
+                tbody.append(row);
+                
+                const mobileCard = `
+                    <div class="eval-card-mobile">
+                        <div class="eval-header">
+                            <div class="eval-number">${rowNumber}</div>
+                            <div class="eval-date">
+                                <i class="fas fa-calendar me-1"></i>${recordDate}
+                            </div>
+                        </div>
+                        <div class="eval-row">
+                            <span class="eval-label">HN:</span>
+                            <span class="eval-value"><strong>${item.hn}</strong></span>
+                        </div>
+                        <div class="eval-row">
+                            <span class="eval-label">ชื่อผู้ป่วย:</span>
+                            <span class="eval-value">${item.patientName}</span>
+                        </div>
+                        <div class="eval-row">
+                            <span class="eval-label">ความเสี่ยง:</span>
+                            <span class="eval-value">
+                                <span class="badge risk-badge ${riskClass}">${item.risk}</span>
+                            </span>
+                        </div>
+                        <div class="guideline-text">
+                            <strong><i class="fas fa-notes-medical me-1"></i>แนวทางปฏิบัติ:</strong><br>
+                            ${item.guideline}
+                        </div>
+                    </div>
+                `;
+                mobileList.append(mobileCard);
+            });
+
+            generatePagination(paginatedData.totalPages, currentPage, 'evaluationPagination', 'changeEvaluationPage');
+            updatePaginationInfo(currentPage, pageSize, paginatedData.totalItems, 'paginationInfo');
+        }
+
+        function changeEvaluationPage(page) {
+            currentPage = page;
+            displayEvaluations();
+            $('html, body').animate({
+                scrollTop: $("#dataPreviewCard").offset().top - 100
+            }, 500);
+        }
+
+        function exportToPDF() {
+            const formId = $('#formSelect').val();
+            
+            if (!formId || allEvaluations.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ไม่มีข้อมูล',
+                    text: 'กรุณาเลือกแบบประเมินที่มีข้อมูล'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'กำลังสร้าง PDF...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const downloadUrl = '@Url.Action("ExportEvaluationReportPDF", "HP")?formId=' + formId;
+            console.log('PDF URL:', downloadUrl); 
+            
+            fetch(downloadUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to generate PDF: ' + response.statusText);
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `รายงานการประเมิน_${currentFormName}_${new Date().toISOString().slice(0,10)}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'เรียบร้อย',
+                        text: 'กำลัง Download PDF',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถสร้าง PDF ได้ กรุณาลองใหม่อีกครั้ง'
+                    });
+                });
+        }
+
+        function exportToExcel() {
+            const formId = $('#formSelect').val();
+            
+            if (!formId || allEvaluations.length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ไม่มีข้อมูล',
+                    text: 'กรุณาเลือกแบบประเมินที่มีข้อมูล'
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'กำลังสร้าง Excel...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const downloadUrl = '@Url.Action("ExportEvaluationReportExcel", "HP")?formId=' + formId;
+            console.log('Excel URL:', downloadUrl); 
+            
+            fetch(downloadUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to generate Excel: ' + response.statusText);
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `รายงานการประเมิน_${currentFormName}_${new Date().toISOString().slice(0,10)}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'เรียบร้อย',
+                        text: 'กำลัง Download Excel',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถสร้าง Excel ได้ กรุณาลองใหม่อีกครั้ง'
+                    });
+                });
+        }
+
+
+    </script>
+}

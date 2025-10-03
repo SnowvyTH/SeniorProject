@@ -250,3 +250,11 @@ D:\Project\Project\obj\Debug\net9.0\compressed\1vbndpapma-1dljn267ol.gz
 D:\Project\Project\obj\Debug\net9.0\compressed\calkufgl2x-n4i0zh21v8.gz
 D:\Project\Project\obj\Debug\net9.0\compressed\at6r7p1kze-o21wahxuga.gz
 D:\Project\Project\obj\Debug\net9.0\compressed\4m6l9iwdi7-al8r27nwld.gz
+D:\Project\Project\bin\Debug\net9.0\ClosedXML.dll
+D:\Project\Project\bin\Debug\net9.0\ClosedXML.Parser.dll
+D:\Project\Project\bin\Debug\net9.0\DocumentFormat.OpenXml.dll
+D:\Project\Project\bin\Debug\net9.0\DocumentFormat.OpenXml.Framework.dll
+D:\Project\Project\bin\Debug\net9.0\ExcelNumberFormat.dll
+D:\Project\Project\bin\Debug\net9.0\RBush.dll
+D:\Project\Project\bin\Debug\net9.0\SixLabors.Fonts.dll
+D:\Project\Project\bin\Debug\net9.0\System.IO.Packaging.dll

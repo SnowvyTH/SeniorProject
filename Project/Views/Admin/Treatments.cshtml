@@ -11,7 +11,7 @@
         </button>
     </div>
 
-    <!-- Search -->
+    
     <div class="row mb-3">
         <div class="col-md-6">
             <div class="input-group">
@@ -21,7 +21,7 @@
         </div>
     </div>
 
-    <!-- Treatments Table -->
+    
     <div class="table-responsive">
         <table class="table table-hover" id="treatmentsTable">
             <thead class="table-light">
@@ -32,19 +32,19 @@
                 </tr>
             </thead>
             <tbody id="treatmentsTableBody">
-                <!-- Data will be loaded via AJAX -->
+                
             </tbody>
         </table>
     </div>
 
-    <!-- Loading indicator -->
+    
     <div id="loadingIndicator" class="text-center py-4">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">กำลังโหลด...</span>
         </div>
     </div>
 
-    <!-- Pagination -->
+    
     <div class="d-flex justify-content-between align-items-center mt-4">
         <div id="paginationInfo" class="text-muted"></div>
         <nav>
@@ -53,7 +53,7 @@
     </div>
 </div>
 
-<!-- Add Treatment Modal -->
+
 <div class="modal fade" id="addTreatmentModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -78,7 +78,7 @@
     </div>
 </div>
 
-<!-- Edit Treatment Modal -->
+
 <div class="modal fade" id="editTreatmentModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -113,19 +113,16 @@
         $(document).ready(function() {
             loadTreatments();
 
-            // Search functionality
             $('#searchTreatment').on('keyup', function() {
                 currentPage = 1;
                 loadTreatments();
             });
 
-            // Add treatment form
             $('#addTreatmentForm').on('submit', function(e) {
                 e.preventDefault();
                 addTreatment();
             });
 
-            // Edit treatment form
             $('#editTreatmentForm').on('submit', function(e) {
                 e.preventDefault();
                 updateTreatment();
@@ -195,7 +192,6 @@
             $('#loadingIndicator').hide();
             $('#treatmentsTable tbody').show();
 
-            // Update pagination
             generatePagination(paginatedData.totalPages, currentPage, 'treatmentsPagination', 'changeTreatmentPage');
             updatePaginationInfo(currentPage, pageSize, paginatedData.totalItems, 'paginationInfo');
         }

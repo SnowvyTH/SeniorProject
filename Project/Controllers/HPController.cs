@@ -3,6 +3,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Project.Data;
 using Project.Models.Entity;
+using iText.Kernel.Font;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Element;
+using iText.Layout.Properties;
+using iText.Layout.Borders;
+using iText.Kernel.Colors;
+using iText.IO.Font;
+using ClosedXML.Excel;
+using XLColor = ClosedXML.Excel.XLColor;
 
 namespace Project.Controllers
 {
@@ -18,18 +28,15 @@ namespace Project.Controllers
 
         public async Task<IActionResult> Index(string? startDate = null, string? endDate = null, string? formType = null)
         {
-            // ตรวจสอบสิทธิ์ - ต้องเป็น RoleID = 2 เท่านั้น
             var roleId = User.FindFirst("RoleID")?.Value;
             if (roleId != "2")
             {
                 return RedirectToAction("AccessDenied", "Home");
             }
 
-            // ดึงข้อมูลผู้ใช้และรูปโปรไฟล์
             ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
             ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
             
-            // ดึง UserID และรูปโปรไฟล์
             var userIdClaim = User.FindFirst("UserID")?.Value;
             if (int.TryParse(userIdClaim, out int userId))
             {
@@ -48,12 +55,10 @@ namespace Project.Controllers
                 ViewBag.ProfileImageUrl = null;
             }
 
-            // กำหนดค่า default: 7 วันที่ผ่านมา และ formID = 8
             DateTime startDateParsed = DateTime.Today.AddDays(-7);
             DateTime endDateParsed = DateTime.Today.AddDays(1);
             string? defaultFormType = formType;
 
-            // ถ้าไม่มีการระบุ formType ให้ใช้ form ที่มี FormID = 8
             if (string.IsNullOrEmpty(defaultFormType))
             {
                 var defaultForm = await _context.Form.FirstOrDefaultAsync(f => f.FormID == 8);
@@ -64,21 +69,18 @@ namespace Project.Controllers
                 startDateParsed = parsedStart;
             
             if (!string.IsNullOrEmpty(endDate) && DateTime.TryParse(endDate, out var parsedEnd))
-                endDateParsed = parsedEnd.AddDays(1); // Include the end date
+                endDateParsed = parsedEnd.AddDays(1); 
 
-            // ส่งค่า filter ไปยัง view
             ViewBag.StartDate = startDateParsed.ToString("yyyy-MM-dd");
             ViewBag.EndDate = endDateParsed.AddDays(-1).ToString("yyyy-MM-dd");
             ViewBag.FormType = defaultFormType;
 
-            // เตรียมข้อมูลสำหรับ Dashboard - ใช้ static data เพื่อความเรียบง่าย
             ViewBag.TotalPatients = await _context.Patient.CountAsync();
             ViewBag.PatientsAssessed = await _context.Evaluation.Select(e => e.HN).Distinct().CountAsync();
             ViewBag.AverageScore = 8.5;
             ViewBag.SevereCases = await _context.Evaluation.CountAsync(e => e.Result != null && 
                 (e.Result.Contains("รุนแรง") || e.Result.Contains("Severe")));
 
-            // ดึงรายการ Forms
             var forms = await _context.Form.Select(f => new { f.FormID, f.FormName }).ToListAsync();
             ViewBag.Forms = forms;
 
@@ -87,18 +89,15 @@ namespace Project.Controllers
 
         public async Task<IActionResult> Patients()
         {
-            // ตรวจสอบสิทธิ์ - ต้องเป็น RoleID = 2 เท่านั้น
             var roleId = User.FindFirst("RoleID")?.Value;
             if (roleId != "2")
             {
                 return RedirectToAction("AccessDenied", "Home");
             }
 
-            // ดึงข้อมูลผู้ใช้และรูปโปรไฟล์
             ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
             ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
             
-            // ดึง UserID และรูปโปรไฟล์
             var userIdClaim = User.FindFirst("UserID")?.Value;
             if (int.TryParse(userIdClaim, out int userId))
             {
@@ -113,7 +112,6 @@ namespace Project.Controllers
                 }
             }
 
-            // ดึงข้อมูลผู้ป่วยพร้อมประวัติการประเมิน
             var patients = await _context.Patient
                 .Include(p => p.Title)
                 .Include(p => p.Evaluations)
@@ -127,20 +125,460 @@ namespace Project.Controllers
             return View(patients);
         }
 
-        public async Task<IActionResult> EvaluationDetail(int id)
+        public async Task<IActionResult> ExportReport()
         {
-            // ตรวจสอบสิทธิ์ - ต้องเป็น RoleID = 2 เท่านั้น
             var roleId = User.FindFirst("RoleID")?.Value;
             if (roleId != "2")
             {
                 return RedirectToAction("AccessDenied", "Home");
             }
 
-            // ดึงข้อมูลผู้ใช้และรูปโปรไฟล์
             ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
             ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
             
-            // ดึง UserID และรูปโปรไฟล์
+            var userIdClaim = User.FindFirst("UserID")?.Value;
+            if (int.TryParse(userIdClaim, out int userId))
+            {
+                var user = await _context.User.FindAsync(userId);
+                if (user != null && !string.IsNullOrEmpty(user.Picture))
+                {
+                    ViewBag.ProfileImageUrl = $"/uploads/profile/{user.Picture}";
+                }
+                else
+                {
+                    ViewBag.ProfileImageUrl = null;
+                }
+            }
+
+            var forms = await _context.Form
+                .OrderBy(f => f.FormName)
+                .ToListAsync();
+            
+            ViewBag.Forms = forms;
+
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEvaluationsByForm(int formId)
+        {
+            var evaluations = await _context.Evaluation
+                .Include(e => e.Patient)
+                    .ThenInclude(p => p!.Title)
+                .Include(e => e.Form)
+                .Where(e => e.FormID == formId)
+                .OrderByDescending(e => e.RecordDate)
+                .Select(e => new
+                {
+                    evaId = e.EvaID,
+                    recordDate = e.RecordDate,
+                    patientName = (e.Patient!.Title!.TitleName ?? "") + e.Patient.FirstName + " " + e.Patient.LastName,
+                    hn = e.Patient.HN,
+                    risk = e.Result ?? "-",
+                    guideline = e.ResultDetail ?? "-",
+                    formName = e.Form!.FormName
+                })
+                .ToListAsync();
+
+            return Json(new { success = true, data = evaluations });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportEvaluationReportPDF(int formId)
+        {
+            try
+            {
+                var evaluations = await _context.Evaluation
+                    .Include(e => e.Patient)
+                        .ThenInclude(p => p!.Title)
+                    .Include(e => e.Form)
+                    .Where(e => e.FormID == formId)
+                    .OrderByDescending(e => e.RecordDate)
+                    .ToListAsync();
+
+                if (!evaluations.Any())
+                {
+                    return BadRequest("ไม่พบข้อมูลการประเมิน");
+                }
+
+                var formName = evaluations.First().Form?.FormName ?? "ไม่ระบุแบบฟอร์ม";
+
+                string thaiFontPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "font", "THSarabunNew.ttf");
+                var thaiFontProgram = FontProgramFactory.CreateFont(thaiFontPath);
+                var thaiFont = PdfFontFactory.CreateFont(thaiFontProgram, PdfEncodings.IDENTITY_H);
+
+                string thaiBoldFontPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "font", "THSarabunNewBold.ttf");
+                var thaiBoldFontProgram = FontProgramFactory.CreateFont(thaiBoldFontPath);
+                var thaiBoldFont = PdfFontFactory.CreateFont(thaiBoldFontProgram, PdfEncodings.IDENTITY_H);
+
+                MemoryStream stream = new MemoryStream();
+                PdfWriter writer = new PdfWriter(stream);
+                PdfDocument pdf = new PdfDocument(writer);
+                Document document = new Document(pdf, iText.Kernel.Geom.PageSize.A4);
+
+                document.SetMargins(40, 40, 40, 40);
+
+                Paragraph title = new Paragraph("รายงานการประเมินผู้ป่วย")
+                    .SetFont(thaiBoldFont)
+                    .SetFontSize(15)
+                    .SetTextAlignment(TextAlignment.CENTER);
+                document.Add(title);
+
+                Paragraph subtitle = new Paragraph($"แบบประเมิน: {formName}")
+                    .SetFont(thaiBoldFont)
+                    .SetFontSize(14)
+                    .SetTextAlignment(TextAlignment.CENTER);
+                document.Add(subtitle);
+
+                Paragraph datePrinted = new Paragraph($"วันที่ออกรายงาน: {ConvertToThaiDate(DateTime.Now)} {DateTime.Now:HH:mm} น.")
+                    .SetFont(thaiBoldFont)
+                    .SetFontSize(14)
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetMarginBottom(5);
+                document.Add(datePrinted);
+
+                float[] columnWidths = { 50, 120, 200, 100, 280 };
+                Table table = new Table(UnitValue.CreatePointArray(columnWidths));
+                table.SetWidth(UnitValue.CreatePercentValue(100));
+
+                string[] headers = { "ลำดับ", "วันที่ประเมิน", "HN / ชื่อผู้ป่วย", "ความเสี่ยง", "แนวทางปฏิบัติ" };
+                foreach (string header in headers)
+                {
+                    Cell headerCell = new Cell()
+                        .Add(new Paragraph(header)
+                            .SetFont(thaiBoldFont)
+                            .SetFontSize(14)
+                            .SetFontColor(ColorConstants.WHITE))
+                        .SetBackgroundColor(new DeviceRgb(44, 90, 160))
+                        .SetTextAlignment(TextAlignment.CENTER)
+                        .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                        .SetPadding(4)
+                        .SetBorder(new SolidBorder(ColorConstants.WHITE, 1));
+                    table.AddHeaderCell(headerCell);
+                }
+
+                int rowNumber = 1;
+                bool isAlternate = false;
+
+                foreach (var evaluation in evaluations)
+                {
+                    var backgroundColor = isAlternate 
+                        ? new DeviceRgb(245, 247, 250) 
+                        : ColorConstants.WHITE;
+
+                    table.AddCell(CreateDataCell(rowNumber.ToString(), thaiFont, backgroundColor, TextAlignment.CENTER));
+
+                    string dateStr = ConvertToThaiDate(evaluation.RecordDate);
+                    table.AddCell(CreateDataCell(dateStr, thaiFont, backgroundColor, TextAlignment.CENTER));
+
+                    string hn = evaluation.Patient?.HN ?? "-";
+                    string patientName = $"{evaluation.Patient?.Title?.TitleName}{evaluation.Patient?.FirstName} {evaluation.Patient?.LastName}";
+                    string hnAndName = $"{patientName}\n{hn}";
+                    table.AddCell(CreateDataCell(hnAndName, thaiFont, backgroundColor, TextAlignment.LEFT));
+
+                    string risk = evaluation.Result ?? "-";
+                    DeviceRgb riskColor = GetRiskColor(risk);
+                    Cell riskCell = new Cell()
+                        .Add(new Paragraph(risk)
+                            .SetFont(thaiBoldFont)
+                            .SetFontSize(12)
+                            .SetFontColor(ColorConstants.WHITE))
+                        .SetBackgroundColor(riskColor)
+                        .SetTextAlignment(TextAlignment.CENTER)
+                        .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                        .SetPadding(5)
+                        .SetBorder(new SolidBorder(ColorConstants.LIGHT_GRAY, 0.5f));
+                    table.AddCell(riskCell);
+
+                    string guideline = evaluation.ResultDetail ?? "-";
+                    table.AddCell(CreateDataCell(guideline, thaiFont, backgroundColor, TextAlignment.LEFT));
+
+                    rowNumber++;
+                    isAlternate = !isAlternate;
+                }
+
+                document.Add(table);
+
+                Paragraph footer = new Paragraph($"จำนวนรายการทั้งหมด: {evaluations.Count} รายการ")
+                    .SetFont(thaiFont)
+                    .SetFontSize(12)
+                    .SetTextAlignment(TextAlignment.RIGHT)
+                    .SetMarginTop(12);
+                document.Add(footer);
+
+                document.Close();
+
+                var fileName = $"รายงานการประเมิน_{formName}_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+                return File(stream.ToArray(), "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"เกิดข้อผิดพลาด: {ex.Message}");
+            }
+        }
+
+        private Cell CreateDataCell(string content, PdfFont font, Color backgroundColor, TextAlignment alignment)
+        {
+            return new Cell()
+                .Add(new Paragraph(content)
+                    .SetFont(font)
+                    .SetFontSize(12))
+                .SetBackgroundColor(backgroundColor)
+                .SetTextAlignment(alignment)
+                .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                .SetPadding(4)
+                .SetBorder(new SolidBorder(ColorConstants.LIGHT_GRAY, 0.5f));
+        }
+
+        private string ConvertToThaiDate(DateTime date)
+        {
+            var thaiMonths = new[] { "", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+                                     "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม" };
+            int thaiYear = date.Year + 543;
+            return $"{date.Day} {thaiMonths[date.Month]} {thaiYear}";
+        }
+
+        private DeviceRgb GetRiskColor(string risk)
+        {
+            string riskLower = risk.ToLower();
+            
+            if (riskLower.Contains("รุนแรง") || riskLower.Contains("severe") || 
+                riskLower.Contains("สูง") || riskLower.Contains("high") ||
+                riskLower.Contains("marked"))
+            {
+                return new DeviceRgb(220, 53, 69); 
+            }
+            else if (riskLower.Contains("ปานกลาง") || riskLower.Contains("moderate") || 
+                     riskLower.Contains("medium") || riskLower.Contains("mild"))
+            {
+                return new DeviceRgb(255, 193, 7); 
+            }
+            else if (riskLower.Contains("ปกติ") || riskLower.Contains("น้อย") || 
+                     riskLower.Contains("absent") || riskLower.Contains("questionable") ||
+                     riskLower.Contains("ไม่พบ"))
+            {
+                return new DeviceRgb(40, 167, 69); 
+            }
+            else
+            {
+                return new DeviceRgb(108, 117, 125); 
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportEvaluationReportExcel(int formId)
+        {
+            try
+            {
+                var evaluations = await _context.Evaluation
+                    .Include(e => e.Patient)
+                        .ThenInclude(p => p!.Title)
+                    .Include(e => e.Form)
+                    .Where(e => e.FormID == formId)
+                    .OrderByDescending(e => e.RecordDate)
+                    .ToListAsync();
+
+                if (!evaluations.Any())
+                {
+                    return BadRequest("ไม่พบข้อมูลการประเมิน");
+                }
+
+                var formName = evaluations.First().Form?.FormName ?? "ไม่ระบุแบบฟอร์ม";
+
+                using (var workbook = new XLWorkbook())
+                {
+                    var worksheet = workbook.Worksheets.Add("รายงานการประเมิน");
+
+                    worksheet.Column(1).Width = 8;  
+                    worksheet.Column(2).Width = 18; 
+                    worksheet.Column(3).Width = 15; 
+                    worksheet.Column(4).Width = 30; 
+                    worksheet.Column(5).Width = 20; 
+                    worksheet.Column(6).Width = 50; 
+
+                    var titleRange = worksheet.Range("A1:F1");
+                    titleRange.Merge();
+                    var titleCell = worksheet.Cell(1, 1);
+                    titleCell.Value = "รายงานการประเมินผู้ป่วย";
+                    titleCell.Style.Font.Bold = true;
+                    titleCell.Style.Font.FontSize = 18;
+                    titleCell.Style.Font.FontName = "TH Sarabun New";
+                    titleCell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    titleCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    titleCell.Style.Fill.BackgroundColor = XLColor.FromArgb(44, 90, 160);
+                    titleCell.Style.Font.FontColor = XLColor.White;
+
+                    var subtitleRange = worksheet.Range("A2:F2");
+                    subtitleRange.Merge();
+                    var subtitleCell = worksheet.Cell(2, 1);
+                    subtitleCell.Value = $"แบบประเมิน: {formName}";
+                    subtitleCell.Style.Font.Bold = true;
+                    subtitleCell.Style.Font.FontSize = 17;
+                    subtitleCell.Style.Font.FontName = "TH Sarabun New";
+                    subtitleCell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    subtitleCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    subtitleCell.Style.Fill.BackgroundColor = XLColor.FromArgb(52, 152, 219);
+                    subtitleCell.Style.Font.FontColor = XLColor.White;
+
+                    var dateRange = worksheet.Range("A3:F3");
+                    dateRange.Merge();
+                    var dateCell = worksheet.Cell(3, 1);
+                    dateCell.Value = $"วันที่ออกรายงาน: {ConvertToThaiDate(DateTime.Now)} {DateTime.Now:HH:mm} น.";
+                    dateCell.Style.Font.Bold = true;
+                    dateCell.Style.Font.FontSize = 17;
+                    dateCell.Style.Font.FontName = "TH Sarabun New";
+                    dateCell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    dateCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    dateCell.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+                    int headerRow = 4;
+                    string[] headers = { "ลำดับ", "วันที่ประเมิน", "HN", "ชื่อผู้ป่วย", "ความเสี่ยง", "แนวทางปฏิบัติ" };
+                    
+                    for (int i = 0; i < headers.Length; i++)
+                    {
+                        var headerCell = worksheet.Cell(headerRow, i + 1);
+                        headerCell.Value = headers[i];
+                        headerCell.Style.Font.Bold = true;
+                        headerCell.Style.Font.FontSize = 16;
+                        headerCell.Style.Font.FontName = "TH Sarabun New";
+                        headerCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        headerCell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        headerCell.Style.Fill.BackgroundColor = XLColor.FromArgb(44, 90, 160);
+                        headerCell.Style.Font.FontColor = XLColor.White;
+                        headerCell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    }
+
+                    int currentRow = 5;
+                    int rowNumber = 1;
+
+                    foreach (var evaluation in evaluations)
+                    {
+                        var rowColor = rowNumber % 2 == 0 ? XLColor.FromArgb(245, 247, 250) : XLColor.White;
+
+                        var cell1 = worksheet.Cell(currentRow, 1);
+                        cell1.Value = rowNumber;
+                        cell1.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        cell1.Style.Fill.BackgroundColor = rowColor;
+                        cell1.Style.Font.FontSize = 14;
+                        cell1.Style.Font.FontName = "TH Sarabun New";
+                        cell1.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        cell1.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        var cell2 = worksheet.Cell(currentRow, 2);
+                        cell2.Value = ConvertToThaiDate(evaluation.RecordDate);
+                        cell2.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        cell2.Style.Fill.BackgroundColor = rowColor;
+                        cell2.Style.Font.FontSize = 14;
+                        cell2.Style.Font.FontName = "TH Sarabun New";
+                        cell2.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        cell2.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        var cell3 = worksheet.Cell(currentRow, 3);
+                        cell3.Value = evaluation.Patient?.HN ?? "-";
+                        cell3.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        cell3.Style.Fill.BackgroundColor = rowColor;
+                        cell3.Style.Font.FontSize = 14;
+                        cell3.Style.Font.FontName = "TH Sarabun New";
+                        cell3.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        cell3.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        var cell4 = worksheet.Cell(currentRow, 4);
+                        string patientName = $"{evaluation.Patient?.Title?.TitleName}{evaluation.Patient?.FirstName} {evaluation.Patient?.LastName}";
+                        cell4.Value = patientName;
+                        cell4.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                        cell4.Style.Fill.BackgroundColor = rowColor;
+                        cell4.Style.Font.FontSize = 14;
+                        cell4.Style.Font.FontName = "TH Sarabun New";
+                        cell4.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        cell4.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        var cell5 = worksheet.Cell(currentRow, 5);
+                        string risk = evaluation.Result ?? "-";
+                        cell5.Value = risk;
+                        cell5.Style.Font.Bold = true;
+                        cell5.Style.Font.FontSize = 14;
+                        cell5.Style.Font.FontName = "TH Sarabun New";
+                        cell5.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        cell5.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        
+                        string riskLower = risk.ToLower();
+                        if (riskLower.Contains("รุนแรง") || riskLower.Contains("severe") || 
+                            riskLower.Contains("สูง") || riskLower.Contains("high"))
+                        {
+                            cell5.Style.Fill.BackgroundColor = XLColor.FromArgb(220, 53, 69);
+                            cell5.Style.Font.FontColor = XLColor.White;
+                        }
+                        else if (riskLower.Contains("ปานกลาง") || riskLower.Contains("moderate") || 
+                                 riskLower.Contains("medium"))
+                        {
+                            cell5.Style.Fill.BackgroundColor = XLColor.FromArgb(255, 193, 7);
+                            cell5.Style.Font.FontColor = XLColor.Black;
+                        }
+                        else
+                        {
+                            cell5.Style.Fill.BackgroundColor = XLColor.FromArgb(40, 167, 69);
+                            cell5.Style.Font.FontColor = XLColor.White;
+                        }
+                        cell5.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        var cell6 = worksheet.Cell(currentRow, 6);
+                        string guideline = evaluation.ResultDetail ?? "-";
+                        cell6.Value = guideline;
+                        cell6.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                        cell6.Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+                        cell6.Style.Alignment.WrapText = true;
+                        cell6.Style.Fill.BackgroundColor = rowColor;
+                        cell6.Style.Font.FontSize = 14;
+                        cell6.Style.Font.FontName = "TH Sarabun New";
+                        cell6.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+
+                        currentRow++;
+                        rowNumber++;
+                    }
+
+                    var footerRange = worksheet.Range($"A{currentRow}:F{currentRow}");
+                    footerRange.Merge();
+                    var footerCell = worksheet.Cell(currentRow, 1);
+                    footerCell.Value = $"จำนวนรายการทั้งหมด: {evaluations.Count} รายการ";
+                    footerCell.Style.Font.Bold = true;
+                    footerCell.Style.Font.FontSize = 14;
+                    footerCell.Style.Font.FontName = "TH Sarabun New";
+                    footerCell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    footerCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+                    footerCell.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+                    worksheet.Row(1).Height = 30;
+                    worksheet.Row(2).Height = 25;
+                    worksheet.Row(3).Height = 20;
+                    worksheet.Row(4).Height = 25;
+
+                    using (var stream = new MemoryStream())
+                    {
+                        workbook.SaveAs(stream);
+                        var content = stream.ToArray();
+                        var fileName = $"รายงานการประเมิน_{formName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+                        
+                        return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"เกิดข้อผิดพลาด: {ex.Message}");
+            }
+        }
+
+        public async Task<IActionResult> EvaluationDetail(int id)
+        {
+            var roleId = User.FindFirst("RoleID")?.Value;
+            if (roleId != "2")
+            {
+                return RedirectToAction("AccessDenied", "Home");
+            }
+
+            ViewBag.UserName = User.FindFirst("FirstName")?.Value + " " + User.FindFirst("LastName")?.Value;
+            ViewBag.RoleName = User.FindFirst("RoleName")?.Value;
+            
             var userIdClaim = User.FindFirst("UserID")?.Value;
             if (int.TryParse(userIdClaim, out int userId))
             {
@@ -173,7 +611,6 @@ namespace Project.Controllers
                 return NotFound();
             }
 
-            // คำนวณคะแนนรวม
             if (evaluation.EvaluationDetails?.Any() == true && evaluation.Form != null)
             {
                 var scores = evaluation.EvaluationDetails.Where(ed => ed.Score.HasValue).Select(ed => ed.Score!.Value).ToList();
@@ -231,7 +668,6 @@ namespace Project.Controllers
         {
             try
             {
-                // ส่งข้อมูลง่ายๆ สำหรับ chart
                 return Json(new { 
                     success = true, 
                     message = "Chart data loaded",
@@ -251,7 +687,6 @@ namespace Project.Controllers
         {
             try
             {
-                // กำหนดช่วงวันที่ default
                 DateTime startDateParsed = DateTime.Today.AddDays(-7);
                 DateTime endDateParsed = DateTime.Today.AddDays(1);
 
@@ -261,7 +696,6 @@ namespace Project.Controllers
                 if (!string.IsNullOrEmpty(endDate) && DateTime.TryParse(endDate, out var parsedEnd))
                     endDateParsed = parsedEnd.AddDays(1);
 
-                // ใช้ query ที่เรียบง่ายกว่า
                 var evaluations = await _context.Evaluation
                     .Include(e => e.Form)
                     .Where(e => e.RecordDate >= startDateParsed && 
@@ -270,7 +704,6 @@ namespace Project.Controllers
                     .Select(e => new { e.Result, FormName = e.Form!.FormName })
                     .ToListAsync();
 
-                // จัดกลุ่มข้อมูลตามระดับความรุนแรง 3 ระดับ
                 var severityGroups = new Dictionary<string, int>
                 {
                     { "ความรุนแรงน้อย", 0 },
@@ -287,7 +720,6 @@ namespace Project.Controllers
                     }
                 }
 
-                // สร้าง distribution data
                 var distribution = new List<object>
                 {
                     new { label = "ความรุนแรงน้อย", count = severityGroups["ความรุนแรงน้อย"], color = "#28a745" },
@@ -295,7 +727,6 @@ namespace Project.Controllers
                     new { label = "ความรุนแรงมาก", count = severityGroups["ความรุนแรงมาก"], color = "#dc3545" }
                 };
 
-                // กรองออกรายการที่มีค่า 0
                 distribution = distribution.Where(d => ((dynamic)d).count > 0).ToList();
 
                 return Json(distribution);
@@ -311,7 +742,6 @@ namespace Project.Controllers
         {
             try
             {
-                // กำหนดค่า default: 7 วันที่ผ่านมา
                 DateTime startDateParsed = DateTime.Today.AddDays(-7);
                 DateTime endDateParsed = DateTime.Today.AddDays(1);
 
@@ -325,7 +755,6 @@ namespace Project.Controllers
                     endDateParsed = parsedEnd.Date.AddDays(1);
                 }
 
-                // นับจำนวนการประเมินตามประเภทแบบฟอร์ม
                 var formTypeCounts = await _context.Evaluation
                     .Include(e => e.Form)
                     .Where(e => e.RecordDate >= startDateParsed && e.RecordDate < endDateParsed)
@@ -349,7 +778,6 @@ namespace Project.Controllers
         {
             try
             {
-                // กำหนดค่า default: 7 วันที่ผ่านมา
                 DateTime startDateParsed = DateTime.Today.AddDays(-7);
                 DateTime endDateParsed = DateTime.Today.AddDays(1);
 
@@ -360,17 +788,15 @@ namespace Project.Controllers
 
                 if (DateTime.TryParse(endDate, out DateTime parsedEnd))
                 {
-                    endDateParsed = parsedEnd.AddDays(1); // เพิ่ม 1 วันเพื่อรวมวันสุดท้าย
+                    endDateParsed = parsedEnd.AddDays(1); 
                 }
 
-                // ดึงข้อมูลการประเมินตามช่วงวันที่
                 var evaluationsQuery = _context.Evaluation
                     .Include(e => e.Patient)
                     .Include(e => e.Form)
                     .Include(e => e.EvaluationDetails)
                     .Where(e => e.RecordDate >= startDateParsed && e.RecordDate < endDateParsed);
 
-                // กรองตามแบบฟอร์มถ้ามี
                 if (!string.IsNullOrEmpty(formType))
                 {
                     evaluationsQuery = evaluationsQuery.Where(e => e.Form!.FormName == formType);
@@ -378,11 +804,9 @@ namespace Project.Controllers
 
                 var evaluations = await evaluationsQuery.ToListAsync();
 
-                // คำนวณ KPI
                 var totalPatients = await _context.Patient.CountAsync();
                 var patientsAssessed = evaluations.Select(e => e.HN).Distinct().Count();
                 
-                // คำนวณคะแนนรวมจาก EvaluationDetails
                 var averageScore = 0.0;
                 if (evaluations.Any())
                 {
@@ -392,7 +816,6 @@ namespace Project.Controllers
                 
                 var severeCases = evaluations.Count(e => e.Result == "รุนแรง" || e.Result == "Severe" || e.Result == "Severe akathisia");
 
-                // คำนวณ trend (เปรียบเทียบกับช่วงก่อนหน้า)
                 var daysDiff = (endDateParsed - startDateParsed).Days;
                 var previousStartDate = startDateParsed.AddDays(-daysDiff);
                 var previousEvaluations = await _context.Evaluation
@@ -410,7 +833,6 @@ namespace Project.Controllers
                 var trendPercentage = previousAvgScore > 0 ? ((averageScore - previousAvgScore) / previousAvgScore * 100) : 0;
                 var trendIndicator = trendPercentage > 0 ? $"+{trendPercentage:F1}%" : $"{trendPercentage:F1}%";
 
-                // ข้อมูลสำหรับกราฟ trend
                 var trendData = new List<object>();
                 var currentDate = startDateParsed;
                 
@@ -418,7 +840,6 @@ namespace Project.Controllers
                 {
                     var dayEvaluations = evaluations.Where(e => e.RecordDate.Date == currentDate.Date).ToList();
                     
-                    // คำนวณค่าเฉลี่ยสำหรับแต่ละแบบฟอร์ม
                     var modSasEvals = dayEvaluations.Where(e => e.Form?.FormName == "Mod-SAS").ToList();
                     var modAimsEvals = dayEvaluations.Where(e => e.Form?.FormName == "Mod-AIMS").ToList();
                     var modBarsEvals = dayEvaluations.Where(e => e.Form?.FormName == "Mod-BARS").ToList();
@@ -467,13 +888,10 @@ namespace Project.Controllers
             if (string.IsNullOrEmpty(result))
                 return "ความรุนแรงน้อย";
 
-            // ความรุนแรงน้อย = สีเขียว
             var lowSeverity = new[] { "ปกติ", "Absent", "Questionable", "Mild akathisia", "Mild", "น้อยมาก", "ไม่พบอาการ" };
             
-            // ความรุนแรงปานกลาง = สีเหลือง
             var moderateSeverity = new[] { "Moderate", "Moderate akathisia", "เล็กน้อย", "ปานกลาง" };
             
-            // ความรุนแรงมาก = สีแดง
             var highSeverity = new[] { "Marked akathisia", "Severe", "Severe akathisia", "รุนแรง" };
 
             if (lowSeverity.Contains(result))
@@ -483,42 +901,7 @@ namespace Project.Controllers
             else if (highSeverity.Contains(result))
                 return "ความรุนแรงมาก";
             else
-                return "ความรุนแรงน้อย"; // default
-        }
-
-        private string GetSeverityColor(string result, string formName)
-        {
-            return formName switch
-            {
-                "Mod-SAS" => result switch
-                {
-                    "ปกติ" => "#28a745", // เขียว
-                    "Mild" => "#28a745", // เขียว
-                    "Moderate" => "#ffc107", // เหลือง
-                    "Severe" => "#dc3545", // แดง
-                    _ => "#6c757d" // เทา
-                },
-                "Mod-BARS" => result switch
-                {
-                    "Absent" => "#28a745", // เขียว
-                    "Questionable" => "#28a745", // เขียว
-                    "Mild akathisia" => "#ffc107", // เหลือง
-                    "Moderate akathisia" => "#ffc107", // เหลือง
-                    "Marked akathisia" => "#dc3545", // แดง
-                    "Severe akathisia" => "#dc3545", // แดง
-                    _ => "#6c757d" // เทา
-                },
-                "Mod-AIMS" => result switch
-                {
-                    "ไม่พบอาการ" => "#28a745", // เขียว
-                    "Mild" => "#28a745", // เขียว
-                    "เล็กน้อย" => "#28a745", // เขียว
-                    "ปานกลาง" => "#ffc107", // เหลือง
-                    "รุนแรง" => "#dc3545", // แดง
-                    _ => "#6c757d" // เทา
-                },
-                _ => "#6c757d" // เทาสำหรับที่ไม่ระบุ
-            };
+                return "ความรุนแรงน้อย"; 
         }
 
         [HttpGet]
@@ -526,28 +909,25 @@ namespace Project.Controllers
         {
             try
             {
-                // กำหนดค่า default: 7 วันที่ผ่านมา
                 DateTime startDateParsed = DateTime.Today.AddDays(-7);
                 DateTime endDateParsed = DateTime.Today.AddDays(1);
 
                 if (DateTime.TryParse(startDate, out DateTime parsedStart))
                 {
-                    startDateParsed = parsedStart.Date; // ใช้เฉพาะวันที่
+                    startDateParsed = parsedStart.Date; 
                 }
 
                 if (DateTime.TryParse(endDate, out DateTime parsedEnd))
                 {
-                    endDateParsed = parsedEnd.Date.AddDays(1); // เพิ่ม 1 วันและใช้เฉพาะวันที่
+                    endDateParsed = parsedEnd.Date.AddDays(1); 
                 }
 
-                // ดึงข้อมูลการประเมินตามช่วงวันที่ (ใช้ .Date เพื่อเปรียบเทียบเฉพาะวันที่)
                 var evaluationsQuery = _context.Evaluation
                     .Include(e => e.Patient)
                     .Include(e => e.Form)
                     .Include(e => e.EvaluationDetails)
                     .Where(e => e.RecordDate.Date >= startDateParsed.Date && e.RecordDate.Date < endDateParsed.Date);
 
-                // กรองตามแบบฟอร์มถ้ามี
                 if (!string.IsNullOrEmpty(formType))
                 {
                     evaluationsQuery = evaluationsQuery.Where(e => e.Form!.FormName == formType);
@@ -555,11 +935,9 @@ namespace Project.Controllers
 
                 var evaluations = await evaluationsQuery.ToListAsync();
 
-                // คำนวณ KPI
                 var totalPatients = await _context.Patient.CountAsync();
                 var patientsAssessed = evaluations.Select(e => e.HN).Distinct().Count();
                 
-                // คำนวณคะแนนรวมจาก EvaluationDetails
                 var averageScore = 0.0;
                 if (evaluations.Any())
                 {
@@ -569,7 +947,6 @@ namespace Project.Controllers
                 
                 var severeCases = evaluations.Count(e => e.Result == "รุนแรง" || e.Result == "Severe" || e.Result == "Severe akathisia");
 
-                // คำนวณ trend (เปรียบเทียบกับช่วงก่อนหน้า)
                 var daysDiff = (endDateParsed - startDateParsed).Days;
                 var previousStartDate = startDateParsed.AddDays(-daysDiff);
                 var previousEvaluations = await _context.Evaluation
@@ -587,7 +964,6 @@ namespace Project.Controllers
                 var trendPercentage = previousAvgScore > 0 ? ((averageScore - previousAvgScore) / previousAvgScore * 100) : 0;
                 var trendIndicator = trendPercentage > 0 ? $"+{trendPercentage:F1}%" : $"{trendPercentage:F1}%";
 
-                // ข้อมูลสำหรับกราฟ trend - ดึงแบบฟอร์มทั้งหมดจากฐานข้อมูล
                 var availableForms = await _context.Form.Select(f => f.FormName).Distinct().ToListAsync();
                 var trendData = new List<object>();
                 var currentDate = startDateParsed.Date;
@@ -597,7 +973,6 @@ namespace Project.Controllers
                     var dayEvaluations = evaluations.Where(e => e.RecordDate.Date == currentDate.Date).ToList();
                     var dateStr = currentDate.ToString("yyyy-MM-dd");
                     
-                    // คำนวณค่าเฉลี่ยสำหรับแต่ละแบบฟอร์มที่มีในระบบ
                     foreach (var formName in availableForms)
                     {
                         var formEvals = dayEvaluations.Where(e => e.Form?.FormName == formName).ToList();
@@ -657,27 +1032,15 @@ namespace Project.Controllers
         {
             return severityLevel switch
             {
-                "ความรุนแรงน้อย" => "#28a745", // เขียว
-                "ความรุนแรงปานกลาง" => "#ffc107", // เหลือง
-                "ความรุนแรงมาก" => "#dc3545", // แดง
-                _ => "#6c757d" // เทา
-            };
-        }
-
-        private int GetSeverityOrder(string severityLevel)
-        {
-            return severityLevel switch
-            {
-                "ความรุนแรงน้อย" => 1,
-                "ความรุนแรงปานกลาง" => 2,
-                "ความรุนแรงมาก" => 3,
-                _ => 4
+                "ความรุนแรงน้อย" => "#28a745", 
+                "ความรุนแรงปานกลาง" => "#ffc107", 
+                "ความรุนแรงมาก" => "#dc3545", 
+                _ => "#6c757d" 
             };
         }
 
     }
 
-    // Data Models for Dashboard
     public class DashboardData
     {
         public int TotalPatients { get; set; }

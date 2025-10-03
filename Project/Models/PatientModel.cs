@@ -32,7 +32,7 @@ namespace Project.Models
             {
                 return date.Date <= DateTime.Today;
             }
-            return true; // null values are handled by Required attribute if needed
+            return true; 
         }
         
         public override string FormatErrorMessage(string name)

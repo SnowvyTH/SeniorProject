@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="utf-8" />
@@ -6,7 +6,7 @@
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     
-    <!-- Prevent caching of profile pictures -->
+    
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -19,7 +19,7 @@
     }
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
     
-    <!-- Custom pagination styles -->
+    
     <style>
         .pagination-sm .page-link {
             padding: 0.375rem 0.75rem;
@@ -256,6 +256,169 @@
         .stats-card:hover {
             transform: translateY(-5px);
         }
+
+        /* Responsive Design for Pharma Layout */
+        
+        /* Tablet (iPad) */
+        @@media (max-width: 1024px) and (min-width: 769px) {
+            .navbar-brand {
+                font-size: 1.3rem;
+            }
+            
+            .navbar-nav .nav-link {
+                padding: 0.6rem 0.8rem !important;
+                font-size: 0.9rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem 0;
+            }
+            
+            .page-header {
+                padding: 1.5rem 0;
+            }
+        }
+
+        /* Mobile */
+        @@media (max-width: 768px) {
+            .navbar-custom {
+                padding: 0.8rem 0;
+            }
+            
+            .navbar-brand {
+                font-size: 1.1rem;
+            }
+            
+            .navbar-brand img {
+                width: 40px;
+            }
+            
+            .navbar-toggler {
+                border-color: rgba(255,255,255,0.3);
+            }
+            
+            .navbar-toggler-icon {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 1)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+            }
+            
+            .navbar-collapse {
+                background: rgba(5, 104, 94, 0.95);
+                padding: 1rem;
+                border-radius: 10px;
+                margin-top: 1rem;
+            }
+            
+            .navbar-nav {
+                margin: 0 !important;
+            }
+            
+            .navbar-nav .nav-link {
+                padding: 0.8rem 1rem !important;
+                margin: 0.2rem 0;
+                border-radius: 6px;
+            }
+            
+            .navbar-nav .nav-link:hover,
+            .navbar-nav .nav-link.active {
+                background-color: rgba(255, 255, 255, 0.15);
+            }
+            
+            .user-profile {
+                margin-top: 1rem;
+                padding: 0.8rem;
+                justify-content: center;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .main-content {
+                padding: 1rem 0;
+            }
+            
+            .page-header {
+                padding: 1.5rem 1rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .page-title {
+                font-size: 1.3rem;
+            }
+            
+            .card {
+                border-radius: 12px;
+                margin-bottom: 1rem;
+            }
+            
+            .modern-card .card-header {
+                padding: 0.8rem 1rem;
+                font-size: 1rem;
+            }
+            
+            .modern-card .card-body {
+                padding: 1rem;
+            }
+            
+            .btn-primary {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+            
+            .table {
+                font-size: 0.85rem;
+            }
+            
+            .table thead th {
+                padding: 0.6rem;
+                font-size: 0.85rem;
+            }
+            
+            .table tbody td {
+                padding: 0.6rem;
+            }
+        }
+
+        /* Extra small mobile */
+        @@media (max-width: 480px) {
+            .navbar-brand {
+                font-size: 1rem;
+            }
+            
+            .navbar-brand img {
+                width: 35px;
+            }
+            
+            .container {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            
+            .page-title {
+                font-size: 1.1rem;
+            }
+            
+            .btn-primary {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+            }
+            
+            .modern-card .card-header {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Landscape orientation for mobile */
+        @@media (max-height: 500px) and (orientation: landscape) {
+            .navbar-custom {
+                padding: 0.5rem 0;
+            }
+            
+            .page-header {
+                padding: 1rem;
+            }
+        }
     </style>
     @await RenderSectionAsync("Styles", required: false)
 <body>
@@ -264,6 +427,10 @@
             <a class="navbar-brand mx-2" href="#">
                 <img src="/img/logo.png" width="50px" /> ระบบประเมินผู้ป่วย
             </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
             
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
@@ -330,9 +497,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
-        // Load user profile picture for navbar
         $(document).ready(function() {
-            // Check if there's a profile image from ViewBag
             const profileUrl = '@Html.Raw(ViewBag.ProfileImageUrl?.ToString() ?? "")';
             if (profileUrl && profileUrl.trim() !== '') {
                 updateNavbarAvatar(profileUrl);
@@ -344,13 +509,11 @@
         function updateNavbarAvatar(imageUrl) {
             const $avatar = $('#navbarUserAvatar');
             
-            // Add timestamp to prevent caching if not already present
             let imageUrlWithTimestamp = imageUrl;
             if (!imageUrl.includes('?t=')) {
                 imageUrlWithTimestamp = imageUrl + '?t=' + new Date().getTime();
             }
             
-            // Create image element
             const $img = $('<img>')
                 .attr('src', imageUrlWithTimestamp)
                 .attr('alt', 'Profile Picture')
@@ -360,16 +523,13 @@
                     'object-fit': 'cover'
                 })
                 .on('error', function() {
-                    // If image fails to load, show initials
                     console.log('Profile image failed to load, showing initials');
                     resetNavbarAvatar();
                 });
             
-            // Replace avatar content with image
             $avatar.empty().append($img);
         }
 
-        // Global function to reset navbar avatar (used by profile page)
         function resetNavbarAvatar() {
             const $avatar = $('#navbarUserAvatar');
             const initials = '@(ViewBag.UserName?.ToString().Substring(0, 1).ToUpper())';
@@ -383,12 +543,10 @@
             });
         }
 
-        // Force refresh navbar avatar (for use after profile picture changes)
         function forceRefreshNavbarAvatar() {
             $.get('/Pharma/GetUserProfile')
                 .done(function(data) {
                     if (data.success && data.profilePictureUrl) {
-                        // Force cache busting with current timestamp
                         const freshImageUrl = data.profilePictureUrl.split('?')[0] + '?t=' + new Date().getTime();
                         updateNavbarAvatar(freshImageUrl);
                     } else {
@@ -401,7 +559,6 @@
                 });
         }
 
-        // Global function to update navbar avatar (used by profile page)
         window.updateNavbarAvatar = updateNavbarAvatar;
         window.resetNavbarAvatar = resetNavbarAvatar;
         window.forceRefreshNavbarAvatar = forceRefreshNavbarAvatar;

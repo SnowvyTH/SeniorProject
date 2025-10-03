@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="utf-8" />
@@ -6,16 +6,16 @@
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     
-    <!-- Prevent caching of profile pictures -->
+    
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <!-- FontAwesome -->
+    
     <link rel="icon" type="image/x-icon" href="/img/logo.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
 </head>
-    <!-- Custom pagination styles -->
+    
     <style>
         .pagination-sm .page-link {
             padding: 0.375rem 0.75rem;
@@ -311,21 +311,168 @@
             100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
         }
 
-        /* Responsive */
-        @@media (max-width: 768px) {
+        /* Mobile sidebar toggle */
+        .sidebar-toggle {
+            display: none;
+            background: var(--mint-green);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        /* Sidebar Overlay for Mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        /* Responsive Design - Tablet (iPad) */
+        @@media (max-width: 1024px) and (min-width: 769px) {
             .sidebar {
-                width: 100%;
-                position: fixed;
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
+                width: 240px;
             }
             
-            .sidebar.active {
+            .main-content {
+                margin-left: 240px;
+            }
+            
+            .content-wrapper {
+                padding: 25px 20px;
+            }
+            
+            .page-title {
+                font-size: 24px;
+            }
+            
+            .nav-link {
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+            
+            .logo {
+                font-size: 20px;
+            }
+            
+            .top-bar {
+                padding: 18px 25px;
+            }
+        }
+
+        /* Responsive Design - Mobile */
+        @@media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                width: 280px;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 2000;
+            }
+            
+            .sidebar.show {
                 transform: translateX(0);
+                box-shadow: 4px 0 20px rgba(0,0,0,0.3);
             }
             
             .main-content {
                 margin-left: 0;
+                width: 100%;
+            }
+            
+            .sidebar-toggle {
+                display: inline-block;
+            }
+            
+            .top-bar {
+                padding: 15px 20px;
+                flex-wrap: wrap;
+            }
+            
+            .page-title {
+                font-size: 20px;
+                order: 2;
+                width: 100%;
+                margin-top: 10px;
+            }
+            
+            .user-info {
+                order: 3;
+                margin-left: auto;
+            }
+            
+            .sidebar-toggle {
+                order: 1;
+            }
+            
+            .content-wrapper {
+                padding: 15px;
+            }
+            
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .user-info > div {
+                display: none;
+            }
+            
+            .stats-card {
+                margin-bottom: 1rem;
+            }
+            
+            .stats-card .card-body {
+                padding: 1.2rem;
+            }
+            
+            .stats-number {
+                font-size: 28px;
+            }
+            
+            .stats-label {
+                font-size: 13px;
+            }
+        }
+
+        /* Extra small mobile */
+        @@media (max-width: 480px) {
+            .page-title {
+                font-size: 18px;
+            }
+            
+            .content-wrapper {
+                padding: 12px;
+            }
+            
+            .sidebar {
+                width: 260px;
+            }
+            
+            .nav-link {
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+            
+            .stats-number {
+                font-size: 24px;
+            }
+        }
+
+        @@media (min-width: 769px) {
+            .sidebar-overlay {
+                display: none !important;
             }
         }
 
@@ -461,8 +608,11 @@
         }
     </style>
 <body>
+    
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
     <div class="admin-layout">
-        <!-- Sidebar -->
+        
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
@@ -515,9 +665,12 @@
             </nav>
         </aside>
 
-        <!-- Main Content -->
+        
         <main class="main-content">
             <div class="top-bar">
+                <button class="sidebar-toggle d-md-none" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <h1 class="page-title">ระบบแบบประเมินผู้ป่วย</h1>
                 <div class="user-info">
                     <div class="user-avatar" id="adminNavbarUserAvatar">
@@ -541,9 +694,25 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <script>
-        // Load admin profile picture for navbar
-        $(document).ready(function() {
+        function toggleSidebar() {
+            $('.sidebar').toggleClass('show');
+            $('.sidebar-overlay').toggleClass('show');
+        }
 
+        $(document).ready(function() {
+            $('.sidebar .nav-link').on('click', function() {
+                if (window.innerWidth <= 768) {
+                    $('.sidebar').removeClass('show');
+                    $('.sidebar-overlay').removeClass('show');
+                }
+            });
+            
+            $(window).on('resize', function() {
+                if (window.innerWidth > 768) {
+                    $('.sidebar').removeClass('show');
+                    $('.sidebar-overlay').removeClass('show');
+                }
+            });
         });
     </script>
     

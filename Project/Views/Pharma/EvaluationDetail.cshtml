@@ -5,7 +5,7 @@
 }
 
 <div class="container">
-    <!-- Header Section -->
+    
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="page-title">
@@ -20,7 +20,7 @@
         </div>
     </div>
 
-    <!-- Patient Information -->
+    
     <div class="modern-card mb-4">
         <div class="card-header">
             <h5 class="mb-0">
@@ -102,9 +102,9 @@
         </div>
     </div>
 
-    <!-- Evaluation Details -->
+    
     <div class="row">
-        <!-- Main Content -->
+        
         <div class="col-md-8">
             <div class="modern-card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
@@ -213,7 +213,7 @@
                             }
                         </div>
                         
-                        <!-- Navigation Buttons -->
+                        
                         <div class="d-flex justify-content-between mt-4 mb-4">
                             <button type="button" class="btn btn-outline-secondary" id="prevBtn" onclick="previousQuestion()" style="display: none;">
                                 <i class="fas fa-chevron-left me-2"></i>คำถามก่อนหน้า
@@ -235,11 +235,11 @@
             </div>
         </div>
         
-        <!-- Navigation Sidebar -->
+        
         <div class="col-md-4">
             @if (Model.EvaluationDetails?.Any() == true)
             {
-                <!-- Question Navigation -->
+                
                 <div class="modern-card sticky-top mb-3" style="top: 20px;">
                     <div class="card-header">
                         <h6 class="mb-0">
@@ -525,24 +525,18 @@
         });
 
         function initializeNavigation() {
-            // Hide all questions initially
             $('.question-slide').hide();
             
-            // Show first question
             showQuestion(0);
         }
 
         function showQuestion(index) {
-            // Hide all questions
             $('.question-slide').hide();
             
-            // Show current question
             $(`.question-slide[data-question-index="${index}"]`).show();
             
-            // Update current question index
             currentQuestionIndex = index;
             
-            // Update navigation
             updateNavigation();
             updateQuestionCounter();
             updatePageNavigation();
@@ -552,14 +546,12 @@
             const prevBtn = $('#prevBtn');
             const nextBtn = $('#nextBtn');
             
-            // Show/hide previous button
             if (currentQuestionIndex === 0) {
                 prevBtn.hide();
             } else {
                 prevBtn.show();
             }
             
-            // Show/hide next button
             if (currentQuestionIndex === totalQuestions - 1) {
                 nextBtn.hide();
             } else {
@@ -595,7 +587,6 @@
             }
         }
 
-        // Keyboard navigation
         $(document).keydown(function(e) {
             if (e.key === 'ArrowLeft' && currentQuestionIndex > 0) {
                 e.preventDefault();

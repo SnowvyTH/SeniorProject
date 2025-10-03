@@ -4,7 +4,7 @@
 }
 
 <div class="container">
-    <!-- Header Section -->
+    
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="page-title">
@@ -15,8 +15,8 @@
     </div>
 
     <div class="row">
-        <div class="col-md-8 mx-auto">
-            <!-- Profile Information Card -->
+        <div class="col-md-12 mx-auto">
+            
             <div class="modern-card">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -26,29 +26,29 @@
                 <div class="card-body">
                     <form id="profileForm">
                         <div class="row g-3">
-                            <!-- Username (Read-only) -->
+                            
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">ชื่อผู้ใช้</label>
                                 <input type="text" class="form-control bg-light" id="username" readonly>
                                 <small class="form-text text-muted">ไม่สามารถแก้ไขชื่อผู้ใช้ได้</small>
                             </div>
 
-                            <!-- Title -->
+                            
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">คำนำหน้า</label>
                                 <select class="form-select" id="titleId" required>
                                     <option value="">เลือกคำนำหน้า</option>
-                                    <!-- จะถูกเติมด้วย JavaScript -->
+                                    
                                 </select>
                             </div>
 
-                            <!-- First Name -->
+                            
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">ชื่อจริง</label>
                                 <input type="text" class="form-control" id="firstName" placeholder="กรอกชื่อจริง" required>
                             </div>
 
-                            <!-- Last Name -->
+                            
                             <div class="col-md-4">
                                 <label class="form-label fw-bold">นามสกุล</label>
                                 <input type="text" class="form-control" id="lastName" placeholder="กรอกนามสกุล" required>
@@ -58,7 +58,7 @@
                 </div>
             </div>
 
-            <!-- Password Change Card -->
+            
             <div class="modern-card mt-4">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -73,7 +73,7 @@
                         </div>
                         
                         <div class="row g-3">
-                            <!-- Current Password -->
+                            
                             <div class="col-md-12">
                                 <label class="form-label fw-bold">รหัสผ่านปัจจุบัน</label>
                                 <div class="input-group">
@@ -84,7 +84,7 @@
                                 </div>
                             </div>
 
-                            <!-- New Password -->
+                            
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">รหัสผ่านใหม่</label>
                                 <div class="input-group">
@@ -96,7 +96,7 @@
                                 <small class="form-text text-muted">รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร</small>
                             </div>
 
-                            <!-- Confirm New Password -->
+                            
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">ยืนยันรหัสผ่านใหม่</label>
                                 <div class="input-group">
@@ -111,7 +111,7 @@
                 </div>
             </div>
 
-            <!-- Action Buttons -->
+            
             <div class="d-flex justify-content-end mt-4 gap-2">
                 <button type="button" class="btn btn-secondary" onclick="resetForm()">
                     <i class="fas fa-undo me-2"></i>รีเซ็ต
@@ -215,10 +215,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(document).ready(function() {
-            // Load titles first, then load user profile
             loadTitles();
             
-            // Add a fallback timer in case the API calls fail
             setTimeout(function() {
                 if (!$('#username').val()) {
                     loadUserProfileData();
@@ -255,19 +253,16 @@
             $.get('/Pharma/GetTitles')
                 .done(function(titles) {
                     const select = $('#titleId');
-                    // Clear existing options except the first one
                     select.find('option:not(:first)').remove();
                     
                     titles.forEach(title => {
                         select.append(`<option value="${title.titleID}">${title.titleName}</option>`);
                     });
                     
-                    // Reload user profile after titles are loaded to set the correct selected title
                     loadUserProfileData();
                 })
                 .fail(function(xhr, status, error) {
                     console.error('Error loading titles:', xhr.responseText);
-                    // Try to load user profile anyway even if titles fail
                     loadUserProfileData();
                 });
         }
@@ -282,11 +277,10 @@
                         $('#firstName').val(data.firstName || '');
                         $('#lastName').val(data.lastName || '');
                         
-                        // Set title after options are loaded
                         if (data.titleID && data.titleID > 0) {
                             $('#titleId').val(data.titleID);
                         } else {
-                            $('#titleId').val(''); // Reset to default
+                            $('#titleId').val(''); 
                         }
                     } else {
                         Swal.fire({
@@ -326,12 +320,10 @@
             const newPassword = $('#newPassword').val();
             const confirmPassword = $('#confirmPassword').val();
 
-            // ถ้าไม่มีการกรอกรหัสผ่านใดๆ ถือว่าไม่ต้องการเปลี่ยน
             if (!currentPassword && !newPassword && !confirmPassword) {
                 return { valid: true, changePassword: false };
             }
 
-            // ถ้ากรอกบางช่อง ต้องกรอกครบทุกช่อง
             if (!currentPassword) {
                 Swal.fire({
                     icon: 'warning',
@@ -372,13 +364,11 @@
         }
 
         function saveProfile() {
-            // Validate basic profile data
             if (!$('#profileForm')[0].checkValidity()) {
                 $('#profileForm')[0].reportValidity();
                 return;
             }
 
-            // Validate password fields
             const passwordValidation = validatePasswordFields();
             if (!passwordValidation.valid) {
                 return;
@@ -390,13 +380,11 @@
                 LastName: $('#lastName').val()
             };
 
-            // Add password data if user wants to change password
             if (passwordValidation.changePassword) {
                 profileData.CurrentPassword = passwordValidation.currentPassword;
                 profileData.NewPassword = passwordValidation.newPassword;
             }
 
-            // Show loading
             Swal.fire({
                 title: 'กำลังบันทึก...',
                 text: 'กรุณารอสักครู่',
@@ -413,14 +401,11 @@
                 contentType: 'application/json',
                 success: function(result) {
                     if (result.success) {
-                        // Clear password fields first
                         $('#currentPassword').val('');
                         $('#newPassword').val('');
                         $('#confirmPassword').val('');
                         
-                        // Check if password was changed
                         if (passwordValidation.changePassword) {
-                            // Password was changed - require re-login
                             Swal.fire({
                                 icon: 'success',
                                 title: 'สำเร็จ!',
@@ -429,11 +414,9 @@
                                 confirmButtonText: 'ตกลง',
                                 allowOutsideClick: false
                             }).then(() => {
-                                // Redirect to logout/login page
                                 window.location.href = '/Home/Logout';
                             });
                         } else {
-                            // Only profile info was changed - redirect to index
                             Swal.fire({
                                 icon: 'success',
                                 title: 'สำเร็จ!',
@@ -441,7 +424,6 @@
                                 confirmButtonColor: '#198754',
                                 confirmButtonText: 'ตกลง'
                             }).then(() => {
-                                // Redirect to pharma index
                                 window.location.href = '/Pharma/Index';
                             });
                         }
@@ -475,12 +457,10 @@
                 cancelButtonText: 'ยกเลิก'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Clear password fields first
                     $('#currentPassword').val('');
                     $('#newPassword').val('');
                     $('#confirmPassword').val('');
                     
-                    // Reload user profile data
                     loadUserProfileData();
                 }
             });

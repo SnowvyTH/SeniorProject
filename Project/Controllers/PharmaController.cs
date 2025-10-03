@@ -522,7 +522,7 @@ namespace Project.Controllers
 
                 foreach (var score in scores)
                 {
-                    if (question == 1 || question == 4 || question == 6) // 2
+                    if (question == 1 || question == 4 || question == 6) 
                     {
                         addOffset += y_offset;
                         new Canvas(canvas, pageSize)
@@ -530,7 +530,7 @@ namespace Project.Controllers
                                 new Paragraph("🌕").SetFontSize(12).SetFont(emojiFont).SetFontColor(ColorConstants.RED),
                                 posX + (score * x_offset), posY + ((question * y_offset) + addOffset), TextAlignment.LEFT);
                     }
-                    else if (question == 5) // 3
+                    else if (question == 5) 
                     {
                         addOffset += y_offset * 2;
                         new Canvas(canvas, pageSize)
@@ -538,7 +538,7 @@ namespace Project.Controllers
                                 new Paragraph("🌕").SetFontSize(12).SetFont(emojiFont).SetFontColor(ColorConstants.RED),
                                 posX + (score * x_offset), posY + ((question * y_offset) + addOffset), TextAlignment.LEFT);
                     }
-                    else if (question < 10) // 1
+                    else if (question < 10) 
                     {
                         new Canvas(canvas, pageSize)
                             .ShowTextAligned(
@@ -593,7 +593,6 @@ namespace Project.Controllers
                         var pdf = new PdfDocument(writer);
                         var document = new Document(pdf, PageSize.A4);
 
-                        // Header
                         var headerParagraph = new Paragraph("แบบประเมินการเคลื่อนไหวผิดปกติจากการรักษายาโรคจิต")
                             .SetTextAlignment(TextAlignment.CENTER)
                             .SetFontSize(12)
@@ -608,27 +607,24 @@ namespace Project.Controllers
                             .SetFont(thaiBoldFont);
                         document.Add(subHeaderParagraph);
 
-                        // Patient info section
                         var patientInfo = new Paragraph()
                             .SetTextAlignment(TextAlignment.CENTER)
                             .Add($"HN {evaluation.Patient!.HN}")
-                            .Add("   ") // Spacing
+                            .Add("   ") 
                             .Add($"ชื่อผู้ป่วย-นามสกุล {evaluation.Patient.Title?.TitleName}{evaluation.Patient.FirstName} {evaluation.Patient.LastName}")
-                            .Add("   ") // Spacing
+                            .Add("   ") 
                             .Add("☐ OPD ☐ WARD")
                             .SetFontSize(10)
                             .SetMargin(0)
                             .SetFont(thaiBoldFont);
                         document.Add(patientInfo);
 
-                        // Create main table
                         float[] columnWidths = { 6f, 2f, 2f, 2f, 2f, 2f };
                         var table = new Table(columnWidths);
                         table.SetWidth(UnitValue.CreatePercentValue(100));
 
-                        // First header row - "คะแนน" merged across score columns
                         var testHeaderCell = new Cell(2, 1).Add(new Paragraph("การทดสอบ")
-                            .SetFontSize(11) // เพิ่มขนาดฟอนต์
+                            .SetFontSize(11) 
                             .SetMargin(0)
                             .SetMultipliedLeading(0.8f))
                             .SetFont(thaiBoldFont)
@@ -707,7 +703,6 @@ namespace Project.Controllers
                             .SetPadding(3);
                         table.AddHeaderCell(scoreCell4);
 
-                        // Add question rows
                         var questions = evaluation.Form.Questions.OrderBy(q => q.QuestionID).ToList();
                         for (int i = 0; i < questions.Count; i++)
                         {
@@ -715,14 +710,12 @@ namespace Project.Controllers
                             var detail = evaluation.EvaluationDetails?.FirstOrDefault(ed => ed.QuestionID == question.QuestionID);
                             var selectedScore = detail?.Score ?? 0;
 
-                            // Question text cell
                             string questionText = GetQuestionDisplayText(i + 1, question.QuestionText);
                             var questionCell = CreateCell(questionText, thaiFont, false);
-                            questionCell.SetFontSize(10); // ขนาด font สำหรับคำถาม
-                            questionCell.SetVerticalAlignment(VerticalAlignment.TOP); // ชิดขอบบน
+                            questionCell.SetFontSize(10); 
+                            questionCell.SetVerticalAlignment(VerticalAlignment.TOP); 
                             table.AddCell(questionCell);
 
-                            // Score cells with checkboxes
                             for (int score = 0; score <= 4; score++)
                             {
                                 string checkMark = selectedScore == score ? "☐" : "☐";
@@ -734,7 +727,6 @@ namespace Project.Controllers
                                 }
                                 else
                                 {
-                                    // Get option text for this score
                                     var option = question.Options.FirstOrDefault(o => o.Value == score);
                                     if (option != null && !string.IsNullOrEmpty(option.OptionText))
                                     {
@@ -758,7 +750,6 @@ namespace Project.Controllers
 
                         document.Add(table);
 
-                        // Add summary section
                         document.Add(new Paragraph(" ").SetFontSize(10));
 
                         var summaryTitle = new Paragraph("สรุปผลการประเมิน")
@@ -779,7 +770,6 @@ namespace Project.Controllers
                             document.Add(detailParagraph);
                         }
 
-                        // Add evaluation info
                         document.Add(new Paragraph(" ").SetFontSize(10));
                         var evaluationInfo = new Paragraph()
                             .Add($"วันที่ประเมิน: {evaluation.RecordDate:dd/MM/yyyy HH:mm}")
@@ -803,9 +793,9 @@ namespace Project.Controllers
             {
                 var paragraph = new Paragraph(content)
                     .SetFont(font)
-                    .SetFontSize(11) // เพิ่มขนาดฟอนต์เล็กน้อยเพื่อดูหนา
+                    .SetFontSize(11) 
                     .SetMargin(0)
-                    .SetMultipliedLeading(0.6f); // ลดระยะห่างบรรทัดให้น้อยลง
+                    .SetMultipliedLeading(0.6f); 
 
                 return new Cell()
                     .Add(paragraph)
@@ -821,16 +811,16 @@ namespace Project.Controllers
             {
                 var paragraph = new Paragraph(content)
                     .SetFont(font)
-                    .SetFontSize(8) // ขนาด font เริ่มต้น
-                    .SetMargin(0) // ลบ margin
-                    .SetMultipliedLeading(0.8f); // ลดระยะห่างบรรทัดให้น้อยลง
+                    .SetFontSize(8) 
+                    .SetMargin(0) 
+                    .SetMultipliedLeading(0.8f); 
 
                 return new Cell()
                     .Add(paragraph)
                     .SetBorder(new SolidBorder(1))
-                    .SetVerticalAlignment(VerticalAlignment.TOP) // ชิดขอบบน
+                    .SetVerticalAlignment(VerticalAlignment.TOP) 
                     .SetTextAlignment(TextAlignment.LEFT)
-                    .SetPadding(3); // เพิ่ม padding เล็กน้อย
+                    .SetPadding(3); 
             }
 
             private string GetQuestionDisplayText(int questionNumber, string? questionText)
@@ -985,25 +975,75 @@ namespace Project.Controllers
                 return Json(result);
             }
 
+            [HttpGet]
+            public async Task<IActionResult> CheckDuplicatePatient(string? citizenId = null, string? firstName = null, string? lastName = null, string? currentHN = null)
+            {
+                try
+                {
+                    var duplicates = new List<object>();
+
+                    if (!string.IsNullOrEmpty(citizenId))
+                    {
+                        var citizenIdDuplicate = await _db.Patient
+                            .Where(p => p.CitizenID == citizenId && p.HN != currentHN)
+                            .Select(p => new
+                            {
+                                hn = p.HN,
+                                name = p.FirstName + " " + p.LastName,
+                                citizenId = p.CitizenID,
+                                type = "citizenId"
+                            })
+                            .FirstOrDefaultAsync();
+
+                        if (citizenIdDuplicate != null)
+                        {
+                            duplicates.Add(citizenIdDuplicate);
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(firstName) && !string.IsNullOrEmpty(lastName))
+                    {
+                        var nameDuplicate = await _db.Patient
+                            .Where(p => p.FirstName == firstName && p.LastName == lastName && p.HN != currentHN)
+                            .Select(p => new
+                            {
+                                hn = p.HN,
+                                name = p.FirstName + " " + p.LastName,
+                                citizenId = p.CitizenID,
+                                type = "fullName"
+                            })
+                            .FirstOrDefaultAsync();
+
+                        if (nameDuplicate != null)
+                        {
+                            duplicates.Add(nameDuplicate);
+                        }
+                    }
+
+                    return Json(new { success = true, duplicates = duplicates });
+                }
+                catch (Exception ex)
+                {
+                    return Json(new { success = false, message = "เกิดข้อผิดพลาด: " + ex.Message });
+                }
+            }
+
             [HttpPost]
             public async Task<IActionResult> CreatePatient([FromBody] PatientModel model)
             {
                 try
                 {
-                    // ตรวจสอบ model validation
                     if (!ModelState.IsValid)
                     {
                         var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                         return Json(new { success = false, message = string.Join(", ", errors) });
                     }
                     
-                    // ตั้งค่า default RecordDate หากไม่ได้ระบุ
                     if (!model.RecordDate.HasValue)
                     {
                         model.RecordDate = DateTime.Today;
                     }
                     
-                    // ตรวจสอบว่าวันที่บันทึกไม่เกินวันปัจจุบัน
                     if (model.RecordDate.HasValue && model.RecordDate.Value.Date > DateTime.Today)
                     {
                         return Json(new { success = false, message = "วันที่บันทึกเวชระเบียนไม่สามารถเกินวันปัจจุบันได้" });
@@ -1048,14 +1088,12 @@ namespace Project.Controllers
             {
                 try
                 {
-                    // ตรวจสอบ model validation
                     if (!ModelState.IsValid)
                     {
                         var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
                         return Json(new { success = false, message = string.Join(", ", errors) });
                     }
                     
-                    // ตรวจสอบว่าวันที่บันทึกไม่เกินวันปัจจุบัน
                     if (model.RecordDate.HasValue && model.RecordDate.Value.Date > DateTime.Today)
                     {
                         return Json(new { success = false, message = "วันที่บันทึกเวชระเบียนไม่สามารถเกินวันปัจจุบันได้" });
@@ -1340,7 +1378,6 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ไม่พบแบบประเมิน" });
                     }
 
-                    // ตรวจสอบว่าเป็นฟอร์มระบบหรือไม่
                     var systemForms = new[] { "Mod-SAS", "Mod-BARS", "Mod-AIMS" };
                     if (systemForms.Contains(form.FormName))
                     {
@@ -1357,7 +1394,6 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ชื่อแบบประเมินนี้มีอยู่แล้วในระบบ กรุณาใช้ชื่ออื่น" });
                     }
 
-                    // ตรวจสอบว่ามีการประเมินแล้วหรือไม่
                     var questionIds = form.Questions.Select(q => q.QuestionID).ToList();
                     var evaluatedQuestionIds = new HashSet<int>();
                     var evaluatedOptionIds = new HashSet<int>();
@@ -1373,7 +1409,6 @@ namespace Project.Controllers
                             .Select(ed => ed.QuestionID!.Value)
                             .ToHashSet();
 
-                        // หา option ที่เคยถูกใช้ในการประเมิน (ใช้วิธีแยกขั้นตอน)
                         var evaluationScores = await _db.EvaluationDetail
                             .Where(ed => ed.QuestionID.HasValue && evaluatedQuestionIds.Contains(ed.QuestionID.Value))
                             .Select(ed => new { QuestionId = ed.QuestionID!.Value, Score = ed.Score ?? 0 })
@@ -1401,18 +1436,15 @@ namespace Project.Controllers
 
                     try
                     {
-                        // อัพเดทข้อมูลพื้นฐานของฟอร์ม
                         form.FormName = formName;
                         form.FormType = formType;
                         form.Scoring = scoring;
 
-                        // จัดการคำถามใหม่
                         if (!string.IsNullOrEmpty(questionsJson))
                         {
                             var newQuestions = System.Text.Json.JsonSerializer.Deserialize<List<QuestionDataWithId>>(questionsJson);
                             if (newQuestions != null)
                             {
-                                // ตรวจสอบการลบคำถามที่เคยถูกประเมิน
                                 var questionsToDelete = form.Questions
                                     .Where(q => !newQuestions.Any(nq => nq.QuestionID == q.QuestionID))
                                     .ToList();
@@ -1432,10 +1464,8 @@ namespace Project.Controllers
                                     });
                                 }
 
-                                // ลบคำถามที่ถูกขอให้ลบ
                                 foreach (var questionToDelete in questionsToDelete)
                                 {
-                                    // ถ้าเป็นคำถามที่เคยถูกประเมิน และ forceUpdate = true ต้องลบ evaluation details ที่เกี่ยวข้อง
                                     if (evaluatedQuestionIds.Contains(questionToDelete.QuestionID) && forceUpdate)
                                     {
                                         var relatedEvaluationDetails = await _db.EvaluationDetail
@@ -1448,7 +1478,6 @@ namespace Project.Controllers
                                     _db.Question.Remove(questionToDelete);
                                 }
 
-                                // จัดการคำถามที่เหลือ
                                 foreach (var questionData in newQuestions)
                                 {
                                     Question question;
@@ -1456,7 +1485,6 @@ namespace Project.Controllers
 
                                     if (questionData.QuestionID > 0)
                                     {
-                                        // คำถามเดิม - อัพเดท
                                         question = form.Questions.FirstOrDefault(q => q.QuestionID == questionData.QuestionID)!;
                                         if (question != null)
                                         {
@@ -1465,12 +1493,11 @@ namespace Project.Controllers
                                         }
                                         else
                                         {
-                                            continue; // ข้าม question ที่ไม่พบ
+                                            continue; 
                                         }
                                     }
                                     else
                                     {
-                                        // คำถามใหม่
                                         question = new Question
                                         {
                                             FormID = form.FormID,
@@ -1481,12 +1508,10 @@ namespace Project.Controllers
                                         isNewQuestion = true;
                                     }
 
-                                    await _db.SaveChangesAsync(); // บันทึกเพื่อได้ QuestionID
+                                    await _db.SaveChangesAsync(); 
 
-                                    // จัดการตัวเลือก
                                     if (questionData.Options != null && !isNewQuestion)
                                     {
-                                        // ตรวจสอบการลบตัวเลือกที่เคยถูกใช้
                                         var currentOptions = question.Options.ToList();
                                         var optionsToDelete = currentOptions
                                             .Where(o => !questionData.Options.Any(no => no.OptionID == o.OptionID))
@@ -1507,7 +1532,6 @@ namespace Project.Controllers
                                             });
                                         }
 
-                                        // ลบตัวเลือกที่ถูกขอให้ลบ และลบ evaluation details ที่เกี่ยวข้องถ้า forceUpdate = true
                                         if (forceUpdate)
                                         {
                                             var deletingUsedOptionIds = deletingUsedOptions.Select(o => o.OptionID).ToList();
@@ -1515,7 +1539,6 @@ namespace Project.Controllers
                                                 .Where(ed => ed.QuestionID == question.QuestionID)
                                                 .ToListAsync();
                                             
-                                            // ลบ evaluation details ที่ใช้ option ที่กำลังจะลบ
                                             foreach (var evalDetail in relatedEvaluationDetails)
                                             {
                                                 var usedOption = deletingUsedOptions.FirstOrDefault(o => 
@@ -1531,18 +1554,15 @@ namespace Project.Controllers
                                     }
                                     else if (isNewQuestion && questionData.Options != null)
                                     {
-                                        // คำถามใหม่ - ลบตัวเลือกเก่าทั้งหมดแล้วเพิ่มใหม่
                                         _db.Option.RemoveRange(question.Options);
                                     }
 
-                                    // เพิ่ม/อัพเดทตัวเลือก
                                     if (questionData.Options != null)
                                     {
                                         foreach (var optionData in questionData.Options)
                                         {
                                             if (optionData.OptionID > 0 && !isNewQuestion)
                                             {
-                                                // ตัวเลือกเดิม - อัพเดท
                                                 var existingOption = question.Options
                                                     .FirstOrDefault(o => o.OptionID == optionData.OptionID);
                                                 if (existingOption != null)
@@ -1553,7 +1573,6 @@ namespace Project.Controllers
                                             }
                                             else
                                             {
-                                                // ตัวเลือกใหม่
                                                 var option = new Option
                                                 {
                                                     QuestionID = question.QuestionID,
@@ -1568,13 +1587,11 @@ namespace Project.Controllers
                             }
                         }
 
-                        // จัดการเกณฑ์การแปรผล
                         if (!string.IsNullOrEmpty(interpretersJson))
                         {
                             var newInterpreters = System.Text.Json.JsonSerializer.Deserialize<List<InterpreterDataWithId>>(interpretersJson);
                             if (newInterpreters != null)
                             {
-                                // เพิ่มเกณฑ์ใหม่เท่านั้น (ห้ามลบเกณฑ์เก่า)
                                 var newOnlyInterpreters = newInterpreters.Where(i => i.InterpreterID <= 0).ToList();
                                 
                                 foreach (var interpreterData in newOnlyInterpreters)
@@ -1590,7 +1607,6 @@ namespace Project.Controllers
                                     _db.Interpreter.Add(interpreter);
                                 }
 
-                                // อัพเดทเกณฑ์เดิม
                                 var existingInterpreters = newInterpreters.Where(i => i.InterpreterID > 0).ToList();
                                 foreach (var interpreterData in existingInterpreters)
                                 {
@@ -1654,17 +1670,14 @@ namespace Project.Controllers
                         return Json(new { success = false, message = "ไม่พบแบบประเมิน" });
                     }
 
-                    // ตรวจสอบว่าเป็นฟอร์มระบบหรือไม่
                     var systemForms = new[] { "Mod-SAS", "Mod-BARS", "Mod-AIMS" };
                     if (systemForms.Contains(form.FormName))
                     {
                         return Json(new { success = false, message = "ไม่สามารถลบแบบประเมินระบบได้" });
                     }
 
-                    // นับจำนวนการประเมินที่เกี่ยวข้อง
                     int evaluationsCount = form.Evaluations.Count;
 
-                    // ถ้ามีการประเมินและไม่ได้ระบุ forceDelete ให้แจ้งเตือน
                     if (evaluationsCount > 0 && !forceDelete)
                     {
                         return Json(new { 
@@ -1681,34 +1694,28 @@ namespace Project.Controllers
                     {
                         int deletedEvaluations = 0;
 
-                        // ลบประวัติการประเมินที่เกี่ยวข้อง (ถ้ามี)
                         if (form.Evaluations.Any())
                         {
                             foreach (var evaluation in form.Evaluations)
                             {
-                                // ลบรายละเอียดการประเมิน
                                 if (evaluation.EvaluationDetails.Any())
                                 {
                                     _db.EvaluationDetail.RemoveRange(evaluation.EvaluationDetails);
                                 }
                                 
-                                // ลบการประเมิน
                                 _db.Evaluation.Remove(evaluation);
                                 deletedEvaluations++;
                             }
                         }
 
-                        // ลบคำถามและตัวเลือก
                         foreach (var question in form.Questions)
                         {
                             _db.Option.RemoveRange(question.Options);
                         }
                         _db.Question.RemoveRange(form.Questions);
 
-                        // ลบเกณฑ์การแปรผล
                         _db.Interpreter.RemoveRange(form.Interpreters);
 
-                        // ลบแบบประเมิน
                         _db.Form.Remove(form);
 
                         await _db.SaveChangesAsync();

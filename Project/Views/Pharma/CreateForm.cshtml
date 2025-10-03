@@ -4,7 +4,7 @@
 }
 
 <div class="container">
-    <!-- Header Section -->
+    
     <div class="d-flex justify-content-between align-items-center mb-4 mt-4">
         <div>
             <h2 class="page-title">
@@ -199,7 +199,7 @@
     </div>
 </div>
 
-</div> <!-- Close container -->
+</div> 
 
 @section Scripts {
     <script>
@@ -312,7 +312,6 @@
                     return;
                 }
                 
-                // Check if form name is invalid (duplicate)
                 if ($('#formName').hasClass('is-invalid')) {
                     Swal.fire({
                         icon: 'error',
@@ -336,7 +335,6 @@
             }
             
             if (currentStep === 2) {
-                // ตรวจสอบสำหรับประเภท 3 ที่ใช้ Section
                 if (selectedFormType === 3) {
                     if ($('.section-item').length === 0) {
                         Swal.fire({
@@ -359,20 +357,17 @@
                             return false;
                         }
                         
-                        // ตรวจสอบว่ามีคำถามในหัวข้อนี้หรือไม่
                         if ($(this).find('.question-in-section-item').length === 0) {
                             QuestionNotFill = true;
                             return false;
                         }
                         
-                        // ตรวจสอบคำถามในหัวข้อ
                         $(this).find('.question-in-section-item').each(function() {
                             if (!$(this).find('.question-text').val().trim()) {
                                 QuestionNotFill = true;
                                 return false;
                             }
                             
-                            // ตรวจสอบตัวเลือกและคะแนน
                             $(this).find('.option-item').each(function() {
                                 let optionValue = $(this).find('.option-value').val();
                                 if (!optionValue) {
@@ -417,7 +412,6 @@
                         return;
                     }
                 } else {
-                    // ตรวจสอบสำหรับประเภท 1 และ 2 (แบบเดิม)
                     if ($('.question-item').length === 0) {
                         Swal.fire({
                             icon: 'warning',
@@ -436,12 +430,10 @@
                             return false;
                         }
                         
-                        // ตรวจสอบตัวเลือกและคะแนน
                         $(this).find('.option-item').each(function() {
                             let optionText = $(this).find('.option-text').val().trim();
                             let optionValue = $(this).find('.option-value').val();
                             
-                            // สำหรับประเภท 1 และ 2 ต้องมีข้อความและคะแนน
                             if (selectedFormType === 1 || selectedFormType === 2) {
                                 if (!optionText || !optionValue) {
                                     OptionNotFill = true;
@@ -495,7 +487,6 @@
             let questionHtml = '';
             
             if (selectedFormType === 1) {
-                // ประเภท 1: แบบประเมินมาตรฐาน
                 questionHtml = `
                     <div class="question-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-question="${questionsCount}">
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -520,7 +511,6 @@
                         </div>
                     </div>`;
             } else if (selectedFormType === 2) {
-                // ประเภท 2: แบบประเมินข้อความยาว
                 questionHtml = `
                     <div class="question-item mb-4 border-0 shadow-sm rounded-3 p-4" style="background: #f8f9fa;" data-question="${questionsCount}">
                         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -558,7 +548,6 @@
             $('#questions-container').append(questionHtml);
         }
         
-        // ฟังก์ชันใหม่สำหรับเพิ่ม Section (ประเภท 3)
         function addSection() {
             questionsCount++;
             let sectionHtml = `
@@ -587,7 +576,6 @@
             $('#questions-container').append(sectionHtml);
         }
         
-        // ฟังก์ชันเพิ่มคำถามใน Section
         function addQuestionToSection(sectionId) {
             let sectionQuestionsCount = $(`.questions-in-section[data-section="${sectionId}"] .question-in-section-item`).length + 1;
             let questionHtml = `
@@ -617,7 +605,6 @@
             $(`.questions-in-section[data-section="${sectionId}"]`).append(questionHtml);
         }
         
-        // ฟังก์ชันลบ Section
         function removeSection(sectionId) {
             Swal.fire({
                 title: 'ต้องการลบหัวข้อใหญ่นี้หรือไม่?',
@@ -642,7 +629,6 @@
             });
         }
         
-        // ฟังก์ชันลบคำถามจาก Section
         function removeQuestionFromSection(questionId) {
             Swal.fire({
                 title: 'ต้องการลบคำถามนี้หรือไม่?',
@@ -697,7 +683,6 @@
             let optionHtml = '';
             
             if (selectedFormType === 1) {
-                // ประเภท 1: แบบประเมินมาตรฐาน
                 optionHtml = `
                     <div class="option-item mb-2">
                         <div class="input-group">
@@ -709,7 +694,6 @@
                         </div>
                     </div>`;
             } else if (selectedFormType === 2) {
-                // ประเภท 2: แบบประเมินข้อความยาว
                 optionHtml = `
                     <div class="option-item mb-3">
                         <div class="row">
@@ -729,7 +713,6 @@
                         </div>
                     </div>`;
             } else if (selectedFormType === 3) {
-                // ประเภท 3: แบบประเมินแบบมี Section
                 optionHtml = `
                     <div class="option-item mb-2">
                         <div class="input-group">
@@ -812,7 +795,6 @@
                 return;
             }
             
-            // Check for duplicate form name
             if ($('#formName').hasClass('is-invalid')) {
                 Swal.fire({
                     icon: 'error',
@@ -832,7 +814,6 @@
                 return;
             }
             
-            // ตรวจสอบสำหรับประเภท 3 ที่ใช้ Section
             if (selectedFormType === 3) {
                 if ($('.section-item').length === 0) {
                     Swal.fire({
@@ -844,7 +825,6 @@
                     return;
                 }
             } else {
-                // ตรวจสอบสำหรับประเภท 1 และ 2 (แบบเดิม)
                 if ($('.question-item').length === 0) {
                     Swal.fire({
                         icon: 'warning',
@@ -889,7 +869,6 @@
                 return;
             }
             
-            // Show loading
             Swal.fire({
                 title: 'กำลังบันทึก...',
                 text: 'กรุณารอสักครู่',
@@ -904,34 +883,30 @@
             formData.append('formType', selectedFormType);
             formData.append('scoring', $('#scoringMethod').val());
             
-            // Prepare questions data
             let questionsData = [];
             
             if (selectedFormType === 3) {
-                // สำหรับประเภท 3: ใช้ Section structure
                 $('.section-item').each(function() {
                     let sectionName = $(this).find('.section-name').val().trim();
                     
                     if (sectionName) {
-                        // เก็บคำถามในแต่ละ section
                         $(this).find('.question-in-section-item').each(function() {
                             let questionText = $(this).find('.question-text').val().trim();
                             
                             if (questionText) {
                                 let question = {
                                     questionText: questionText,
-                                    section: sectionName, // เก็บชื่อ section
+                                    section: sectionName, 
                                     options: []
                                 };
                                 
-                                // เก็บข้อมูล options
                                 $(this).find('.option-item').each(function() {
                                     let optionText = $(this).find('.option-text').val().trim();
                                     let optionValue = $(this).find('.option-value').val();
                                     
-                                    if (optionValue) { // ประเภท 3 ต้องมีคะแนนเท่านั้น
+                                    if (optionValue) { 
                                         question.options.push({
-                                            optionText: optionText || '', // ตัวเลือกสามารถว่างได้
+                                            optionText: optionText || '', 
                                             value: parseInt(optionValue) || 0
                                         });
                                     }
@@ -945,7 +920,6 @@
                     }
                 });
             } else {
-                // สำหรับประเภท 1 และ 2: ใช้โครงสร้างเดิม
                 $('.question-item').each(function() {
                     let questionText = $(this).find('.question-text').val().trim();
                     
@@ -956,7 +930,6 @@
                             options: []
                         };
                         
-                        // เก็บข้อมูล options
                         $(this).find('.option-item').each(function() {
                             let optionText = $(this).find('.option-text').val().trim();
                             let optionValue = $(this).find('.option-value').val();
@@ -976,7 +949,6 @@
                 });
             }
             
-            // Prepare interpreters data
             let interpretersData = [];
             $('.result-setting-item').each(function() {
                 let minScore = $(this).find('.min-score').val();
@@ -984,7 +956,6 @@
                 let interName = $(this).find('.result-name').val().trim();
                 let interText = $(this).find('.result-text').val().trim();
                 
-                // ตรวจสอบให้ครบถ้วน
                 if (minScore && maxScore && interName && interText) {
                     interpretersData.push({
                         minScore: parseInt(minScore),
@@ -995,8 +966,8 @@
                 }
             });
             
-            console.log('Questions Data:', questionsData); // Debug
-            console.log('Interpreters Data:', interpretersData); // Debug
+            console.log('Questions Data:', questionsData); 
+            console.log('Interpreters Data:', interpretersData); 
             
             formData.append('questionsJson', JSON.stringify(questionsData));
             formData.append('interpretersJson', JSON.stringify(interpretersData));
