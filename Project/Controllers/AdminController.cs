@@ -76,10 +76,10 @@ namespace Project.Controllers
 
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(u => u.FirstName.Contains(search) || 
-                                       u.LastName.Contains(search) || 
-                                       u.Username.Contains(search) ||
-                                       u.Title.TitleName.Contains(search));
+                query = query.Where(u => (u.FirstName != null && u.FirstName.Contains(search)) || 
+                                       (u.LastName != null && u.LastName.Contains(search)) || 
+                                       (u.Username != null && u.Username.Contains(search)) ||
+                                       (u.Title != null && u.Title.TitleName != null && u.Title.TitleName.Contains(search)));
             }
 
             if (!string.IsNullOrEmpty(roleFilter) && int.TryParse(roleFilter, out int roleInt))
@@ -95,7 +95,7 @@ namespace Project.Controllers
             var users = await query.Select(u => new
             {
                 userID = u.UserID,
-                titleName = u.Title.TitleName,
+                titleName = u.Title != null ? u.Title.TitleName : "",
                 firstName = u.FirstName,
                 lastName = u.LastName,
                 username = u.Username,
@@ -576,7 +576,7 @@ namespace Project.Controllers
                 .Select(l => new
                 {
                     logID = l.LogID,
-                    username = l.User.Username,
+                    username = l.User != null ? l.User.Username : "",
                     logDateTime = l.LogDateTime,
                     titleName = l.User != null && l.User.Title != null ? l.User.Title.TitleName : "",
                     firstName = l.User != null ? l.User.FirstName : "",
@@ -656,7 +656,7 @@ namespace Project.Controllers
                 .Where(l => l.LogDateTime.HasValue &&
                             l.LogDateTime.Value.Date >= startDate &&
                             l.LogDateTime.Value.Date <= endDate)
-                .GroupBy(l => l.LogDateTime.Value.Date)
+                .GroupBy(l => l.LogDateTime!.Value.Date)
                 .Select(g => new {
                     Date = g.Key,
                     Count = g.Count()

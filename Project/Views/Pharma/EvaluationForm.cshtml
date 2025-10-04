@@ -82,7 +82,7 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="question-text mb-4">
-                                            <h6 class="fw-bold">@Html.Raw(question.QuestionText.Replace("\n", "<br>"))</h6>
+                                            <h6 class="fw-bold">@Html.Raw((question.QuestionText ?? "").Replace("\n", "<br>"))</h6>
                                         </div>
                                         
                                         <div class="choices-container">
@@ -96,7 +96,7 @@
                                                            data-question="@question.QuestionID"
                                                            onchange="updateProgress(); updateQuestionStatus(@(globalQuestionIndex - 1))">
                                                     <label class="form-check-label" for="choice_@choice.OptionID">
-                                                        @Html.Raw(choice.OptionText.Replace("\n", "<br>"))
+                                                        @Html.Raw((choice.OptionText ?? "").Replace("\n", "<br>"))
                                                         <span class="badge bg-secondary ms-2">@choice.Value</span>
                                                     </label>
                                                 </div>
@@ -125,7 +125,7 @@
                                     {
                                         
                                         <div class="question-text mb-4">
-                                            <h6 class="fw-bold">@Html.Raw(question.QuestionText.Replace("\n", "<br>"))</h6>
+                                            <h6 class="fw-bold">@Html.Raw((question.QuestionText ?? "").Replace("\n", "<br>"))</h6>
                                         </div>
                                     }
                                     else
@@ -149,7 +149,7 @@
                                                 <label class="form-check-label" for="choice_@choice.OptionID">
                                                     @if (form.FormType == 2)
                                                     {
-                                                        @Html.Raw(choice.OptionText.Replace("\n", "<br>"))
+                                                        @Html.Raw((choice.OptionText ?? "").Replace("\n", "<br>"))
                                                     }
                                                     else
                                                     {
@@ -311,7 +311,6 @@
             border-color: var(--mint-green);
         }
 
-        /* Selected choice item styling */
         .choice-item input[type="radio"]:checked ~ *,
         .choice-item:has(input[type="radio"]:checked) {
             background: rgba(81, 195, 183, 0.15) !important;
@@ -319,7 +318,6 @@
             box-shadow: 0 2px 8px rgba(81, 195, 183, 0.3) !important;
         }
 
-        /* Alternative fallback for browsers that don't support :has() */
         .choice-item.selected {
             background: rgba(81, 195, 183, 0.15) !important;
             border-color: var(--mint-green) !important;
@@ -413,7 +411,6 @@
             background-color: var(--mint-green) !important;
         }
 
-        /* Type 3 Specific Styles */
         .section-card {
             border-left: 5px solid var(--mint-green);
         }
@@ -459,7 +456,6 @@
             background-color: #6c757d !important;
         }
 
-        /* Question Navigation Styles */
         .question-nav-item {
             display: flex;
             align-items: center;
@@ -510,7 +506,6 @@
             padding-left: 0.5rem;
         }
 
-        /* Question Slide Styles */
         .question-slide {
             min-height: 400px;
         }
@@ -520,7 +515,6 @@
             line-height: 1.6;
         }
 
-        /* Page Navigation Grid */
         .page-grid {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
@@ -564,7 +558,6 @@
             border-color: #28a745;
         }
 
-        /* Navigation Button Styles */
         .btn {
             border-radius: 8px;
             font-weight: 500;

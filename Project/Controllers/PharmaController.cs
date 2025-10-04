@@ -281,7 +281,7 @@ namespace Project.Controllers
             var emojifontProgram = FontProgramFactory.CreateFont(emojifontPath);
             var emojiFont = PdfFontFactory.CreateFont(emojifontProgram, PdfEncodings.IDENTITY_H);
 
-            if (evaluation!.Form!.FormType == 1) {
+            if (evaluation!.Form!.FormID == 8) {
 
                 string modsasBackgroundPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdf", "modsas.pdf");
 
@@ -354,7 +354,7 @@ namespace Project.Controllers
 
                 var fileName = $"Evaluation_{evaluation.Patient.HN}_{evaluation.RecordDate:yyyyMMdd_HHmm}.pdf";
                 return File(stream.ToArray(), "application/pdf", fileName);
-            } else if (evaluation.Form.FormType == 2) {
+            } else if (evaluation.Form.FormID == 9) {
                 string modbarBackgroundPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdf", "modbar.pdf");
                 MemoryStream stream = new MemoryStream();
                 PdfWriter writer = new PdfWriter(stream);
@@ -461,9 +461,9 @@ namespace Project.Controllers
                 backgroundPdf.Close();
                 reader.Close();
 
-                var fileName = $"Evaluation_{evaluation.Patient.HN}_{evaluation.RecordDate:yyyyMMdd_HHmm}.pdf";
+                var fileName = $"ผลการประเมิน_{evaluation.Form.FormName}_{evaluation.Patient.HN}_{evaluation.RecordDate:yyyyMMdd_HHmm}.pdf";
                 return File(stream.ToArray(), "application/pdf", fileName);
-            } else if (evaluation.Form.FormType == 3){
+            } else if (evaluation.Form.FormID == 10){
                 string modaimsBackgroundPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "pdf", "modaims.pdf");
                 MemoryStream stream = new MemoryStream();
                 PdfWriter writer = new PdfWriter(stream);
@@ -584,7 +584,7 @@ namespace Project.Controllers
                 backgroundPdf.Close();
                 reader.Close();
 
-                var fileName = $"Evaluation_{evaluation.Patient.HN}_{evaluation.RecordDate:yyyyMMdd_HHmm}.pdf";
+                var fileName = $"ผลการประเมิน_{evaluation.Form.FormName}_{evaluation.Patient.HN}_{evaluation.RecordDate:yyyyMMdd_HHmm}.pdf";
                 return File(stream.ToArray(), "application/pdf", fileName);
             } else {
                     try {
@@ -592,194 +592,179 @@ namespace Project.Controllers
                         var writer = new PdfWriter(stream);
                         var pdf = new PdfDocument(writer);
                         var document = new Document(pdf, PageSize.A4);
+                        document.SetMargins(36, 36, 36, 36);
 
-                        var headerParagraph = new Paragraph("แบบประเมินการเคลื่อนไหวผิดปกติจากการรักษายาโรคจิต")
+                        var titleParagraph = new Paragraph($"แบบประเมิน {evaluation.Form.FormName}")
                             .SetTextAlignment(TextAlignment.CENTER)
-                            .SetFontSize(12)
-                            .SetMargin(0)
+                            .SetFontSize(16)
                             .SetFont(thaiBoldFont);
-                        document.Add(headerParagraph);
+                        document.Add(titleParagraph);
+                        document.Add(new Paragraph($"{evaluation.Patient!.HN}  ชื่อ-สกุล: {evaluation.Patient.Title?.TitleName}{evaluation.Patient.FirstName} {evaluation.Patient.LastName}  ประเภทผู้ป่วย: {evaluation.Patient.PatientType ?? "ไม่ระบุ"}  วันที่ประเมิน: {evaluation.RecordDate:dd/MM/yyyy}").SetFont(thaiFont).SetFontSize(14).SetTextAlignment(TextAlignment.CENTER));
 
-                        var subHeaderParagraph = new Paragraph("Modified Simpson-Angus Rating Scale (Mod-SAS) สำหรับ Parkinsonism และ EPS อื่นๆ")
-                            .SetTextAlignment(TextAlignment.CENTER)
-                            .SetFontSize(12)
-                            .SetMargin(0)
-                            .SetFont(thaiBoldFont);
-                        document.Add(subHeaderParagraph);
-
-                        var patientInfo = new Paragraph()
-                            .SetTextAlignment(TextAlignment.CENTER)
-                            .Add($"HN {evaluation.Patient!.HN}")
-                            .Add("   ") 
-                            .Add($"ชื่อผู้ป่วย-นามสกุล {evaluation.Patient.Title?.TitleName}{evaluation.Patient.FirstName} {evaluation.Patient.LastName}")
-                            .Add("   ") 
-                            .Add("☐ OPD ☐ WARD")
-                            .SetFontSize(10)
-                            .SetMargin(0)
-                            .SetFont(thaiBoldFont);
-                        document.Add(patientInfo);
-
-                        float[] columnWidths = { 6f, 2f, 2f, 2f, 2f, 2f };
-                        var table = new Table(columnWidths);
-                        table.SetWidth(UnitValue.CreatePercentValue(100));
-
-                        var testHeaderCell = new Cell(2, 1).Add(new Paragraph("การทดสอบ")
-                            .SetFontSize(11) 
-                            .SetMargin(0)
-                            .SetMultipliedLeading(0.8f))
-                            .SetFont(thaiBoldFont)
-                            .SetTextAlignment(TextAlignment.CENTER)
-                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
-                            .SetBackgroundColor(ColorConstants.WHITE)
-                            .SetBorder(new SolidBorder(1))
-                            .SetPadding(3);
-                        table.AddHeaderCell(testHeaderCell);
-
-                        var scoreHeaderCell = new Cell(1, 5).Add(new Paragraph("คะแนน")
-                            .SetFontSize(11)
-                            .SetMargin(0)
-                            .SetMultipliedLeading(0.8f))
-                            .SetFont(thaiBoldFont)
-                            .SetTextAlignment(TextAlignment.CENTER)
-                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
-                            .SetBackgroundColor(ColorConstants.WHITE)
-                            .SetBorder(new SolidBorder(1))
-                            .SetPadding(3);
-                        table.AddHeaderCell(scoreHeaderCell);
-
-                        var scoreCell0 = new Cell().Add(new Paragraph("0")
-                            .SetFontSize(11)
-                            .SetMargin(0)
-                            .SetMultipliedLeading(0.8f))
-                            .SetFont(thaiBoldFont)
-                            .SetTextAlignment(TextAlignment.CENTER)
-                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
-                            .SetBackgroundColor(ColorConstants.WHITE)
-                            .SetBorder(new SolidBorder(1))
-                            .SetPadding(3);
-                        table.AddHeaderCell(scoreCell0);
-                        var scoreCell1 = new Cell().Add(new Paragraph("1")
-                            .SetFontSize(11)
-                            .SetMargin(0)
-                            .SetMultipliedLeading(0.8f))
-                            .SetFont(thaiBoldFont)
-                            .SetTextAlignment(TextAlignment.CENTER)
-                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
-                            .SetBackgroundColor(ColorConstants.WHITE)
-                            .SetBorder(new SolidBorder(1))
-                            .SetPadding(3);
-                        table.AddHeaderCell(scoreCell1);
-                        var scoreCell2 = new Cell().Add(new Paragraph("2")
-                            .SetFontSize(11)
-                            .SetMargin(0)
-                            .SetMultipliedLeading(0.8f))
-                            .SetFont(thaiBoldFont)
-                            .SetTextAlignment(TextAlignment.CENTER)
-                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
-                            .SetBackgroundColor(ColorConstants.WHITE)
-                            .SetBorder(new SolidBorder(1))
-                            .SetPadding(3);
-                        table.AddHeaderCell(scoreCell2);
-                        var scoreCell3 = new Cell().Add(new Paragraph("3")
-                            .SetFontSize(11)
-                            .SetMargin(0)
-                            .SetMultipliedLeading(0.8f))
-                            .SetFont(thaiBoldFont)
-                            .SetTextAlignment(TextAlignment.CENTER)
-                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
-                            .SetBackgroundColor(ColorConstants.WHITE)
-                            .SetBorder(new SolidBorder(1))
-                            .SetPadding(3);
-                        table.AddHeaderCell(scoreCell3);
-                        var scoreCell4 = new Cell().Add(new Paragraph("4")
-                            .SetFontSize(11)
-                            .SetMargin(0)
-                            .SetMultipliedLeading(0.8f))
-                            .SetFont(thaiBoldFont)
-                            .SetTextAlignment(TextAlignment.CENTER)
-                            .SetVerticalAlignment(VerticalAlignment.MIDDLE)
-                            .SetBackgroundColor(ColorConstants.WHITE)
-                            .SetBorder(new SolidBorder(1))
-                            .SetPadding(3);
-                        table.AddHeaderCell(scoreCell4);
-
-                        var questions = evaluation.Form.Questions.OrderBy(q => q.QuestionID).ToList();
-                        for (int i = 0; i < questions.Count; i++)
+                        if (evaluation.Form.FormType == 3)
                         {
-                            var question = questions[i];
-                            var detail = evaluation.EvaluationDetails?.FirstOrDefault(ed => ed.QuestionID == question.QuestionID);
-                            var selectedScore = detail?.Score ?? 0;
+                            var questionsBySection = evaluation.Form.Questions
+                                .OrderBy(q => q.QuestionID)
+                                .GroupBy(q => q.Section ?? "คำถามทั่วไป")
+                                .ToList();
 
-                            string questionText = GetQuestionDisplayText(i + 1, question.QuestionText);
-                            var questionCell = CreateCell(questionText, thaiFont, false);
-                            questionCell.SetFontSize(10); 
-                            questionCell.SetVerticalAlignment(VerticalAlignment.TOP); 
-                            table.AddCell(questionCell);
-
-                            for (int score = 0; score <= 4; score++)
+                            foreach (var sectionGroup in questionsBySection)
                             {
-                                string checkMark = selectedScore == score ? "☐" : "☐";
-                                var scoreText = "";
+                                var sectionHeader = new Paragraph(sectionGroup.Key)
+                                    .SetFont(thaiBoldFont)
+                                    .SetFontSize(12)
+                                    .SetBackgroundColor(new DeviceRgb(240, 240, 240))
+                                    .SetPadding(5)
+                                    .SetMarginBottom(5);
+                                document.Add(sectionHeader);
 
-                                if (score == 0)
+                                float[] columnWidths = { 50f, 30f, 20f };
+                                var table = new Table(UnitValue.CreatePercentArray(columnWidths));
+                                table.SetWidth(UnitValue.CreatePercentValue(100));
+                                table.SetMarginBottom(5);
+
+                                var headerCell1 = new Cell().Add(new Paragraph("คำถาม").SetFont(thaiBoldFont).SetFontSize(11))
+                                    .SetTextAlignment(TextAlignment.CENTER)
+                                    .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                                    .SetBackgroundColor(new DeviceRgb(200, 200, 200))
+                                    .SetPadding(5);
+                                table.AddHeaderCell(headerCell1);
+
+                                var headerCell2 = new Cell().Add(new Paragraph("คำตอบ").SetFont(thaiBoldFont).SetFontSize(11))
+                                    .SetTextAlignment(TextAlignment.CENTER)
+                                    .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                                    .SetBackgroundColor(new DeviceRgb(200, 200, 200))
+                                    .SetPadding(5);
+                                table.AddHeaderCell(headerCell2);
+
+                                var headerCell3 = new Cell().Add(new Paragraph("คะแนน").SetFont(thaiBoldFont).SetFontSize(11))
+                                    .SetTextAlignment(TextAlignment.CENTER)
+                                    .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                                    .SetBackgroundColor(new DeviceRgb(200, 200, 200))
+                                    .SetPadding(5);
+                                table.AddHeaderCell(headerCell3);
+
+                                int questionNumber = 1;
+                                foreach (var question in sectionGroup)
                                 {
-                                    scoreText = $"{checkMark} ปกติ";
-                                }
-                                else
-                                {
-                                    var option = question.Options.FirstOrDefault(o => o.Value == score);
-                                    if (option != null && !string.IsNullOrEmpty(option.OptionText))
-                                    {
-                                        scoreText = $"{checkMark} {option.OptionText}";
-                                    }
-                                    else
-                                    {
-                                        scoreText = checkMark;
-                                    }
+                                    var detail = evaluation.EvaluationDetails?.FirstOrDefault(ed => ed.QuestionID == question.QuestionID);
+                                    var selectedScore = detail?.Score ?? 0;
+                                    var selectedOption = question.Options.FirstOrDefault(o => o.Value == selectedScore);
+
+                                    var questionCell = new Cell().Add(new Paragraph($"{questionNumber}. {question.QuestionText ?? ""}").SetFont(thaiFont).SetFontSize(10))
+                                        .SetVerticalAlignment(VerticalAlignment.TOP)
+                                        .SetPadding(5);
+                                    table.AddCell(questionCell);
+
+                                    var answerText = selectedOption?.OptionText ?? (selectedScore == 0 ? "ปกติ" : $"คะแนน {selectedScore}");
+                                    var answerCell = new Cell().Add(new Paragraph(answerText).SetFont(thaiFont).SetFontSize(10))
+                                        .SetVerticalAlignment(VerticalAlignment.TOP)
+                                        .SetPadding(5);
+                                    table.AddCell(answerCell);
+
+                                    var scoreCell = new Cell().Add(new Paragraph(selectedScore.ToString()).SetFont(thaiFont).SetFontSize(10))
+                                        .SetTextAlignment(TextAlignment.CENTER)
+                                        .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                                        .SetPadding(5);
+                                    table.AddCell(scoreCell);
+
+                                    questionNumber++;
                                 }
 
-                                var cell = CreateCell(scoreText, thaiFont, false);
-                                cell.SetFontSize(10);
-                                cell.SetTextAlignment(TextAlignment.LEFT);
-                                cell.SetVerticalAlignment(VerticalAlignment.TOP);
-                                cell.SetMargin(0);
-                                cell.SetPadding(3);
-                                table.AddCell(cell);
+                                document.Add(table);
                             }
                         }
+                        else
+                        {
+                            float[] columnWidths = { 50f, 30f, 20f };
+                            var table = new Table(UnitValue.CreatePercentArray(columnWidths));
+                            table.SetWidth(UnitValue.CreatePercentValue(100));
 
-                        document.Add(table);
+                            var headerCell1 = new Cell().Add(new Paragraph("คำถาม").SetFont(thaiBoldFont).SetFontSize(11))
+                                .SetTextAlignment(TextAlignment.CENTER)
+                                .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                                .SetBackgroundColor(new DeviceRgb(200, 200, 200))
+                                .SetPadding(5);
+                            table.AddHeaderCell(headerCell1);
 
-                        document.Add(new Paragraph(" ").SetFontSize(10));
+                            var headerCell2 = new Cell().Add(new Paragraph("คำตอบ").SetFont(thaiBoldFont).SetFontSize(11))
+                                .SetTextAlignment(TextAlignment.CENTER)
+                                .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                                .SetBackgroundColor(new DeviceRgb(200, 200, 200))
+                                .SetPadding(5);
+                            table.AddHeaderCell(headerCell2);
+
+                            var headerCell3 = new Cell().Add(new Paragraph("คะแนน").SetFont(thaiBoldFont).SetFontSize(11))
+                                .SetTextAlignment(TextAlignment.CENTER)
+                                .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                                .SetBackgroundColor(new DeviceRgb(200, 200, 200))
+                                .SetPadding(5);
+                            table.AddHeaderCell(headerCell3);
+
+                            var questions = evaluation.Form.Questions.OrderBy(q => q.QuestionID).ToList();
+                            for (int i = 0; i < questions.Count; i++)
+                            {
+                                var question = questions[i];
+                                var detail = evaluation.EvaluationDetails?.FirstOrDefault(ed => ed.QuestionID == question.QuestionID);
+                                var selectedScore = detail?.Score ?? 0;
+                                var selectedOption = question.Options.FirstOrDefault(o => o.Value == selectedScore);
+
+                                var questionCell = new Cell().Add(new Paragraph($"{i + 1}. {question.QuestionText ?? ""}").SetFont(thaiFont).SetFontSize(10))
+                                    .SetVerticalAlignment(VerticalAlignment.TOP)
+                                    .SetPadding(5);
+                                table.AddCell(questionCell);
+
+                                var answerText = selectedOption?.OptionText ?? (selectedScore == 0 ? "ปกติ" : $"คะแนน {selectedScore}");
+                                var answerCell = new Cell().Add(new Paragraph(answerText).SetFont(thaiFont).SetFontSize(10))
+                                    .SetVerticalAlignment(VerticalAlignment.TOP)
+                                    .SetPadding(5);
+                                table.AddCell(answerCell);
+
+                                var scoreCell = new Cell().Add(new Paragraph(selectedScore.ToString()).SetFont(thaiFont).SetFontSize(10))
+                                    .SetTextAlignment(TextAlignment.CENTER)
+                                    .SetVerticalAlignment(VerticalAlignment.MIDDLE)
+                                    .SetPadding(5);
+                                table.AddCell(scoreCell);
+                            }
+
+                            document.Add(table);
+                        }
+
+                        document.Add(new Paragraph("\n"));
 
                         var summaryTitle = new Paragraph("สรุปผลการประเมิน")
-                            .SetFontSize(12)
-                            .SetFont(thaiFont);
+                            .SetFont(thaiBoldFont)
+                            .SetFontSize(14);
                         document.Add(summaryTitle);
 
+                        var summaryTable = new Table(UnitValue.CreatePercentArray(new float[] { 100 }));
+                        summaryTable.SetWidth(UnitValue.CreatePercentValue(100));
+                        summaryTable.SetBackgroundColor(new DeviceRgb(250, 250, 250));
+                        summaryTable.SetMarginBottom(10);
+
                         var resultParagraph = new Paragraph()
-                            .Add($"ผลการประเมิน: {evaluation.Result}")
-                            .SetFontSize(10);
-                        document.Add(resultParagraph);
+                            .Add(new Text("ผลการประเมิน: ").SetFont(thaiBoldFont).SetFontSize(12))
+                            .Add(new Text(evaluation.Result ?? "ไม่ระบุ").SetFont(thaiFont).SetFontSize(12));
+                        summaryTable.AddCell(new Cell().Add(resultParagraph).SetBorder(Border.NO_BORDER).SetPadding(5));
 
                         if (!string.IsNullOrEmpty(evaluation.ResultDetail))
                         {
                             var detailParagraph = new Paragraph()
-                                .Add($"รายละเอียด: {evaluation.ResultDetail}")
-                                .SetFontSize(10);
-                            document.Add(detailParagraph);
+                                .Add(new Text("แนวทางปฎิบัติ: ").SetFont(thaiBoldFont).SetFontSize(12))
+                                .Add(new Text(evaluation.ResultDetail).SetFont(thaiFont).SetFontSize(12));
+                            summaryTable.AddCell(new Cell().Add(detailParagraph).SetBorder(Border.NO_BORDER).SetPadding(5));
                         }
 
-                        document.Add(new Paragraph(" ").SetFontSize(10));
-                        var evaluationInfo = new Paragraph()
-                            .Add($"วันที่ประเมิน: {evaluation.RecordDate:dd/MM/yyyy HH:mm}")
-                            .Add("\n")
-                            .Add($"ผู้ประเมิน: {evaluation.User?.Title?.TitleName}{evaluation.User?.FirstName} {evaluation.User?.LastName}")
-                            .SetFontSize(10);
-                        document.Add(evaluationInfo);
+                        document.Add(summaryTable);
+
+                        var evaluatorInfo = new Paragraph()
+                            .Add(new Text("ผู้ประเมิน: ").SetFont(thaiBoldFont).SetFontSize(12))
+                            .Add(new Text($"{evaluation.User?.Title?.TitleName}{evaluation.User?.FirstName} {evaluation.User?.LastName}").SetFont(thaiFont).SetFontSize(10));
+                        document.Add(evaluatorInfo);
+
                         document.Close();
 
-                        var fileName = $"Evaluation_{evaluation.Patient.HN}_{evaluation.RecordDate:yyyyMMdd_HHmm}.pdf";
+                        var fileName = $"ผลการประเมิน_{evaluation.Form.FormName}_{evaluation.Patient.HN}_{evaluation.RecordDate:yyyyMMdd_HHmm}.pdf";
                         return File(stream.ToArray(), "application/pdf", fileName);
                     }
                     catch (Exception ex)

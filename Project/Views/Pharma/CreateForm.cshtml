@@ -847,6 +847,9 @@
             }
             
             let ResultNotFill = false;
+            let InvalidScoreRange = false;
+            let invalidRangeText = '';
+            
             $('.result-setting-item').each(function() {
                 let minScore = $(this).find('.min-score').val();
                 let maxScore = $(this).find('.max-score').val();
@@ -857,6 +860,12 @@
                     ResultNotFill = true;
                     return false;
                 }
+                
+                if (parseInt(minScore) > parseInt(maxScore)) {
+                    InvalidScoreRange = true;
+                    invalidRangeText = resultName.trim();
+                    return false;
+                }
             });
             
             if (ResultNotFill) {
@@ -864,6 +873,16 @@
                     icon: 'warning',
                     title: 'ข้อมูลไม่ครบถ้วน',
                     text: 'กรุณากรอกข้อมูลการตั้งค่าผลลัพธ์ให้ครบถ้วน (คะแนนต่ำสุด, คะแนนสูงสุด, ระดับความรุนแรง, และแนวทางปฎิบัติ)',
+                    confirmButtonColor: '#51c3b7'
+                });
+                return;
+            }
+            
+            if (InvalidScoreRange) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ช่วงคะแนนไม่ถูกต้อง',
+                    text: `ช่วงคะแนนของ "${invalidRangeText}" ไม่ถูกต้อง\nคะแนนต่ำสุดต้องไม่มากกว่าคะแนนสูงสุด`,
                     confirmButtonColor: '#51c3b7'
                 });
                 return;

@@ -17,7 +17,7 @@
     <div class="modern-card mb-4">
         <div class="card-body">
             <div class="row g-3 align-items-end">
-                <div class="col-10">
+                <div class="col-lg-8 col-md-12">
                     <label class="form-label fw-bold">
                         เลือกแบบประเมิน
                     </label>
@@ -29,16 +29,18 @@
                         }
                     </select>
                 </div>
-                <div class="col-2">
-                    <label class="form-label fw-bold">
+                <div class="col-lg-4 col-md-12">
+                    <label class="form-label fw-bold export-label">
                         ออกรายงาน
-                    </label><br />
-                    <button type="button" class="btn btn-danger btn-large me-2" id="exportPdfBtn" onclick="exportToPDF()" disabled>
-                        <i class="fas fa-file-pdf me-2"></i>PDF
-                    </button>
-                    <button type="button" class="btn btn-success btn-large" id="exportExcelBtn" onclick="exportToExcel()" disabled>
-                        <i class="fas fa-file-excel me-2"></i>Excel
-                    </button>
+                    </label>
+                    <div class="export-buttons-container">
+                        <button type="button" class="btn btn-danger export-btn" id="exportPdfBtn" onclick="exportToPDF()" disabled>
+                            <i class="fas fa-file-pdf me-2"></i>PDF
+                        </button>
+                        <button type="button" class="btn btn-success export-btn" id="exportExcelBtn" onclick="exportToExcel()" disabled>
+                            <i class="fas fa-file-excel me-2"></i>Excel
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -250,6 +252,18 @@
             }
         }
 
+        /* Desktop - Export buttons in row */
+        .export-buttons-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .export-btn {
+            flex: 1;
+            min-width: 120px;
+        }
+
         /* Mobile */
         @@media (max-width: 768px) {
             .container-fluid {
@@ -272,17 +286,27 @@
                 row-gap: 1rem !important;
             }
             
-            .col-10, .col-2 {
+            .col-lg-8, .col-lg-4 {
                 width: 100% !important;
             }
             
-            .btn-large {
-                width: 100%;
-                margin: 0.3rem 0 !important;
+            /* Export buttons - แนวตั้งบนมือถือ */
+            .export-label {
+                margin-bottom: 0.5rem;
             }
             
-            #exportExcelBtn {
-                margin-top: 0.5rem !important;
+            .export-buttons-container {
+                display: flex;
+                flex-direction: column;
+                gap: 0.6rem;
+                width: 100%;
+            }
+            
+            .export-btn {
+                width: 100%;
+                padding: 0.7rem;
+                font-size: 0.95rem;
+                font-weight: 600;
             }
             
             .form-label {
@@ -392,6 +416,18 @@
             }
         }
 
+        /* Tablet responsive */
+        @@media (max-width: 1024px) and (min-width: 769px) {
+            .export-buttons-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .export-btn {
+                width: 100%;
+            }
+        }
+
         /* Extra small mobile */
         @@media (max-width: 480px) {
             .page-title {
@@ -400,6 +436,19 @@
             
             .modern-card {
                 border-radius: 10px;
+            }
+            
+            .modern-card .card-body {
+                padding: 0.8rem;
+            }
+            
+            .export-btn {
+                padding: 0.6rem;
+                font-size: 0.9rem;
+            }
+            
+            .export-btn i {
+                font-size: 0.9rem;
             }
             
             .eval-card-mobile {

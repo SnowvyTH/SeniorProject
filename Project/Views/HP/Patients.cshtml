@@ -403,66 +403,193 @@
 
         /* Responsive Design for Patients Page */
         
-        /* Tablet (iPad) */
-        @@media (max-width: 1024px) and (min-width: 769px) {
+        /* iPad Portrait (820 x 1180) */
+        @@media (min-width: 769px) and (max-width: 1024px) {
+            .container-fluid {
+                padding: 0 15px;
+            }
+            
             .page-title {
-                font-size: 1.6rem;
+                font-size: 1.8rem;
+                margin-bottom: 1.2rem;
+            }
+            
+            /* Filter Card */
+            .filter-card {
+                margin-bottom: 1.5rem;
+            }
+            
+            .filter-card .card-body {
+                padding: 1.2rem;
             }
             
             .filter-card .row {
-                gap: 0.5rem;
+                margin: 0 -8px;
             }
             
-            .table th, .table td {
+            .filter-card .col-md-7 {
+                width: 100%;
+                padding: 0 8px;
+                margin-bottom: 1rem;
+            }
+            
+            .filter-card .col-md-3,
+            .filter-card .col-md-2 {
+                width: 50%;
+                padding: 0 8px;
+            }
+            
+            .filter-card label {
                 font-size: 0.9rem;
-                padding: 0.6rem;
+                margin-bottom: 0.4rem;
+            }
+            
+            .filter-card .form-control,
+            .filter-card .form-select {
+                font-size: 0.95rem;
+            }
+            
+            .filter-card .btn {
+                font-size: 0.9rem;
+                padding: 0.6rem 1rem;
+            }
+            
+            /* Table */
+            .table-responsive {
+                border-radius: 12px;
+            }
+            
+            .table th {
+                font-size: 0.9rem;
+                padding: 0.8rem 0.6rem;
+            }
+            
+            .table td {
+                font-size: 0.85rem;
+                padding: 0.8rem 0.6rem;
             }
             
             .avatar-sm {
-                width: 35px;
-                height: 35px;
-                font-size: 1rem;
+                width: 38px;
+                height: 38px;
+                font-size: 1.1rem;
+            }
+            
+            .table th[width="8%"] {
+                width: 6%;
+            }
+            
+            .table th[width="42%"] {
+                width: 40%;
+            }
+            
+            .table th[width="12%"] {
+                width: 15%;
+            }
+            
+            .table th[width="15%"] {
+                width: 18%;
+            }
+            
+            .table th[width="22%"] {
+                width: 21%;
             }
             
             .dropdown-menu {
-                min-width: 250px;
+                min-width: 260px;
+                max-width: 300px;
+            }
+            
+            .evaluation-item {
+                padding: 0.6rem 0.8rem;
+            }
+            
+            .evaluation-item .small {
+                font-size: 0.75rem;
+            }
+            
+            /* Pagination */
+            .pagination {
+                font-size: 0.9rem;
+            }
+            
+            .pagination .page-link {
+                padding: 0.5rem 0.8rem;
             }
         }
 
-        /* Mobile - Show cards instead of table */
+        /* Mobile (375 x 667 and similar) - Show cards instead of table */
         @@media (max-width: 768px) {
+            .container-fluid {
+                padding: 0 10px;
+            }
+            
             .page-title {
-                font-size: 1.4rem;
+                font-size: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .page-title i {
+                font-size: 1.3rem;
             }
             
             .d-flex.justify-content-between {
                 flex-direction: column;
                 align-items: flex-start !important;
+                margin-bottom: 1rem;
+            }
+            
+            /* Filter Card */
+            .filter-card {
+                margin-bottom: 1rem;
+            }
+            
+            .filter-card .card-body {
+                padding: 1rem;
+            }
+            
+            .filter-card .row {
+                margin: 0 -8px;
             }
             
             .filter-card .col-md-7,
             .filter-card .col-md-3,
             .filter-card .col-md-2 {
                 width: 100%;
-                padding: 0 0.5rem;
+                padding: 0 8px;
+                margin-bottom: 1rem;
             }
             
-            .filter-card .row {
-                margin: 0;
+            .filter-card .col-md-2 {
+                margin-bottom: 0;
             }
             
             .filter-card label {
-                font-size: 0.85rem;
-                margin-bottom: 0.3rem;
+                font-size: 0.9rem;
+                margin-bottom: 0.4rem;
+                font-weight: 600;
+            }
+            
+            .filter-card .input-group-text {
+                padding: 0.5rem 0.8rem;
+            }
+            
+            .filter-card .form-control,
+            .filter-card .form-select {
+                font-size: 0.9rem;
+                padding: 0.5rem 0.8rem;
             }
             
             .filter-card .btn {
-                margin-top: 0.5rem;
+                width: 100%;
+                padding: 0.6rem;
+                font-size: 0.9rem;
+                margin-top: 0 !important;
             }
             
             /* Hide table, show mobile cards */
             .table-responsive {
-                display: none;
+                display: none !important;
             }
             
             /* Mobile card layout */
@@ -485,19 +612,23 @@
                 margin-bottom: 0.8rem;
                 padding-bottom: 0.8rem;
                 border-bottom: 1px solid #e9ecef;
+                gap: 0.8rem;
             }
             
             .patient-card-mobile .avatar-sm {
                 width: 45px;
                 height: 45px;
                 font-size: 1.3rem;
-                margin-right: 0.8rem;
+                margin-right: 0;
+                flex-shrink: 0;
             }
             
             .patient-card-mobile .patient-name {
                 font-size: 1rem;
                 font-weight: 600;
                 color: var(--dark-color);
+                margin-bottom: 0.2rem;
+                line-height: 1.3;
                 margin-bottom: 0.2rem;
             }
             
@@ -506,28 +637,31 @@
                 color: #6c757d;
             }
             
-            .patient-card-mobile .patient-info-row {
+            .patient-card-mobile .patient-info-section {
+                margin-bottom: 0.8rem;
+            }
+            
+            .patient-card-mobile .info-row {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                padding: 0.5rem 0;
-                font-size: 0.85rem;
+                padding: 0.6rem 0.8rem;
+                background: #f8f9fa;
+                border-radius: 8px;
+                margin-bottom: 0.5rem;
             }
             
             .patient-card-mobile .info-label {
                 color: #6c757d;
                 font-weight: 500;
-            }
-            
-            .patient-card-mobile .info-value {
-                font-weight: 600;
+                font-size: 0.85rem;
             }
             
             .patient-card-mobile .latest-eval-card {
                 background: #f8f9fa;
-                padding: 0.6rem;
+                padding: 0.8rem;
                 border-radius: 8px;
-                margin: 0.5rem 0;
+                margin: 0.8rem 0;
             }
             
             .patient-card-mobile .latest-eval-card .eval-date {
@@ -551,13 +685,232 @@
             
             .patient-card-mobile .btn-sm {
                 flex: 1;
+                font-size: 0.85rem;
+                padding: 0.6rem;
+                white-space: nowrap;
+            }
+            
+            .patient-card-mobile .dropdown {
+                position: relative !important;
+            }
+            
+            .patient-card-mobile .dropdown-menu {
+                min-width: 280px;
+                max-width: calc(100vw - 40px);
+                max-height: 70vh;
+                overflow-y: auto;
+                position: absolute !important;
+                z-index: 1060 !important;
+            }
+            
+            .patient-card-mobile .dropdown-toggle {
+                width: 100%;
+                text-align: left;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .patient-card-mobile .dropdown-toggle::after {
+                margin-left: auto;
+            }
+            
+            .dropdown-menu .evaluation-item {
+                padding: 0.8rem 1rem;
+                border-bottom: 1px solid #f0f0f0;
+                cursor: pointer;
+            }
+            
+            .dropdown-menu .evaluation-item:last-child {
+                border-bottom: none;
+            }
+            
+            .dropdown-menu .evaluation-item:active {
+                background-color: #e9ecef;
+            }
+            
+            /* Pagination */
+            .pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.3rem;
+            }
+            
+            .pagination .page-item {
+                margin: 0.2rem;
+            }
+            
+            .pagination .page-link {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.85rem;
+                min-width: 38px;
+                text-align: center;
+            }
+            
+            #hpPaginationInfo {
+                font-size: 0.8rem;
+                text-align: center;
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            nav[aria-label="Page navigation"] .d-flex {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            /* Loading and No Data Messages */
+            #loadingSpinner,
+            #noDataMessage {
+                padding: 2rem 1rem;
+            }
+            
+            #noDataMessage i {
+                font-size: 2.5rem;
+            }
+            
+            #noDataMessage h5 {
+                font-size: 1rem;
+                margin-top: 0.8rem;
+            }
+            
+            #noDataMessage p {
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* Extra Small Mobile (iPhone SE, etc. - 375px and below) */
+        @@media (max-width: 480px) {
+            .container-fluid {
+                padding: 0 8px;
+            }
+            
+            .page-title {
+                font-size: 1.3rem;
+            }
+            
+            .filter-card .card-body {
+                padding: 0.8rem;
+            }
+            
+            .filter-card .row {
+                margin: 0 -6px;
+            }
+            
+            .filter-card .col-md-7,
+            .filter-card .col-md-3,
+            .filter-card .col-md-2 {
+                padding: 0 6px;
+                margin-bottom: 0.8rem;
+            }
+            
+            .filter-card label {
+                font-size: 0.85rem;
+            }
+            
+            .filter-card .form-control,
+            .filter-card .form-select,
+            .filter-card .input-group-text {
+                font-size: 0.85rem;
+                padding: 0.45rem 0.7rem;
+            }
+            
+            .filter-card .btn {
+                padding: 0.5rem;
+                font-size: 0.85rem;
+            }
+            
+            .patient-card-mobile {
+                padding: 0.8rem;
+            }
+            
+            .patient-card-mobile .avatar-sm {
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+            }
+            
+            .patient-card-mobile .patient-name {
+                font-size: 0.95rem;
+            }
+            
+            .patient-card-mobile .patient-hn {
+                font-size: 0.75rem;
+            }
+            
+            .patient-card-mobile .info-row {
+                padding: 0.5rem 0.6rem;
+            }
+            
+            .patient-card-mobile .info-label {
+                font-size: 0.8rem;
+            }
+            
+            .patient-card-mobile .badge {
+                font-size: 0.7rem;
+                padding: 0.3rem 0.5rem;
+            }
+            
+            .patient-card-mobile .latest-eval-card {
+                padding: 0.6rem;
+            }
+            
+            .patient-card-mobile .latest-eval-card .eval-date {
+                font-size: 0.8rem;
+            }
+            
+            .patient-card-mobile .latest-eval-card .eval-form {
+                font-size: 0.7rem;
+            }
+            
+            .patient-card-mobile .btn-sm {
                 font-size: 0.8rem;
                 padding: 0.5rem;
             }
             
+            .pagination .page-link {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.8rem;
+                min-width: 34px;
+            }
+            
             .dropdown-menu {
-                min-width: 260px;
-                max-width: 90vw;
+                min-width: 240px;
+                font-size: 0.85rem;
+            }
+            
+            .dropdown-menu .evaluation-item {
+                padding: 0.5rem 0.6rem;
+            }
+            
+            .dropdown-menu .small {
+                font-size: 0.7rem;
+            }
+        }
+        
+        /* Landscape Mode for Mobile */
+        @@media (max-height: 500px) and (orientation: landscape) {
+            .page-title {
+                font-size: 1.2rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .filter-card {
+                margin-bottom: 0.8rem;
+            }
+            
+            .filter-card .card-body {
+                padding: 0.8rem;
+            }
+            
+            .patient-card-mobile {
+                padding: 0.8rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .patient-card-mobile .patient-header {
+                margin-bottom: 0.5rem;
+                padding-bottom: 0.5rem;
             }
         }
 
@@ -702,12 +1055,14 @@
         
         function extractPatientData(rowElement) {
             const row = $(rowElement);
+            // เลือกเฉพาะ badge ที่อยู่ในคอลัมน์ "ประเภท" (td ที่ 3) ไม่ใช่ badge ที่อยู่ใน dropdown
+            const typeBadge = row.find('td:eq(2) .badge');
             return {
                 hn: row.data('hn'),
                 name: row.data('name'),
                 type: row.data('type'),
-                typeDisplay: row.find('.badge').text().trim(),
-                typeBadgeClass: row.find('.badge').attr('class'),
+                typeDisplay: typeBadge.text().trim(),
+                typeBadgeClass: typeBadge.attr('class'),
                 latestEvalDate: row.find('.latest-evaluation .fw-bold').text().trim(),
                 latestEvalForm: row.find('.latest-evaluation .text-muted').text().trim(),
                 hasEvaluation: row.find('.dropdown').length > 0,
@@ -729,19 +1084,25 @@
                             <div class="patient-name">${data.name}</div>
                             <div class="patient-hn">HN: ${data.hn}</div>
                         </div>
-                        <span class="${data.typeBadgeClass}">${data.typeDisplay}</span>
+                    </div>
+                    
+                    <div class="patient-info-section">
+                        <div class="info-row">
+                            <span class="info-label">ประเภทผู้ป่วย</span>
+                            <span class="${data.typeBadgeClass}">${data.typeDisplay}</span>
+                        </div>
                     </div>
                     
                     ${hasEval ? `
                     <div class="latest-eval-card">
-                        <div style="font-size: 0.75rem; color: #6c757d; margin-bottom: 0.2rem;">
+                        <div style="font-size: 0.75rem; color: #6c757d; margin-bottom: 0.4rem;">
                             <i class="fas fa-calendar-check me-1"></i>การประเมินล่าสุด
                         </div>
                         <div class="eval-date">${data.latestEvalDate}</div>
                         <div class="eval-form">${data.latestEvalForm}</div>
                     </div>
                     ` : `
-                    <div style="text-align: center; padding: 1rem; color: #6c757d; font-size: 0.85rem;">
+                    <div style="text-align: center; padding: 1rem; color: #6c757d; font-size: 0.85rem; background: #f8f9fa; border-radius: 8px; margin-top: 0.8rem;">
                         <i class="fas fa-info-circle me-1"></i>ยังไม่มีการประเมิน
                     </div>
                     `}
@@ -785,7 +1146,7 @@
         }
 
         function setupDropdownHandlers() {
-            $('.dropdown').on('show.bs.dropdown', function () {
+            $(document).on('show.bs.dropdown', '.dropdown', function () {
                 const dropdown = $(this);
                 const menu = dropdown.find('.dropdown-menu');
                 
@@ -808,7 +1169,7 @@
                 }, 10);
             });
 
-            $('.dropdown').on('hide.bs.dropdown', function () {
+            $(document).on('hide.bs.dropdown', '.dropdown', function () {
                 const menu = $(this).find('.dropdown-menu');
                 menu.css({
                     'position': '',
@@ -818,10 +1179,13 @@
                 });
             });
 
+            // ป้องกันการ scroll ปิด dropdown บน mobile
             $(window).on('scroll', function() {
-                $('.dropdown').each(function() {
-                    $(this).find('.dropdown-toggle').dropdown('hide');
-                });
+                if ($(window).width() > 768) {
+                    $('.dropdown').each(function() {
+                        $(this).find('.dropdown-toggle').dropdown('hide');
+                    });
+                }
             });
 
             $('.table-responsive').on('scroll', function() {
@@ -830,12 +1194,9 @@
                 });
             });
 
-            $(document).on('click', function(e) {
-                if (!$(e.target).closest('.dropdown').length) {
-                    $('.dropdown').each(function() {
-                        $(this).find('.dropdown-toggle').dropdown('hide');
-                    });
-                }
+            // ป้องกัน dropdown ปิดเมื่อคลิกภายในเมนู
+            $(document).on('click', '.dropdown-menu', function(e) {
+                e.stopPropagation();
             });
         }
             

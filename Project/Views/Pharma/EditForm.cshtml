@@ -813,6 +813,31 @@
                 return;
             }
             
+            let InvalidScoreRange = false;
+            let invalidRangeText = '';
+            
+            $('.result-setting-item').each(function() {
+                let minScore = $(this).find('.min-score').val();
+                let maxScore = $(this).find('.max-score').val();
+                let resultName = $(this).find('.result-name').val();
+                
+                if (minScore && maxScore && parseInt(minScore) > parseInt(maxScore)) {
+                    InvalidScoreRange = true;
+                    invalidRangeText = resultName ? resultName.trim() : 'ไม่ระบุชื่อ';
+                    return false;
+                }
+            });
+            
+            if (InvalidScoreRange) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ช่วงคะแนนไม่ถูกต้อง',
+                    text: `ช่วงคะแนนของ "${invalidRangeText}" ไม่ถูกต้อง\nคะแนนต่ำสุดต้องไม่มากกว่าคะแนนสูงสุด`,
+                    confirmButtonColor: '#51c3b7'
+                });
+                return;
+            }
+            
             Swal.fire({
                 title: 'กำลังบันทึก...',
                 text: 'กรุณารอสักครู่',

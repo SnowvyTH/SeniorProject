@@ -35,12 +35,30 @@
 
         body {
             font-family: 'Kanit', sans-serif;
-            background: linear-gradient(135deg, var(--light-mint) 0%, #f8fdfc 100%);
+            background-image: 
+                linear-gradient(135deg, rgba(232, 247, 245, 0.85) 0%, rgba(81, 195, 183, 0.75) 50%, rgba(5, 104, 94, 0.8) 100%),
+                url('/img/background.avif');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(232, 247, 245, 0.3);
+            backdrop-filter: blur(2px);
+            z-index: -1;
         }
 
         .login-container {
@@ -286,6 +304,84 @@
                 margin-bottom: 2rem;
             }
         }
+
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease-out 2.7s;
+            min-width: 300px;
+            border-left: 4px solid;
+        }
+
+        .toast-notification.success {
+            border-left-color: #10b981;
+        }
+
+        .toast-notification.error {
+            border-left-color: #ef4444;
+        }
+
+        .toast-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .toast-notification.success .toast-icon {
+            background: #d1fae5;
+            color: #10b981;
+        }
+
+        .toast-notification.error .toast-icon {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin: 0;
+            color: #1f2937;
+        }
+
+        @@keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @@keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+                transform: translateX(400px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -342,9 +438,35 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        function showToast(type, message) {
+            const existingToast = document.querySelector('.toast-notification');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            
+            const icon = type === 'success' ? '✓' : '✕';
+            
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <span>${icon}</span>
+                </div>
+                <div class="toast-content">
+                    <p class="toast-title">${message}</p>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
         $(document).ready(function() {
             let isSubmitting = false;
 
@@ -360,13 +482,7 @@
                 });
                 
                 if (errorMessages.length > 0) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'ข้อมูลไม่ถูกต้อง',
-                        html: errorMessages.join('<br>'),
-                        confirmButtonColor: '#51c3b7',
-                        confirmButtonText: 'ตกลง'
-                    });
+                    showToast('error', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
                 }
             }
             
@@ -385,13 +501,7 @@
                 var password = $('#Password').val().trim();
                 
                 if (!username || !password) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'กรุณากรอกข้อมูลให้ครบ',
-                        text: 'โปรดกรอกชื่อผู้ใช้และรหัสผ่าน',
-                        confirmButtonColor: '#51c3b7',
-                        confirmButtonText: 'ตกลง'
-                    });
+                    showToast('error', 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน');
                     return false;
                 }
                 
@@ -410,28 +520,17 @@
                             $btn.html('<i class="fas fa-sign-in-alt me-2"></i>Log In');
                             $btn.prop('disabled', false);
                             
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'เข้าสู่ระบบไม่สำเร็จ',
-                                text: response.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
-                                confirmButtonColor: '#51c3b7',
-                                confirmButtonText: 'ลองใหม่อีกครั้ง'
-                            });
+                            showToast('error', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
                         } else {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'เข้าสู่ระบบสำเร็จ',
-                                text: 'กำลังนำคุณเข้าสู่ระบบ...',
-                                timer: 750,
-                                showConfirmButton: false,
-                                allowOutsideClick: false
-                            }).then(() => {
+                            showToast('success', 'เข้าสู่ระบบสำเร็จ');
+                            
+                            setTimeout(() => {
                                 if (response.redirectUrl) {
                                     window.location.href = response.redirectUrl;
                                 } else {
                                     $form.off('submit').submit();
                                 }
-                            });
+                            }, 800);
                         }
                     },
                     error: function(xhr, status, error) {
@@ -440,29 +539,11 @@
                         $btn.prop('disabled', false);
                         
                         if (status === 'timeout') {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'การเชื่อมต่อล่าช้า',
-                                text: 'กรุณาลองใหม่อีกครั้ง',
-                                confirmButtonColor: '#51c3b7',
-                                confirmButtonText: 'ตกลง'
-                            });
+                            showToast('error', 'การเชื่อมต่อล่าช้า กรุณาลองใหม่');
                         } else if (xhr.status === 400 || xhr.status === 401) {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'เข้าสู่ระบบไม่สำเร็จ',
-                                text: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง',
-                                confirmButtonColor: '#51c3b7',
-                                confirmButtonText: 'ลองใหม่อีกครั้ง'
-                            });
+                            showToast('error', 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
                         } else {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'เกิดข้อผิดพลาด',
-                                text: 'ไม่สามารถเข้าสู่ระบบได้ในขณะนี้',
-                                confirmButtonColor: '#51c3b7',
-                                confirmButtonText: 'ตกลง'
-                            });
+                            showToast('error', 'ไม่สามารถเข้าสู่ระบบได้ในขณะนี้');
                         }
                     }
                 });

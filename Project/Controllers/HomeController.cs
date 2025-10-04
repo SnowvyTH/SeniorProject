@@ -25,7 +25,7 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
-        if (User.Identity.IsAuthenticated)
+        if (User.Identity?.IsAuthenticated == true)
         {
             var roleIdClaim = User.FindFirst("RoleID")?.Value;
             if (int.TryParse(roleIdClaim, out int roleId))
