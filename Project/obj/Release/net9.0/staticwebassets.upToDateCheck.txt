@@ -80,6 +80,7 @@ wwwroot\uploads\profile\103.jpg
 wwwroot\img\logo.ico
 wwwroot\css\sweetalert2.min.css
 wwwroot\js\chart.js
+wwwroot\img\background.avif
 D:\Project\Project\wwwroot\css\site.css
 D:\Project\Project\wwwroot\css\fontawesome.css
 D:\Project\Project\wwwroot\js\image-cropper.js
